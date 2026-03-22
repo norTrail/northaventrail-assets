@@ -1,0 +1,880 @@
+/* See Something, Say Something — Standalone Squarespace Script */
+(() => {
+    'use strict';
+
+    // -------------------------
+    // Globals & Constants
+    // -------------------------
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbygx5-v6xF0qyd9riNo3Rf0IPSzf5PmUmS3OBH-fCITcI2qqFcaVY4CFWl-rHMUUgEQTQ/exec";
+    const POI_API_URL = "https://script.google.com/macros/s/AKfycbwBqR4y-aGF7R-pZPrhPI7hnejhd9_0_PK53whCQBICIvVULNgtFB7MW1syjhEVtNWhwQ/exec";
+    const GAS_API_KEY = "NATA_ISSUE_TRACKER_SECURE_TOKEN_2026";
+
+    const searchValues = [];
+    let map, marker;
+    const DEFAULT_MARKER_LONGITUDE = -96.82099635665163;
+    const DEFAULT_MARKER_LATITUDE = 32.89603152402648;
+    const DEFAULT_TRAIL_ZOOM = 12; // used by resetMapMarker()
+
+    let uploadsInProgress = 0;
+    let uploadedImageNames = [];
+    let imageList = [];
+    let geolocationServiceActive = true;
+    let currentFocus = -1;
+    let uploadTimer;
+    let files = [];
+    let formSubmitted = false;
+    let hasAutoLocated = false;
+
+    // DOM Refs
+    let form, submitButton, fileInput, previewContainer, errorMessage, uploadButton, usePhotoGPSButton,
+        hiddenImageNames, shortDescription, longDescription, emailInput, tabs, tabContents,
+        latitudeInput, longitudeInput, locationListInput, locationList, resetMapMarkerButton;
+
+    let manualLatitudeInput, manualLongitudeInput, applyLatLngBtn, latErrorEl, lngErrorEl;
+    let firstNameInput, lastNameInput, rememberContactCheckbox;
+
+    // -------------------------
+    // Utilities & Helpers
+    // -------------------------
+    const isApple = () => /Mac|iPhone|iPad|iPod/.test(navigator.platform);
+
+    function announce(el, msg) {
+        if (!el) return;
+        el.textContent = '';
+        setTimeout(() => { el.textContent = msg; }, 0);
+    }
+
+    function showMessage(message) {
+        const el = document.getElementById('progress');
+        if (!el) return;
+        if (message) {
+            el.classList.remove('hidden');
+            el.textContent = message;
+        } else {
+            el.classList.add('hidden');
+            el.textContent = '';
+        }
+    }
+
+    function isValidEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).trim());
+    }
+
+    function validateForm() {
+        const setState = (elId, valid) => {
+            const el = document.getElementById(elId);
+            el?.classList.toggle('error', !valid);
+            const input = elId === 'short-description' ? shortDescription :
+                elId === 'email' ? emailInput : null;
+            if (input) input.setAttribute('aria-invalid', String(!valid));
+        };
+        const setError = (id, show) => document.getElementById(id)?.classList.toggle('hidden', !show);
+
+        let firstFocusEl = null;
+
+        const shortOk = shortDescription.value.trim() !== '';
+        setState('short-description', shortOk);
+        setState('short-descriptionLabel', shortOk);
+        setError('short-descriptionError', !shortOk);
+        if (!shortOk) firstFocusEl = shortDescription;
+
+        const emailVal = emailInput.value.trim();
+        const emailOk = emailVal === '' || isValidEmail(emailVal);
+        setState('email', emailOk);
+        setState('emailLabel', emailOk);
+        setError('emailError', !emailOk);
+        if (!emailOk && !firstFocusEl) firstFocusEl = emailInput;
+
+        // Coordinate Validation (if provided)
+        const lat = latitudeInput.value.trim();
+        const lng = longitudeInput.value.trim();
+        const coordsOk = (!lat && !lng) || (lat !== "" && lng !== "" && !isNaN(lat) && !isNaN(lng));
+        // We don't have a specific error UI for hidden inputs, but we can block submission
+        if (!coordsOk && !firstFocusEl) {
+            // This shouldn't happen with the map UI, but better safe.
+            announce(document.getElementById('sr-updates'), "Invalid coordinates.");
+            return false;
+        }
+
+        if (firstFocusEl) {
+            firstFocusEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            firstFocusEl.focus({ preventScroll: true });
+            return false;
+        }
+        return true;
+    }
+
+    // -------------------------
+    // GAS API Bridge (Fetch)
+    // -------------------------
+    async function callGAS(params, isExit = false) {
+        try {
+            const fetchOptions = {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify({
+                    ...params,
+                    apiKey: GAS_API_KEY,
+                    origin: window.location.origin
+                })
+            };
+            if (isExit) fetchOptions.keepalive = true;
+
+            const response = await fetch(GAS_WEB_APP_URL, fetchOptions);
+            return { result: 'success', status: 'submitted' };
+        } catch (e) {
+            if (!isExit) {
+                console.error("GAS Call Failed:", e);
+                if (typeof TrailmapError !== 'undefined' && TrailmapError.logClientErrorToServer) {
+                    TrailmapError.logClientErrorToServer({
+                        kind: "issue_tracker_post_error",
+                        message: e.message,
+                        stack: e.stack,
+                        data: { params }
+                    });
+                }
+            }
+            throw e;
+        }
+    }
+
+    // NOTE: Image upload via GET is limited by URL length. 
+    // We use POST for file uploads as it is the standard for multi-part data.
+    async function uploadImageToGAS(base64Data, fileName) {
+        try {
+            const payload = {
+                p: 'uploadFile',
+                data: base64Data,
+                fileName: fileName
+            };
+
+            await fetch(GAS_WEB_APP_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify({
+                    ...payload,
+                    apiKey: GAS_API_KEY,
+                    origin: window.location.origin
+                })
+            });
+
+            return { status: 'submitted' };
+        } catch (e) {
+            console.error("Upload failed", e);
+            throw e;
+        }
+    }
+
+    function buildUniqueFilename(originalName, prefix = "report") {
+        const dotIndex = originalName.lastIndexOf(".");
+        const ext = dotIndex > -1 ? originalName.slice(dotIndex).toLowerCase() : ".jpg";
+        const uuid = (crypto && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).substring(2, 11);
+        return `${prefix}-${uuid}${ext}`;
+    }
+
+    async function deleteImageFromGAS(fileName, isExit = false) {
+        try {
+            const params = {
+                page: 'removeFile',
+                fileName: fileName
+            };
+            callGAS(params, isExit).catch(() => { /* ignore exit errors */ });
+        } catch (e) {
+            if (!isExit) console.error("Delete failed", e);
+        }
+    }
+
+    // -------------------------
+    // Tabs & Map UI Logic
+    // -------------------------
+    function activateTab(tab, index) {
+        // Roving tabindex: deactivate all tabs and panels
+        tabs.forEach((t, i) => {
+            t.classList.remove('active');
+            t.setAttribute('aria-selected', 'false');
+            t.setAttribute('tabindex', '-1');
+            const panel = tabContents[i];
+            if (panel) {
+                panel.classList.remove('active');
+                panel.setAttribute('tabindex', '-1');
+            }
+        });
+
+        // Activate selected tab
+        tab.classList.add('active');
+        tab.setAttribute('aria-selected', 'true');
+        tab.setAttribute('tabindex', '0');
+
+        const activePanel = tabContents[index];
+        if (activePanel) {
+            activePanel.classList.add('active');
+            activePanel.setAttribute('tabindex', '0');
+
+            // Focus Management: Shift focus to the primary action in the new panel
+            const firstInput = activePanel.querySelector('button, input, textarea');
+            if (firstInput) {
+                setTimeout(() => firstInput.focus(), 10);
+            } else if (tab.id === 'tab3') {
+                // For the Map tab, focus the map container
+                setTimeout(() => document.getElementById('map').focus(), 10);
+            }
+        }
+
+        // Enable draggable on both Drag Marker (tab3) and Photo (tab4)
+        // Guard: marker may not exist yet if map hasn't initialised
+        if (marker) {
+            if (tab.id === 'tab3' || tab.id === 'tab4') {
+                marker.setDraggable(true);
+                document.getElementById('issueMarker')?.classList.remove('non-draggable');
+            } else {
+                marker.setDraggable(false);
+                document.getElementById('issueMarker')?.classList.add('non-draggable');
+            }
+        }
+    }
+
+    function syncGPSTab() {
+        const anyHasGPS = imageList.some(img => img.hasGPS);
+        const photoTabHead = document.getElementById('tab4');
+
+        if (anyHasGPS) {
+            photoTabHead.classList.remove('hidden');
+            photoTabHead.setAttribute('tabindex', '0');
+        } else {
+            photoTabHead.classList.add('hidden');
+            photoTabHead.setAttribute('tabindex', '-1');
+            // If the Photo tab was active and is now hidden, switch to Drag Marker (tab3)
+            if (photoTabHead.classList.contains('active')) {
+                activateTab(document.getElementById('tab3'), 2);
+            }
+        }
+    }
+
+    function scrollToIssueTracker() {
+        const container = document.getElementById('issue-tracker-container');
+        if (container) {
+            const top = container.getBoundingClientRect().top + window.pageYOffset - 40; // 40px offset for iOS Dynamic Island
+            window.scrollTo({ top, behavior: 'smooth' });
+        }
+    }
+
+    function resetForm() {
+        formSubmitted = false;
+        hasAutoLocated = false;
+        imageList = [];
+        uploadedImageNames = [];
+        uploadsInProgress = 0;
+
+        // Reset inputs (excluding contact info as requested earlier for persistence)
+        shortDescription.value = "";
+        longDescription.value = "";
+        if (hiddenImageNames) hiddenImageNames.value = "";
+        if (fileInput) fileInput.value = "";
+
+        // Reset visibility
+        document.getElementById('thankYou').classList.add('hidden');
+        document.getElementById('saving').classList.add('hidden');
+        document.getElementById('submitForm').classList.remove('hidden');
+        hideSpinner();
+
+        // Reset Map & Tabs
+        resetMapMarker();
+        syncGPSTab();
+        renderPreviews();
+
+        // Default to GPS tab
+        if (tabs && tabs[0]) activateTab(tabs[0], 0);
+
+        scrollToIssueTracker();
+
+        // Re-enable submit button
+        submitButton.disabled = false;
+        form.setAttribute('aria-busy', 'false');
+    }
+
+    function moveMarker(lat, lng, reason = "") {
+        if (!lat || !lng) return;
+        if (!map || !marker) return;
+        marker.setLngLat([lng, lat]).addTo(map);
+        map.flyTo({ center: [lng, lat], zoom: 16 });
+        latitudeInput.value = lat;
+        longitudeInput.value = lng;
+        manualLatitudeInput.value = parseFloat(lat).toFixed(6);
+        manualLongitudeInput.value = parseFloat(lng).toFixed(6);
+        resetMapMarkerButton.classList.remove('hidden');
+        if (reason) announce(document.getElementById('sr-updates'), `Marker moved to ${reason}.`);
+    }
+
+    // -------------------------
+    // Contact Persistence
+    // -------------------------
+    function loadSavedContactInfo() {
+        const saved = localStorage.getItem('issue_tracker_contact');
+        if (saved) {
+            try {
+                const data = JSON.parse(saved);
+                firstNameInput.value = data.firstName || '';
+                lastNameInput.value = data.lastName || '';
+                emailInput.value = data.email || '';
+                rememberContactCheckbox.checked = true;
+            } catch (e) {
+                console.error("Failed to parse saved contact info", e);
+            }
+        }
+    }
+
+    function saveContactInfo() {
+        if (rememberContactCheckbox.checked) {
+            const data = {
+                firstName: firstNameInput.value,
+                lastName: lastNameInput.value,
+                email: emailInput.value
+            };
+            localStorage.setItem('issue_tracker_contact', JSON.stringify(data));
+        } else {
+            localStorage.removeItem('issue_tracker_contact');
+        }
+    }
+
+    function resetMapMarker() {
+        latitudeInput.value = "";
+        longitudeInput.value = "";
+        resetMapMarkerButton.classList.add('hidden');
+        if (marker) marker.setLngLat([DEFAULT_MARKER_LONGITUDE, DEFAULT_MARKER_LATITUDE]);
+        if (map) map.fitBounds(window.MAP_BOUNDS || [[-96.75639, 32.9154], [-96.88808, 32.87847]], { padding: 40 });
+
+        // Close any open popups
+        const popUps = document.getElementsByClassName('mapboxgl-popup');
+        if (popUps[0]) popUps[0].remove();
+
+        announce(document.getElementById('sr-updates'), "Map marker reset to default trail location.");
+    }
+
+    function showSpinner() {
+        const spinner = document.getElementById('spinner');
+        spinner && spinner.classList.remove('hidden');
+    }
+
+    function hideSpinner() {
+        const spinner = document.getElementById('spinner');
+        spinner && spinner.classList.add('hidden');
+    }
+
+    function renderPreviews() {
+        if (!previewContainer) return;
+        previewContainer.innerHTML = '';
+        // Clear status if no images (reset case)
+        if (imageList.length === 0) {
+            const progressEl = document.getElementById('progress');
+            if (progressEl) progressEl.textContent = "";
+        }
+        imageList.forEach((img, idx) => {
+            const div = document.createElement('div');
+            div.className = 'image-preview';
+            div.innerHTML = `<img src="${img.url}" alt="Preview of uploaded image ${idx + 1}"><button type="button" aria-label="Remove image ${idx + 1}" data-idx="${idx}">X</button>`;
+            div.querySelector('button').onclick = () => {
+                const imgObj = imageList[idx];
+                deleteImageFromGAS(imgObj.fileName, false);
+                imageList.splice(idx, 1);
+
+                if (imageList.length === 0) {
+                    hasAutoLocated = false;
+                } else if (imgObj.hasGPS) {
+                    const stillHasGPS = imageList.some(img => img.hasGPS);
+                    if (!stillHasGPS) hasAutoLocated = false;
+                }
+
+                syncGPSTab();
+                renderPreviews();
+                announce(document.getElementById('sr-updates'), `Image ${idx + 1} removed.`);
+                uploadButton.focus();
+            };
+            previewContainer.appendChild(div);
+        });
+
+        // Update Upload Button State & Text
+        const count = imageList.length;
+        if (count >= 3) {
+            uploadButton.disabled = true;
+            uploadButton.textContent = "Upload Images";
+            errorMessage.classList.remove('hidden');
+            errorMessage.textContent = "Maximum of 3 images reached.";
+        } else {
+            uploadButton.disabled = false;
+            errorMessage.classList.add('hidden');
+            if (count === 0) {
+                uploadButton.textContent = "Upload Images";
+            } else if (count === 1) {
+                uploadButton.textContent = "Add Other Images";
+            } else if (count === 2) {
+                uploadButton.textContent = "Add Other Image";
+            }
+        }
+    }
+
+    function updateUploadStatus() {
+        const progressEl = document.getElementById('progress');
+        if (!progressEl) return;
+
+        if (uploadsInProgress > 0) {
+            progressEl.classList.remove('hidden');
+            progressEl.textContent = "Uploading image(s)... please wait.";
+        } else if (imageList.length > 0) {
+            progressEl.classList.remove('hidden');
+            progressEl.textContent = "Image(s) successfully uploaded!";
+            // Keep the success message for 5 seconds unless a new upload starts
+            setTimeout(() => {
+                if (uploadsInProgress === 0 && progressEl.textContent === "Image(s) successfully uploaded!") {
+                    progressEl.textContent = "";
+                }
+            }, 5000);
+        } else {
+            progressEl.textContent = "";
+        }
+    }
+
+    function initCharCounters() {
+        const trackedIds = ['short-description', 'long-description', 'first-name', 'last-name'];
+        trackedIds.forEach(id => {
+            const input = document.getElementById(id);
+            const counter = document.getElementById(`${id}-counter`);
+            if (!input || !counter) return;
+
+            const maxLength = parseInt(input.getAttribute('maxlength'));
+            if (isNaN(maxLength)) return;
+
+            const update = () => {
+                const remaining = maxLength - input.value.length;
+                const formatted = new Intl.NumberFormat().format(remaining);
+                counter.textContent = `${formatted} characters left`;
+
+                counter.classList.toggle('warning', remaining <= 5 && remaining > 0);
+                counter.classList.toggle('danger', remaining === 0);
+            };
+
+            // Remove existing listener to prevent duplicates on reset
+            input.removeEventListener('input', input._counterUpdate);
+            input._counterUpdate = update;
+            input.addEventListener('input', update);
+
+            update(); // Initial call
+        });
+    }
+
+    // -------------------------
+    // Initialization
+    // -------------------------
+    document.addEventListener('DOMContentLoaded', () => {
+        // Cache Elements
+        form = document.getElementById('report-form');
+        submitButton = document.getElementById('submitButton');
+        fileInput = document.getElementById('file');
+        previewContainer = document.getElementById('image-preview-container');
+        errorMessage = document.getElementById('error-message');
+        uploadButton = document.getElementById('upload-button');
+        usePhotoGPSButton = document.getElementById('photoGPSMessageButton');
+        hiddenImageNames = document.getElementById('imageNames');
+        shortDescription = document.getElementById('short-description');
+        longDescription = document.getElementById('long-description');
+        emailInput = document.getElementById('email');
+        tabs = document.querySelectorAll('.tab-header li');
+        tabContents = document.querySelectorAll('.tab-content');
+        latitudeInput = document.getElementById('latitude');
+        longitudeInput = document.getElementById('longitude');
+        locationListInput = document.getElementById('locationListInput');
+        locationList = document.getElementById('locationListbox');
+        const clearSearch = document.getElementById('clearSearch');
+        resetMapMarkerButton = document.getElementById('resetMapMarker');
+        applyLatLngBtn = document.getElementById('applyLatLng');
+        manualLatitudeInput = document.getElementById('manual-latitude');
+        manualLongitudeInput = document.getElementById('manual-longitude');
+        firstNameInput = document.getElementById('first-name');
+        lastNameInput = document.getElementById('last-name');
+        rememberContactCheckbox = document.getElementById('rememberContact');
+
+        // Load saved info
+        loadSavedContactInfo();
+
+        // Initialize Character Counters (no map dependency)
+        initCharCounters();
+
+        // Tab Logic
+        tabs.forEach((tab, i) => {
+            tab.addEventListener('click', () => activateTab(tab, i));
+            tab.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    activateTab(tab, i);
+                } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    let nextIndex = i + 1;
+                    // Skip hidden tabs (like photo tab if no GPS)
+                    while (nextIndex < tabs.length && tabs[nextIndex].classList.contains('hidden')) {
+                        nextIndex++;
+                    }
+                    if (nextIndex >= tabs.length) nextIndex = 0; // Wrap around
+                    tabs[nextIndex].focus();
+                } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    let prevIndex = i - 1;
+                    // Skip hidden tabs
+                    while (prevIndex >= 0 && tabs[prevIndex].classList.contains('hidden')) {
+                        prevIndex--;
+                    }
+                    if (prevIndex < 0) prevIndex = tabs.length - 1; // Wrap around
+                    // Find last visible if wrapping backwards
+                    if (prevIndex === tabs.length - 1) {
+                        while (prevIndex >= 0 && tabs[prevIndex].classList.contains('hidden')) {
+                            prevIndex--;
+                        }
+                    }
+                    tabs[prevIndex].focus();
+                }
+            });
+        });
+
+        // Ensure the initial tab state is synced (sets marker draggability correctly)
+        if (tabs && tabs[0]) activateTab(tabs[0], 0);
+
+        // File Uploads
+        uploadButton.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', async (e) => {
+            const selected = Array.from(e.target.files);
+            if (imageList.length + selected.length > 3) {
+                errorMessage.classList.remove('hidden');
+                return;
+            }
+            errorMessage.classList.add('hidden');
+
+            for (const file of selected) {
+                const reader = new FileReader();
+                reader.onload = async (event) => {
+                    const uniqueFileName = buildUniqueFilename(file.name);
+                    const url = event.target.result;
+                    const imgData = { url, fileName: uniqueFileName, file, hasGPS: false };
+                    const index = imageList.push(imgData) - 1;
+
+                    renderPreviews();
+
+                    // 1. EXIF Extraction (Immediate feedback)
+                    if (typeof EXIF !== 'undefined') {
+                        EXIF.getData(file, function () {
+                            const lat = EXIF.getTag(this, "GPSLatitude");
+                            const lng = EXIF.getTag(this, "GPSLongitude");
+                            if (lat && lng) {
+                                const decLat = lat[0] + lat[1] / 60 + lat[2] / 3600;
+                                const decLng = lng[0] + lng[1] / 60 + lng[2] / 3600;
+
+                                imgData.hasGPS = true;
+                                imgData.lat = decLat;
+                                imgData.lng = -decLng;
+
+                                syncGPSTab();
+                                activateTab(tabs[3], 3);
+
+                                // Prioritize the first available GPS info
+                                if (!hasAutoLocated) {
+                                    moveMarker(decLat, -decLng, "the location from your photo");
+                                    hasAutoLocated = true;
+                                }
+                            }
+                        });
+                    }
+
+                    // 2. Upload to GAS
+                    uploadsInProgress++;
+                    updateUploadStatus();
+                    try {
+                        // Standard GAS upload flow
+                        await uploadImageToGAS(url, uniqueFileName);
+                    } catch (err) {
+                        console.error(err);
+                    } finally {
+                        uploadsInProgress--;
+                        updateUploadStatus();
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+            // Reset input value so the same file selection triggers change event again
+            e.target.value = '';
+        });
+
+
+
+        // Photo GPS Logic
+        usePhotoGPSButton.onclick = () => {
+            const photoWithGPS = imageList.find(img => img.hasGPS);
+            if (photoWithGPS) {
+                moveMarker(photoWithGPS.lat, photoWithGPS.lng, "the location from your photo");
+            } else {
+                announce(document.getElementById('sr-updates'), "No GPS data found in your uploaded photos.");
+            }
+        };
+
+        // Geolocation
+        document.getElementById('getLocationButton').onclick = () => {
+            if (navigator.geolocation) {
+                announce(document.getElementById('sr-updates'), "Requesting your location...");
+                navigator.geolocation.getCurrentPosition(pos => {
+                    moveMarker(pos.coords.latitude, pos.coords.longitude, "your current location");
+                }, err => {
+                    console.warn(err);
+                    announce(document.getElementById('sr-updates'), "Unable to get location: " + err.message);
+                });
+            }
+        };
+
+        // Manual Coordinates
+        applyLatLngBtn.onclick = () => {
+            const lat = parseFloat(manualLatitudeInput.value);
+            const lng = parseFloat(manualLongitudeInput.value);
+            if (!isNaN(lat) && !isNaN(lng)) moveMarker(lat, lng, "your manually entered coordinates");
+        };
+
+        // Reset Map Marker
+        resetMapMarkerButton.onclick = () => resetMapMarker();
+
+        // -------------------------
+        // Map-ready callback (set by trailmap-init.js in ISSUE_TRACKER_MODE)
+        // Handles everything that requires the map instance: marker, drag events, POI search.
+        // -------------------------
+        let _poiFeatures = [];
+        let _searchListenersAttached = false;
+
+        function decodeHTML_(str) {
+            const txt = document.createElement('textarea');
+            txt.innerHTML = str;
+            return txt.value;
+        }
+
+        function renderPOIResult_(features) {
+            locationList.innerHTML = '';
+            if (features.length === 0) {
+                locationList.innerHTML = '<div class="optionDropdown" role="option" aria-selected="false">No matches found</div>';
+                return;
+            }
+            features.forEach((feat, idx) => {
+                const p = feat.properties || {};
+                const rawName = String(p.l || p.n || '').trim();
+                if (!rawName) return;
+                const name = decodeHTML_(rawName);
+                const coords = feat.geometry?.coordinates;
+                if (!coords || coords.length !== 2) return;
+
+                const opt = document.createElement('div');
+                opt.className = 'optionDropdown';
+                opt.setAttribute('role', 'option');
+                opt.setAttribute('aria-selected', 'false');
+                opt.id = `poi-opt-${idx}`;
+                opt.textContent = name;
+                opt.onclick = () => {
+                    moveMarker(coords[1], coords[0], name);
+                    locationListInput.value = name;
+                    hideDropdown_();
+                    clearSearch.classList.remove('hidden');
+                    if (map) {
+                        new mapboxgl.Popup({ offset: 35 })
+                            .setLngLat([coords[0], coords[1]])
+                            .setHTML(`<strong>${name}</strong>`)
+                            .addTo(map);
+                    }
+                };
+                locationList.appendChild(opt);
+            });
+        }
+
+        function syncDropdownWidth_() {
+            locationList.style.width = locationListInput.offsetWidth + 'px';
+        }
+
+        function showDropdown_() {
+            locationList.classList.remove('hidden');
+            locationListInput.setAttribute('aria-expanded', 'true');
+        }
+
+        function hideDropdown_() {
+            locationList.classList.add('hidden');
+            locationListInput.setAttribute('aria-expanded', 'false');
+        }
+
+        function attachSearchListeners_() {
+            if (_searchListenersAttached) return;
+            _searchListenersAttached = true;
+
+            locationListInput.oninput = () => {
+                const q = locationListInput.value.toLowerCase().trim();
+                clearSearch.classList.toggle('hidden', q.length === 0);
+                const filtered = _poiFeatures.filter(f => {
+                    const p = f.properties || {};
+                    const name = (p.l || p.n || '').toLowerCase();
+                    return name.includes(q);
+                });
+                renderPOIResult_(filtered);
+                syncDropdownWidth_();
+                showDropdown_();
+            };
+
+            locationListInput.onfocus = () => {
+                if (locationListInput.value.trim() === '') {
+                    renderPOIResult_(_poiFeatures);
+                }
+                syncDropdownWidth_();
+                showDropdown_();
+            };
+
+            clearSearch.onclick = () => {
+                locationListInput.value = '';
+                clearSearch.classList.add('hidden');
+                renderPOIResult_(_poiFeatures);
+                hideDropdown_();
+                locationListInput.focus();
+            };
+
+            document.addEventListener('click', (e) => {
+                if (!locationList.contains(e.target) && e.target !== locationListInput) {
+                    hideDropdown_();
+                }
+            });
+        }
+
+        window.onIssueTrackerMapReady = (m) => {
+            map = m;
+
+            // Error logging
+            if (typeof TrailmapError !== 'undefined' && TrailmapError.attachErrorLogging) {
+                TrailmapError.attachErrorLogging(map, { appName: "Report Issue Page" });
+            }
+
+            // Remove stale marker from previous map instance (WebGL recovery case)
+            if (marker) {
+                try { marker.remove(); } catch (_) {}
+            }
+
+            // Create draggable marker
+            const el = document.createElement('div');
+            el.className = 'issueMarker map';
+            el.id = 'issueMarker';
+            el.style.touchAction = 'none';
+            marker = new mapboxgl.Marker(el, { draggable: false, anchor: 'bottom' })
+                .setLngLat([DEFAULT_MARKER_LONGITUDE, DEFAULT_MARKER_LATITUDE])
+                .addTo(map);
+
+            // Re-sync active tab's draggable state now that marker exists
+            const activeTab = Array.from(tabs).find(t => t.getAttribute('aria-selected') === 'true');
+            if (activeTab) activateTab(activeTab, Array.from(tabs).indexOf(activeTab));
+
+            marker.on('dragstart', () => {
+                document.body.style.overflow = 'hidden';
+            });
+
+            marker.on('dragend', () => {
+                document.body.style.overflow = '';
+                const { lat, lng } = marker.getLngLat();
+                latitudeInput.value = lat;
+                longitudeInput.value = lng;
+                manualLatitudeInput.value = parseFloat(lat).toFixed(6);
+                manualLongitudeInput.value = parseFloat(lng).toFixed(6);
+                resetMapMarkerButton.classList.remove('hidden');
+                announce(document.getElementById('sr-updates'), "Marker moved to the location you dragged it to.");
+            });
+
+            // Fetch POI data for the location search
+            map.once('idle', async () => {
+                try {
+                    const res = await fetch(`${POI_API_URL}?page=geo_slim2&requester=issueTracker`);
+                    const payload = await res.json();
+                    _poiFeatures = payload.features || [];
+                    renderPOIResult_(_poiFeatures);
+                } catch (e) {
+                    console.error("Failed to load POIs", e);
+                }
+            });
+
+            // Wire search UI listeners (only once — safe across WebGL reinits)
+            attachSearchListeners_();
+        };
+
+        // Form Submission
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+
+            if (uploadsInProgress > 0) {
+                announce(document.getElementById('sr-updates'), "Please wait for your photos to finish uploading before submitting.");
+                alert("Please wait for your photos to finish uploading.");
+                return;
+            }
+
+            if (!validateForm()) return;
+
+            form.setAttribute('aria-busy', 'true');
+            submitButton.disabled = true;
+            document.getElementById('submitForm').classList.add('hidden');
+            document.getElementById('saving').classList.remove('hidden');
+            showSpinner();
+            scrollToIssueTracker();
+            announce(document.getElementById('sr-updates'), "Submitting report, please wait...");
+
+            const rawParams = {
+                page: 'saveData',
+                Task: shortDescription.value,
+                Details: longDescription.value,
+                "First Name": firstNameInput?.value || "",
+                "Last Name": lastNameInput?.value || "",
+                "Email Address": emailInput.value,
+                Coordinates: (latitudeInput.value && longitudeInput.value) ? `(${latitudeInput.value}, ${longitudeInput.value})` : "",
+                Latitude: latitudeInput.value || "",
+                Longitude: longitudeInput.value || "",
+                Images: imageList.length > 0 ? JSON.stringify(imageList.map(img => img.fileName)) : ""
+            };
+
+            const params = {};
+            for (const key in rawParams) {
+                if (rawParams[key] && rawParams[key].toString().trim() !== "") {
+                    params[key] = rawParams[key];
+                }
+            }
+
+            try {
+                // Save contact info if requested
+                saveContactInfo();
+
+                const res = await callGAS(params);
+                if (res.result === 'success') {
+                    formSubmitted = true;
+                    hideSpinner();
+                    document.getElementById('saving').classList.add('hidden');
+                    document.getElementById('thankYou').classList.remove('hidden');
+                    document.getElementById('thankYouTitle').focus();
+                    scrollToIssueTracker();
+                    announce(document.getElementById('sr-updates'), "Report submitted successfully. Thank you!");
+                } else {
+                    throw new Error(res.message);
+                }
+            } catch (err) {
+                alert("Submission failed: " + err.message);
+                hideSpinner();
+                document.getElementById('saving').classList.add('hidden');
+                document.getElementById('submitForm').classList.remove('hidden');
+                announce(document.getElementById('sr-updates'), "Submission failed. Please check the form and try again.");
+            } finally {
+                form.setAttribute('aria-busy', 'false');
+                submitButton.disabled = false;
+            }
+        };
+
+        document.getElementById('buttonReload').onclick = () => {
+            resetForm();
+        };
+
+    });
+
+    window.addEventListener('pagehide', () => {
+        if (!formSubmitted && imageList.length > 0) {
+            imageList.forEach((img) => {
+                deleteImageFromGAS(img.fileName, true);
+            });
+        }
+    });
+
+})();

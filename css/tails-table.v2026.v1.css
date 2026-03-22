@@ -1,0 +1,290 @@
+/* ============================================================
+   Northaven TAILS — Table View Styles
+   ============================================================ */
+
+/* ----------------------------
+   Table view container
+   ---------------------------- */
+
+#tableWrapper tr[data-code] {
+  scroll-margin-top: 120px;
+}
+
+#tableView {
+  position: relative;
+  width: 100%;
+  height: 75vh;
+  overflow: hidden;
+  background: #f7faf7;
+  overflow-x: hidden;
+}
+
+#tableView.is-fullscreen {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: var(--vvh, 100dvh);
+  z-index: 999999;
+  background: #ffff;
+}
+
+#tableView.is-fullscreen #tableWrapper {
+  height: calc(
+    var(--vvh)
+    - var(--ada-height)
+    - var(--bottom-ui-height)
+  );
+}
+
+#tableView.is-fullscreen #bottomUiGroupTable {
+  bottom: calc(62px + var(--safe-bottom, 0px) + env(safe-area-inset-bottom));
+}
+
+/* Wrapper allows scrolling body with sticky header */
+#tableWrapper {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;              /* ✅ critical */
+  -webkit-overflow-scrolling: touch;
+  /*padding-bottom: 80px; /* space for bottom UI buttons */
+  max-height: 90%;
+}
+
+/* ----------------------------
+   Table base
+   ---------------------------- */
+
+#grazingTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont,
+               'Segoe UI', Roboto, sans-serif;
+  font-size: 0.95rem;
+  background: #ffffff;
+  table-layout: fixed;
+  max-width: 100%;
+}
+
+/* Sticky date headers */
+.date-header-row .date-header-cell {
+  position: sticky;
+  cursor: default;
+  top: 36px;
+  /* BELOW the table header */
+  z-index: 3;
+  background: #f4f8f3;
+  padding: 8px 12px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: #4a6c4a;
+  border-top: 2px solid darkgray;
+  border-bottom: 1px solid #cddbcc;
+}
+
+/* Optional: smooth fade-in shadow under sticky header */
+.date-header-row .date-header-cell::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 6px;
+  pointer-events: none;
+  background: linear-gradient(rgba(0, 0, 0, 0.12),
+      rgba(0, 0, 0, 0));
+}
+
+/* ----------------------------
+   Header
+   ---------------------------- */
+
+#grazingTable thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #2f6f4e; /* Northaven green */
+  color: #ffffff;
+  text-align: left;
+  font-weight: 600;
+  padding: 12px 10px;
+  border-bottom: 2px solid #1f4f37;
+}
+
+/* ----------------------------
+   Rows
+   ---------------------------- */
+
+#grazingTable tbody tr {
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+#grazingTable tbody tr:hover {
+  background-color: #eef6f0;
+}
+
+#grazingTable tbody tr.active {
+  background-color: #dff1e5;
+}
+
+/* ----------------------------
+   Cells
+   ---------------------------- */
+
+#grazingTable td,
+#grazingTable th {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+#grazingTable td {
+  padding: 10px;
+  vertical-align: middle;
+  border-bottom: 1px solid #e5e5e5;
+  line-height: 1.4;
+}
+
+.icon-label {
+  display: inline-flex;
+  align-items: center;
+  /* vertically aligns icon + text */
+  gap: 6px;
+  /* spacing between them */
+  vertical-align: middle;
+}
+
+/* Center the status cell */
+th.status-cell, td.status-cell {
+  text-align: center !important;
+  vertical-align: middle;
+}
+
+/* Center the whole map-icons cell */
+th.map-icons, td.map-icons {
+  text-align: center !important;
+  vertical-align: middle;
+  padding: 4px 0;
+}
+
+/* Make BOTH icons adopt identical vertical alignment */
+.gmaps-emoji,
+.status-emoji {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  /*margin: 0 6px;*/
+  padding: 3px;
+  line-height: 1;
+  cursor: pointer;
+  min-height: 22px;
+  transition: filter 120ms ease, opacity 120ms ease;
+}
+
+.gmaps-emoji:hover,
+.status-emoji:hover {
+  filter: brightness(1.25);
+  background: rgba(0,0,0,0.12); /* darker hover */
+  border-radius: 5px;
+}
+
+/* Ensure SVG aligns nicely with emoji */
+td.map-icons svg {
+  display: block;
+  /* no baseline gap */
+  vertical-align: middle;
+  /* stays visually centered */
+  height: 22px;
+  /* you can adjust this if needed */
+  width: 22px;
+}
+
+/* Keep the Google Maps icon clickable without triggering row click */
+td.map-icons .gmaps-emoji {
+  cursor: pointer;
+}
+
+/* ----------------------------
+   Status pills
+   ---------------------------- */
+
+.table-status {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.table-status.active {
+  background: #84cc16;
+  color: #1f2937;
+}
+
+.table-status.sleeping {
+  background: #facc15;
+  color: #422006;
+}
+
+.table-status.complete {
+  background: #cbd5e1;
+  color: #334155;
+}
+
+/* ----------------------------
+   Maps link button
+   ---------------------------- */
+
+.table-map-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: #ffffff;
+  background: #3ba3c8;
+  transition: background-color 120ms ease;
+}
+
+.table-map-link:hover,
+.table-map-link:focus {
+  background: #2c8fb1;
+}
+
+/* ----------------------------
+   Empty state
+   ---------------------------- */
+
+#grazingTableBody:empty::before {
+  content: "No grazing locations available.";
+  display: block;
+  padding: 20px;
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* ----------------------------
+   Mobile adjustments
+   ---------------------------- */
+
+@media (max-width: 600px) {
+
+  #grazingTable {
+    font-size: 0.9rem;
+  }
+
+  #grazingTable thead th {
+    padding: 10px 8px;
+  }
+
+  #grazingTable td {
+    padding: 8px;
+  }
+
+}

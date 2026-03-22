@@ -1,0 +1,485 @@
+/* ============================================================
+   Northaven TAILS — Core Styles
+   Native Squarespace Version
+   ============================================================ */
+
+/* ----------------------------
+   Accessibility helpers
+   ---------------------------- */
+.sr-only {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  border: 0;
+  padding: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* ----------------------------
+   Base layout
+   ---------------------------- */
+html, body {
+  margin: 0;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont,
+             'Segoe UI', Roboto,
+             'Caveat', 'Chewy', sans-serif;
+  font-size: clamp(14px, 2.5vw, 18px);
+  background: #f8f8f8;
+  overscroll-behavior: none;
+}
+
+/* Root container */
+#tails-app {
+  position: relative;
+  width: 100%;
+}
+
+/* ----------------------------
+   Map container
+   ---------------------------- */
+#siteContent {
+  position: relative;
+  width: 100%;
+  height: 75vh;
+  overflow: hidden;
+}
+
+#map {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 90%;
+}
+
+.mapboxgl-control-container {
+  z-index: 50;
+}
+
+.mapboxgl-canvas {
+  z-index: 1;
+}
+
+/* ----------------------------
+   Controls
+   ---------------------------- */
+#hamburger {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  font-size: 28px;
+  background: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  min-width: 44px;
+  min-height: 44px;
+  z-index: 5;
+}
+
+#controls {
+  position: absolute;
+  z-index: 50;
+  top: 50px;
+  left: 12px;
+  max-width: 260px;
+  background: rgba(255,255,255,0.92);
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  display: none;
+}
+
+#controls.show {
+  display: block;
+}
+
+#controls .section-title{
+  font-weight: 600;
+}
+
+#controls label {
+  display: block;
+  padding: 10px 6px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+
+/* ----------------------------
+   Overlay banner
+   ---------------------------- */
+#overlay-banner {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  padding: 16px;
+  background: #e6f0ff;
+  border-radius: 16px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  z-index: 4;
+}
+
+#overlay-banner img {
+  float: right;
+  width: 220px;
+  max-width: 40%;
+  margin-left: 16px;
+  border-radius: 12px;
+}
+
+#overlayMessage {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 2em;
+  font-weight: 600;
+}
+
+#countdown {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.6em;
+}
+
+/* ----------------------------
+   Floating status pill
+   ---------------------------- */
+.floating-status {
+  position: absolute;
+  top: 1rem;
+  right: 3rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 2rem;
+  color: white;
+  z-index: 10;
+}
+
+/* ----------------------------
+   Map markers
+   ---------------------------- */
+.sheep-marker,
+.no-mow-marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2;
+  border-radius: 50%;
+  background: white;
+  transition: transform 120ms ease;
+}
+
+.sheep-marker {
+  width: 48px;
+  height: 48px;
+  font-size: 34px;
+  z-index: 5;
+  border: 2px solid currentColor;
+}
+
+.no-mow-marker {
+  width: 32px;
+  height: 32px;
+  font-size: 22px;
+}
+
+.marker-inner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 120ms ease;
+}
+
+.sheep-marker.is-hover .marker-inner,
+.no-mow-marker.is-hover .marker-inner {
+  transform: scale(1.2);
+}
+
+.sheep-marker:focus {
+  outline: 3px solid #000;
+  outline-offset: 2px;
+}
+
+.outlined-sheep-marker {
+  color: white;
+  filter: drop-shadow(0 0 3px white);
+}
+
+/* Bottom-right anchored Google Maps button */
+.popup-gmaps {
+  position: absolute;
+  bottom: 6px;
+  right: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.gmap-icon {
+  transition: filter 0.18s ease;
+}
+
+.gmap-icon:hover {
+  /* Creates a 1px white outline around the SVG paths */
+  filter: drop-shadow(0 0 0 white)
+          drop-shadow(0 0 1px white);
+}
+
+/* Smooth pulsing of white outline glow */
+@keyframes sheep-pulse-outline {
+  0% {
+    text-shadow: 0 0 0px currentColor;
+  }
+
+  50% {
+    text-shadow: 0 0 12px currentColor;
+  }
+
+  100% {
+    text-shadow: 0 0 0px currentColor;
+  }
+}
+
+.outlined-sheep-marker {
+  animation: sheep-pulse-outline 2.2s ease-in-out infinite;
+  will-change: text-shadow;
+}
+
+.mapboxgl-popup,
+.mapboxgl-popup-content {
+  z-index: 30;
+}
+
+/* ----------------------------
+Google Map Button and ADA test
+-------------------------------*/
+#open-map-btn{
+  display:none;
+  text-decoration:none !important;
+}
+
+#ada-info {
+  position: relative;
+  z-index: 5;
+}
+
+#ada-long-text, #ada-short-text{
+  min-height: 1.4em;      /* reserves space even when empty */
+  line-height: 1.4;
+  white-space: nowrap;    /* prevents wrapping */
+  overflow: hidden;       /* hides overflow */
+  font-weight: 600;
+  margin: 0;
+  padding: 0;
+}
+
+#ada-long-text{
+  display: block;
+}
+#ada-short-text{
+  display: none;
+}
+/* ----------------------------
+   Bottom buttons
+   ---------------------------- */
+#bottomUiGroupMap, #bottomUiGroupTable {
+ position: absolute;
+ bottom: 0px;
+ left: 0;
+ right: 0;
+ display: flex;
+ justify-content: center;
+ gap: 6px;
+ z-index: 20;
+ pointer-events: none;
+}
+
+#bottomUiGroupMap > *, #bottomUiGroupTable > * {
+ pointer-events: auto;      /* buttons still clickable */
+}
+
+.map-bottom-button {
+  box-sizing: border-box;
+  background: #3BA3C8;
+  min-width: 168px;
+  color: #fff;
+  padding: 5px 22px;
+  border: none;
+  font-size: 1.3rem;
+  font-family: 'Chewy', sans-serif;
+  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  transition: background 0.2s ease-in-out;
+  text-align: center;
+}
+.map-bottom-button:hover {
+  background: #2D8EAE;
+}
+
+.map-bottom-button:active {
+  background: #22728C;
+}
+
+#bottomUiGroupMap > .is-only,
+#bottomUiGroupTable  > .is-only {
+  border-radius: 10px;
+}
+
+#bottomUiGroupMap > .is-first,
+#bottomUiGroupTable  > .is-first {
+  border-radius: 10px 0 0 10px;
+}
+
+#bottomUiGroupMap > .is-last,
+#bottomUiGroupTable  > .is-last {
+  border-radius: 0 10px 10px 0;
+}
+
+#bottomUiGroupMap > :not(.is-first):not(.is-last):not(.is-only),
+#bottomUiGroupTable > :not(.is-first):not(.is-last):not(.is-only) {
+  border-radius: 0;
+}
+
+/* ======================================
+   Custom Fullscreen (Map-only)
+   ====================================== */
+:root {
+ --safe-bottom: 0px;
+ --safe-top: 0px;
+ --ada-height: 56px;
+ --bottom-ui-height: 70px;
+}
+
+#mapView.is-fullscreen {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: var(--vvh, 100dvh);
+  z-index: 999999;
+  background: #ffff;
+}
+
+#mapView.is-fullscreen #map {
+  height: calc(
+    var(--vvh)
+    - var(--ada-height)
+    - var(--bottom-ui-height)
+  );
+}
+
+#mapView.is-fullscreen #bottomUiGroupMap {
+  bottom: calc(62px + var(--safe-bottom, 0px) + env(safe-area-inset-bottom));
+}
+
+/* Prevent page scroll when fullscreen */
+body.is-map-fullscreen {
+  overflow: hidden;
+}
+
+#tails-app.is-fullscreen #mapView,
+#tails-app.is-fullscreen #tableView{
+  top: 45px; /* height of ADA banner */
+}
+
+#tails-app.is-fullscreen #ada-info,
+#tails-app.is-fullscreen #ada-info {
+  position: fixed;
+  top: var(--safe-top, 0px);
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 10px 14px;
+  z-index: 1000000;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+
+
+/* ----------------------------
+   Animations
+   ---------------------------- */
+@keyframes pulsate {
+  0% { transform: scale(0.1); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: scale(1.2); opacity: 0; }
+}
+
+@keyframes pinBounce {
+  0% { transform: translateY(-35px) rotate(-45deg); }
+  60% { transform: translateY(10px) rotate(-45deg); }
+  100% { transform: translateY(0) rotate(-45deg); }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .sheep-marker {
+    width: 48px;
+    height: 48px;
+    font-size: 34px;
+    line-height: 48px;
+  }
+
+  .bottom-button-text{
+    display: none;
+  }
+
+  #ada-long-text{
+    display: none;
+  }
+  #ada-short-text{
+    display: block;
+  }
+
+  .map-bottom-button {
+    padding: 5px 22px;
+    width: 70px;
+    min-width: 70px;
+    max-width: 70px;
+  }
+
+  a.map-bottom-button,
+  button.map-bottom-button {
+    appearance: none;
+    -webkit-appearance: none;
+    text-decoration: none;
+  }
+
+  .no-mow-marker {
+    width: 28px;
+    height: 28px;
+    font-size: 24px;
+    line-height: 28px;
+  }
+
+  #overlayMessage {
+    font-size: 1.3em !important;
+  }
+
+  #countdown {
+    font-size: 1em !important;
+  }
+}
+
+/* Respect accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .outlined-sheep-marker {
+    animation: none;
+    text-shadow: 0 0 2px currentColor;
+    /* soft static glow */
+  }
+}

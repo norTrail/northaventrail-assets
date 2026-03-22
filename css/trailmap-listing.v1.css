@@ -1,0 +1,124 @@
+.listing-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.listing-table th,
+.listing-table td {
+  border: 1px solid #ccc;
+  padding: 0.6rem;
+  vertical-align: top;
+}
+
+.listing-table thead th {
+  position: sticky;
+  top: 0;
+  background: rgb(16, 132, 82);
+  color: white;
+  z-index: 2;
+}
+
+.map-td {
+  vertical-align: middle;
+}
+
+.map-td div svg {
+  margin: 0;
+}
+
+.map-icons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.popupIcon {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+}
+
+.popupIcon:hover {
+  opacity: 0.8;
+}
+
+.listing-table tbody tr {
+  cursor: pointer;
+  transition: background-color 0.15s ease-in-out;
+  line-height: normal;
+}
+
+/* Mouse hover */
+.listing-table tbody tr:hover {
+  background-color: #eef6f8;
+}
+
+/* Keyboard focus — suppress outline on mouse click */
+.listing-table tbody tr:focus {
+  outline: none;
+}
+
+/* Touch feedback (mobile) */
+.listing-table tbody tr:active {
+  background-color: #dbeef3;
+}
+
+.listing-table tbody tr.is-active {
+  background-color: #cfe8ef;
+  font-weight: 600;
+}
+
+@media (max-width: 480px) {
+  .listing-table td {
+    display: table-cell !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .listing-table thead {
+    display: none;
+  }
+
+  .listing-table tr {
+    display: block;
+    margin-bottom: 1.5rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background: #fff;
+    padding: 0.5rem;
+  }
+
+  .listing-table td {
+    display: block !important;
+    border: none !important;
+    padding: 0.4rem !important;
+  }
+
+  .listing-table td:first-child {
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: rgb(16, 132, 82);
+    border-bottom: 1px solid #eee !important;
+    margin-bottom: 0.5rem;
+  }
+
+  .poi-marker-img {
+    width: 48px !important;
+    /* Smaller icon on mobile */
+    float: right;
+    margin: 0 0 10px 10px;
+  }
+
+  .poi-near {
+    font-size: 0.85rem;
+    color: #666;
+  }
+}
+
+/* Keyboard focus — visible ring only for keyboard navigation */
+.listing-table tbody tr:focus-visible,
+.poi-table tbody tr:focus-visible {
+  outline: 2px solid rgb(16, 132, 82);
+  outline-offset: -2px;
+  background-color: #eef6f8;
+}
