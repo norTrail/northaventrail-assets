@@ -53,6 +53,7 @@ function updateOverlayState(state) {
   bannerCentered = false;
 
   clearCountdown();
+  hideFlockLoader();
 
   switch (state.state) {
 
@@ -153,6 +154,7 @@ function updateMarker(herdCode, herdObj, map) {
  const [lng, lat] = feature.geometry.coordinates;
 
  setCurrentHerdLocation(lat, lng);
+ hideFlockLoader();
 
 // Show zoom ONLY once we have a valid herd location
 if (UI.zoomInBtn && !isZoomedToHerd) {
@@ -177,7 +179,13 @@ if (UI.zoomInBtn && !isZoomedToHerd) {
  const el = document.createElement("button");
  el.type = "button";
  el.className = "sheep-marker outlined-sheep-marker";
- el.innerHTML = `<span class="marker-inner">🐑</span>`;
+ el.innerHTML = `
+   <svg class="sheep-pin-svg" viewBox="0 0 54 72" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+     <path d="M27,70 C27,70 3,44 3,27 C3,13.8 13.8,3 27,3 C40.2,3 51,13.8 51,27 C51,44 27,70 27,70 Z" fill="currentColor"/>
+     <circle cx="27" cy="25" r="18" fill="white"/>
+   </svg>
+   <span class="marker-inner" aria-hidden="true">🐑</span>
+ `;
  el.style.color = color;
  el.dataset.outline = color;
  el.title=`${props.herdName}`
@@ -210,7 +218,7 @@ if (UI.zoomInBtn && !isZoomedToHerd) {
        </svg>
      </span>
    `;
-   const popup = new mapboxgl.Popup({ offset: 28 })
+   const popup = new mapboxgl.Popup({ offset: [0, -76] })
      .setLngLat([lng, lat])
      .setHTML(popupHTML)
      .addTo(map);
@@ -224,7 +232,7 @@ if (UI.zoomInBtn && !isZoomedToHerd) {
 
  herdMarkers[herdCode] = new mapboxgl.Marker({
    element: el,
-   anchor: "center"
+   anchor: "bottom"
  })
    .setLngLat([lng, lat])
    .addTo(map);
@@ -656,12 +664,14 @@ function showTableView(zones) {
     if (!targetCode) return;
 
     const container = document.getElementById("tableWrapper");
-    const row = container?.querySelector(`tr[data-code="${targetCode}"]`);
-    row?.scrollIntoView({
-      block: "nearest",
-      inline: "nearest",
-      behavior: "auto"
-    });
+    if (!container) return;
+    const row = container.querySelector(`tr[data-code="${targetCode}"]`);
+    if (!row) return;
+
+    // Offset scroll to account for sticky thead height
+    const header = container.querySelector("thead");
+    const headerH = header ? header.getBoundingClientRect().height : 0;
+    container.scrollTop = row.offsetTop - headerH - 4;
   });
 }
 
@@ -786,6 +796,16 @@ function clearCountdown() {
     countdownTimer = null;
   }
   UI.countdown.innerText = "";
+}
+
+/* ----------------------------
+   Flock loader
+   ---------------------------- */
+function hideFlockLoader() {
+  const el = document.getElementById("flock-loader");
+  if (!el) return;
+  el.classList.add("flock-loader--hidden");
+  el.addEventListener("transitionend", () => el.remove(), { once: true });
 }
 
 

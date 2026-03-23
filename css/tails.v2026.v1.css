@@ -165,7 +165,8 @@ body {
 /* ----------------------------
    Map markers
    ---------------------------- */
-.sheep-marker,
+
+/* No-mow zone markers (circular emoji style) */
 .no-mow-marker {
   display: inline-flex;
   align-items: center;
@@ -175,32 +176,56 @@ body {
   border-radius: 50%;
   background: white;
   transition: transform 120ms ease;
-}
-
-.sheep-marker {
-  width: 48px;
-  height: 48px;
-  font-size: 34px;
-  z-index: 5;
-  border: 2px solid currentColor;
-}
-
-.no-mow-marker {
   width: 32px;
   height: 32px;
   font-size: 22px;
 }
 
-.marker-inner {
+.no-mow-marker .marker-inner {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   transition: transform 120ms ease;
 }
 
-.sheep-marker.is-hover .marker-inner,
 .no-mow-marker.is-hover .marker-inner {
   transform: scale(1.2);
+}
+
+/* Pin-style herd marker */
+.sheep-marker {
+  position: relative;
+  width: 54px;
+  height: 72px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  z-index: 5;
+  padding: 0;
+  transition: transform 120ms ease;
+  filter: drop-shadow(0 3px 5px rgba(0,0,0,0.3));
+}
+
+.sheep-pin-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.sheep-marker .marker-inner {
+  position: absolute;
+  top: 9px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 30px;
+  line-height: 1;
+}
+
+.sheep-marker.is-hover {
+  transform: scale(1.15) translateY(-3px);
 }
 
 .sheep-marker:focus {
@@ -208,9 +233,69 @@ body {
   outline-offset: 2px;
 }
 
-.outlined-sheep-marker {
-  color: white;
-  filter: drop-shadow(0 0 3px white);
+/* ----------------------------
+   Flock loader overlay
+   ---------------------------- */
+.flock-loader {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(248, 248, 245, 0.82);
+  z-index: 20;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.5s ease;
+}
+
+.flock-loader--hidden {
+  opacity: 0;
+}
+
+.flock-loader-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.flock-loader-pin {
+  width: 80px;
+  height: 105px;
+  animation: loader-bob 1.6s ease-in-out infinite;
+}
+
+.flock-loader-pin svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 6px 10px rgba(0,0,0,0.22));
+}
+
+.flock-loader-shadow {
+  width: 44px;
+  height: 13px;
+  background: rgba(0,0,0,0.18);
+  border-radius: 50%;
+  margin-top: -10px;
+  animation: loader-shadow 1.6s ease-in-out infinite;
+}
+
+.flock-loader-text {
+  margin-top: 18px;
+  font-size: 1.5rem;
+  font-family: 'Chewy', 'Fredoka One', 'Caveat', cursive;
+  color: #57a5d8;
+  letter-spacing: 0.03em;
+}
+
+@keyframes loader-bob {
+  0%, 100% { transform: translateY(0);    }
+  50%       { transform: translateY(-14px); }
+}
+
+@keyframes loader-shadow {
+  0%, 100% { transform: scale(1);   opacity: 0.18; }
+  50%       { transform: scale(0.65); opacity: 0.09; }
 }
 
 /* Bottom-right anchored Google Maps button */
@@ -233,24 +318,15 @@ body {
           drop-shadow(0 0 1px white);
 }
 
-/* Smooth pulsing of white outline glow */
-@keyframes sheep-pulse-outline {
-  0% {
-    text-shadow: 0 0 0px currentColor;
-  }
-
-  50% {
-    text-shadow: 0 0 12px currentColor;
-  }
-
-  100% {
-    text-shadow: 0 0 0px currentColor;
-  }
+/* Smooth pulsing glow for the pin marker */
+@keyframes pin-pulse {
+  0%, 100% { filter: drop-shadow(0 3px 5px rgba(0,0,0,0.30)); }
+  50%       { filter: drop-shadow(0 3px 5px rgba(0,0,0,0.30))
+                      drop-shadow(0 0 16px rgba(102,187,102,0.55)); }
 }
 
 .outlined-sheep-marker {
-  animation: sheep-pulse-outline 2.2s ease-in-out infinite;
-  will-change: text-shadow;
+  animation: pin-pulse 2.2s ease-in-out infinite;
 }
 
 .mapboxgl-popup,
@@ -428,10 +504,13 @@ body.is-map-fullscreen {
 
 @media (max-width: 767px) {
   .sheep-marker {
-    width: 48px;
-    height: 48px;
-    font-size: 34px;
-    line-height: 48px;
+    width: 46px;
+    height: 61px;
+  }
+
+  .sheep-marker .marker-inner {
+    top: 8px;
+    font-size: 26px;
   }
 
   .bottom-button-text{
@@ -479,7 +558,11 @@ body.is-map-fullscreen {
 @media (prefers-reduced-motion: reduce) {
   .outlined-sheep-marker {
     animation: none;
-    text-shadow: 0 0 2px currentColor;
-    /* soft static glow */
+    filter: drop-shadow(0 3px 5px rgba(0,0,0,0.30))
+            drop-shadow(0 0 8px rgba(102,187,102,0.4));
+  }
+  .flock-loader-pin,
+  .flock-loader-shadow {
+    animation: none;
   }
 }
