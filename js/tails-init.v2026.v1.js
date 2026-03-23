@@ -172,12 +172,9 @@ function wireNoMowToggle(map) {
     const show = checkbox.checked;
     const visibility = show ? "visible" : "none";
 
-    // Polygon layers
-    if (map.getLayer("nomow-fill")) {
-      map.setLayoutProperty("nomow-fill", "visibility", visibility);
-    }
-    if (map.getLayer("nomow-outline")) {
-      map.setLayoutProperty("nomow-outline", "visibility", visibility);
+    // Polygon layer
+    if (map.getLayer("no-mow-zones-layer")) {
+      map.setLayoutProperty("no-mow-zones-layer", "visibility", visibility);
     }
 
     // Emoji markers

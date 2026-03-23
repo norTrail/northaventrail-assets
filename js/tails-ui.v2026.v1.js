@@ -490,7 +490,13 @@ function updateNoMowLayers(map, geojson, force = false) {
      Visibility toggle
      --------------------------- */
 
-  const showNoMow = document.getElementById("showNoMow")?.checked;
+  const cb = document.getElementById("showNoMow");
+  // Default to showing no-mow zones on first data load
+  if (cb && !cb.dataset.initialized) {
+    cb.checked = true;
+    cb.dataset.initialized = "1";
+  }
+  const showNoMow = cb?.checked ?? true;
 
   if (map.getLayer("no-mow-zones-layer")) {
     map.setLayoutProperty(
