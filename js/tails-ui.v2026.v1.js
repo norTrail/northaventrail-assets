@@ -840,105 +840,8 @@ function amPm(h) {
   return h >= 12 ? "pm" : "am";
 }
 
-class FullscreenIframeControl {
-  constructor() {
-    this._map = null;
-    this._container = null;
-    this._btn = null;
-    this._isFullscreen = false;
-
-    // bind once so add/remove works correctly
-    this._onKeyDown = this._onKeyDown.bind(this);
-  }
-
-  onAdd(map) {
-    this._map = map;
-
-    this._container = document.createElement("div");
-    this._container.className = "mapboxgl-ctrl mapboxgl-ctrl-group";
-
-    this._btn = document.createElement("button");
-    this._btn.type = "button";
-    this._btn.setAttribute("aria-label", "Toggle fullscreen");
-    this._btn.setAttribute("aria-pressed", "false");
-
-    this._btn.innerHTML = `
-      <svg width="22" height="22" aria-hidden="true">
-        <use href="#icon-fullscreen-enter"></use>
-      </svg>
-    `;
-
-    this._btn.addEventListener("click", () => {
-      this.setFullscreen(!this._isFullscreen);
-    });
-
-    this._container.appendChild(this._btn);
-
-    // ✅ ESC key support
-    document.addEventListener("keydown", this._onKeyDown);
-
-    return this._container;
-  }
-
-  onRemove() {
-    document.removeEventListener("keydown", this._onKeyDown);
-
-    if (this._container?.parentNode) {
-      this._container.parentNode.removeChild(this._container);
-    }
-
-    this._map = null;
-  }
-
-  _onKeyDown(e) {
-    if (e.key === "Escape" && this._isFullscreen) {
-      this.setFullscreen(false);
-    }
-  }
-
-  setFullscreen(enable) {
-    this._isFullscreen = Boolean(enable);
-
-    // Set Gesture Control
-    setMapFullscreenMode(enable)
-
-    const mapView = document.getElementById("mapView");
-    if (!mapView) return;
-    const tableView = document.getElementById("tableView");
-    if (!tableView) return;
-    const tailsApp = document.getElementById('tails-app');
-    if (!tailsApp) return;
-
-    mapView.classList.toggle("is-fullscreen", this._isFullscreen);
-    tableView.classList.toggle("is-fullscreen", this._isFullscreen);
-    tailsApp.classList.toggle("is-fullscreen", this._isFullscreen);
-    document.body.classList.toggle("is-map-fullscreen", this._isFullscreen);
-
-    this._btn.setAttribute("aria-pressed", String(this._isFullscreen));
-    this._btn.innerHTML = `
-      <svg width="22" height="22" aria-hidden="true">
-        <use href="${
-          this._isFullscreen
-            ? "#icon-fullscreen-exit"
-            : "#icon-fullscreen-enter"
-        }"></use>
-      </svg>
-    `;
-
-    // Let Mapbox recompute layout
-    requestAnimationFrame(() => {
-      this._map.resize();
-    });
-
-    // Keep gesture rules consistent
-    if (typeof this._map.setGestureMode === "function") {
-      this._map.setGestureMode(this._isFullscreen);
-    }
-
-    // Update the CSS variables
-    updateSafeViewport();
-  }
-}
+/* FullscreenIframeControl removed — replaced by TrailmapFullscreen.FullscreenMapControl
+   from trailmap-fullscreen.v1.js */
 
 function zoomToHerd(map) {
   if (!map) return;
@@ -1053,56 +956,8 @@ function updateBottomUiState() {
   });
 }
 
-/* ============================================================
-   Deal with Safari Mobile ViewHeight NOT being done correctly by APPLE (boo)
-   ============================================================ */
-
- function updateSafeViewport() {
-   // Fallbacks
-   let safeBottom = 0;
-   let safeTop = 0;
-   let visibleHeightPx = window.innerHeight;
-
-   if (window.visualViewport) {
-     const vv = window.visualViewport;
-
-     safeTop = Math.max(0, Math.round(vv.offsetTop));
-
-     // "How much of the layout viewport is not visible"
-     safeBottom = Math.max(
-       0,
-       Math.round(window.innerHeight - (vv.height + vv.offsetTop))
-     );
-
-     // The single most useful value for iOS Safari fullscreen layouts:
-     visibleHeightPx = Math.round(vv.height);
-   }
-
-   document.documentElement.style.setProperty("--safe-top", `${safeTop}px`);
-   document.documentElement.style.setProperty("--safe-bottom", `${safeBottom}px`);
-   document.documentElement.style.setProperty("--vvh", `${visibleHeightPx}px`);
- }
-
-if (window.visualViewport) {
-  window.visualViewport.addEventListener(
-    'resize',
-    updateSafeViewport,
-    { passive: true }
-  );
-
-  window.visualViewport.addEventListener(
-    'scroll',
-    updateSafeViewport,
-    { passive: true }
-  );
-}
-
-window.addEventListener('orientationchange', () => {
-  setTimeout(updateSafeViewport, 300);
-});
-
-// initial run
-updateSafeViewport();
+/* updateSafeViewport and viewport listeners removed —
+   owned by trailmap-fullscreen.v1.js via TrailmapFullscreen.attachSafeViewportListenersOnce() */
 
 /* ============================================================
    PUBLIC API
