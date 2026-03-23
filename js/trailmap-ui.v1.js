@@ -1104,7 +1104,9 @@ function buildURL(urlParams = {}, makeShort = false) {
     joiner = "&";
   }
 
-  const sat = map.getLayoutProperty("mapbox-satellite", "visibility");
+  const sat = map.getLayer("mapbox-satellite")
+    ? map.getLayoutProperty("mapbox-satellite", "visibility")
+    : DEFAULT_SATELLITE;
   if (sat !== DEFAULT_SATELLITE) {
     url += `${joiner}${SATELLITE_PARAM}=${sat}`;
     joiner = "&";
@@ -1141,7 +1143,8 @@ function getURLParams() {
   }
 
   if (result[PAGE_TITLE_PARM]) {
-    result[PAGE_TITLE_PARM] = window.atob(result[PAGE_TITLE_PARM]);
+    try { result[PAGE_TITLE_PARM] = window.atob(result[PAGE_TITLE_PARM]); }
+    catch { delete result[PAGE_TITLE_PARM]; }
   }
 
   if (result[COORDINATES_PARM]) {
@@ -1152,7 +1155,8 @@ function getURLParams() {
   }
 
   if (result[GROUP_FILTER_PARAM]) {
-    result[GROUP_FILTER_PARAM] = window.atob(result[GROUP_FILTER_PARAM]);
+    try { result[GROUP_FILTER_PARAM] = window.atob(result[GROUP_FILTER_PARAM]); }
+    catch { delete result[GROUP_FILTER_PARAM]; }
   }
 
   return result;

@@ -147,7 +147,7 @@ let herdHistorySources = {};
 function updateMarker(herdCode, herdObj, map) {
   const feature = herdObj.current?.features?.[0];
   if (!feature) {
-   console.log(`No Sheep Data for Herd ${herdCode}: ${JSON.stringify(herdObj)}`);
+   console.warn(`No Sheep Data for Herd ${herdCode}: ${JSON.stringify(herdObj)}`);
    return;
  }
 
@@ -248,7 +248,7 @@ if (UI.zoomInBtn && !isZoomedToHerd) {
 
 function updateHerdHistoryLine(herdCode, historyGeoJSON, color, map) {
   if (!historyGeoJSON || !historyGeoJSON.features?.length) {
-    console.log(`No history data given: ${JSON.stringify(historyGeoJSON)}`)
+    console.warn(`No history data given: ${JSON.stringify(historyGeoJSON)}`);
     return;
   }
 
@@ -287,7 +287,7 @@ function updateHerdHistoryLine(herdCode, historyGeoJSON, color, map) {
   });
 
   // Determine if the line should be visible
-  const showHistory = document.getElementById('showHistory').checked;
+  const showHistory = document.getElementById('showHistory')?.checked ?? false;
   /*const herdToggle = document.querySelector(`input[data-herd='${herdCode}']`);*/
   /*const herdVisible = herdToggle && herdToggle.checked;*/
   // -------------------------------------------
@@ -308,7 +308,7 @@ function renderAllHerds(data, map) {
     const feature = herdObj.current?.features?.[0];
 
     if (!feature) {
-      console.log(`No data for herd ${herdCode}: ${JSON.stringify(herdObj)}`)
+      console.warn(`No data for herd ${herdCode}: ${JSON.stringify(herdObj)}`);
       return;
     }
 
@@ -363,7 +363,7 @@ function featureCenter(geometry) {
 
 function updateNoMowLayers(map, geojson, force = false) {
   if (!map || !geojson || geojson.type !== "FeatureCollection") {
-    UI.tableBtn.style.display = "none";
+    if (UI.tableBtn) UI.tableBtn.style.display = "none";
     return;
   }
 
@@ -597,6 +597,7 @@ function showTableView(zones) {
   }
 
   const table = document.getElementById("grazingTableBody");
+  if (!table) return;
   table.innerHTML = "";
 
   // 1️⃣ Sort by date
@@ -745,8 +746,8 @@ function showSheepUI() {
 function hideSheepUI() {
   isZoomedToHerd = false;
 
-  UI.zoomInBtn.style.display = "none";
-  UI.zoomOutBtn.style.display = "none";
+  if (UI.zoomInBtn)  UI.zoomInBtn.style.display  = "none";
+  if (UI.zoomOutBtn) UI.zoomOutBtn.style.display = "none";
   updateBottomUiState();
 
   // hide the hamburger
@@ -795,7 +796,7 @@ function clearCountdown() {
     clearInterval(countdownTimer);
     countdownTimer = null;
   }
-  UI.countdown.innerText = "";
+  if (UI.countdown) UI.countdown.innerText = "";
 }
 
 /* ----------------------------
@@ -892,6 +893,7 @@ function zoomToHerd(map) {
    ============================================================ */
 
 let openPopups = [];
+let currentFullPopup = null;
 
 function closeAllPopups() {
   try {
