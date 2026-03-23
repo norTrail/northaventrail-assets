@@ -104,10 +104,15 @@ function initMap(container) {
 
     initGestureControl(map);
 
-    if (typeof FullscreenIframeControl === "function") {
-      map.addControl(new FullscreenIframeControl(), "top-right");
+    if (window.TrailmapFullscreen?.FullscreenMapControl) {
+      map.addControl(new TrailmapFullscreen.FullscreenMapControl({
+        appRootId: "tails-app",
+        tableViewId: "tableView",
+        onToggle: (isFs) => {
+          if (typeof setMapFullscreenMode === "function") setMapFullscreenMode(isFs);
+        }
+      }), "top-right");
     }
-
 
     map.once("idle", () => {
       // Load the map data
@@ -296,7 +301,7 @@ function logCaughtError(fn, err, extra = {}) {
 
 
 window.addEventListener("error", (event) => {
-  if (String(e.reason).includes("logClientError")) return;
+  if (String(event.message).includes("logClientError")) return;
   logClientError(
     "window.onerror",
     event.message,

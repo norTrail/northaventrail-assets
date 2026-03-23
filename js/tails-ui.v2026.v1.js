@@ -69,7 +69,7 @@ function updateOverlayState(state) {
 
       // Update the Status Pill
       UI.statusPill.innerText = "Coming";
-      UI.statusPill.display = "block";
+      UI.statusPill.style.display = "block";
 
       UI.overlayImage.src = state.image || "";
       startCountdown(state.startDate);
@@ -118,7 +118,7 @@ function updateOverlayState(state) {
 
       // Update the Status Pill
       UI.statusPill.innerText = "Finished";
-      UI.statusPill.display = "block";
+      UI.statusPill.style.display = "block";
 
       break;
 
@@ -129,7 +129,7 @@ function updateOverlayState(state) {
 
       // Update the Status Pill
       UI.statusPill.innerText = "Grazing";
-      UI.statusPill.display = "block";
+      UI.statusPill.style.display = "block";
       showSheepUI();
       break;
   }
@@ -451,7 +451,6 @@ function updateNoMowLayers(map, geojson, force = false) {
 
           <span
             class="gmaps-emoji popup-gmaps"
-            title="${name}"
             onclick="openZoneGoogleMaps(${lat}, ${lng})"
             title="Open location in Google Maps">
             <svg class="gmap-icon" width="22" height="22">
@@ -652,7 +651,7 @@ function showTableView(zones) {
 
     const container = document.getElementById("tableWrapper");
     const row = container?.querySelector(`tr[data-code="${targetCode}"]`);
-    row.scrollIntoView({
+    row?.scrollIntoView({
       block: "nearest",
       inline: "nearest",
       behavior: "auto"
@@ -966,7 +965,6 @@ function zoomToHerd(map) {
 let openPopups = [];
 
 function closeAllPopups() {
-  console.log(`closeAllPopups called`)
   try {
     while (openPopups.length) {
       openPopups.pop().remove();
