@@ -504,7 +504,7 @@ function updateNoMowLayers(map, geojson, force = false) {
     obj.element.style.display = showNoMow ? "inline-flex" : "none";
   });
 
-  UI.tableBtn.style.display = showNoMow ? "block" : "none";
+  UI.tableBtn.style.display = Object.keys(noMowZoneMarkers).length > 0 ? "block" : "none";
 }
 
 
