@@ -10,7 +10,7 @@
 /* Gesture hint */
 #gesture-tip {
   width: fit-content;
-  position: relative;
+  position: absolute;
   left: 50%;
   bottom: 45px;
   transform: translateX(-50%);
