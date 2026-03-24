@@ -88,12 +88,10 @@ async function bootstrapTailsApp() {
     loader.innerHTML = `
       <div class="flock-loader-inner">
         <div class="flock-loader-pin">
-          <svg viewBox="0 0 54 72" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <path d="M27,70 C27,70 3,44 3,27 C3,13.8 13.8,3 27,3 C40.2,3 51,13.8 51,27 C51,44 27,70 27,70 Z" fill="#66BB66"/>
-            <circle cx="27" cy="25" r="18" fill="white"/>
-            <text x="27" y="34" text-anchor="middle" font-size="22"
-                  font-family="Apple Color Emoji, Segoe UI Emoji, sans-serif">🐑</text>
+          <svg viewBox="0 0 54 72" aria-hidden="true" style="color:#66BB66">
+            <use href="#icon-sheep-pin"/>
           </svg>
+          <span class="flock-loader-emoji" aria-hidden="true">🐑</span>
         </div>
         <div class="flock-loader-shadow"></div>
         <p class="flock-loader-text">Finding the Flock…</p>

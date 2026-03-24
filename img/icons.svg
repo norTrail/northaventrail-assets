@@ -96,6 +96,18 @@
   </symbol>
 
   <!-- =====================
+       Sheep / herd map-pin shape
+       fill="currentColor" — caller sets color via CSS `color` property
+       white circle punches a hole for the emoji/content overlay
+       Used by: herd marker, flock loader
+       ===================== -->
+  <symbol id="icon-sheep-pin" viewBox="0 0 54 72">
+    <path d="M27,70 C27,70 3,44 3,27 C3,13.8 13.8,3 27,3 C40.2,3 51,13.8 51,27 C51,44 27,70 27,70 Z"
+          fill="currentColor"/>
+    <circle cx="27" cy="25" r="18" fill="white"/>
+  </symbol>
+
+  <!-- =====================
        Sheep icon
        ===================== -->
   <symbol id="icon-sheep" viewBox="0 0 27 27">

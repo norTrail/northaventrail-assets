@@ -34,6 +34,28 @@
     let firstNameInput, lastNameInput, rememberContactCheckbox;
 
     // -------------------------
+    // SVG Sprite Loader
+    // -------------------------
+    function loadSvgSpriteOnce() {
+        if (document.getElementById("svg-sprite-inline")) return;
+        fetch("https://assets.northaventrail.org/img/icons.svg", { cache: "force-cache" })
+            .then(r => {
+                if (!r.ok) throw new Error(`SVG sprite fetch failed: ${r.status}`);
+                return r.text();
+            })
+            .then(svgText => {
+                if (document.getElementById("svg-sprite-inline")) return; // guard re-entry
+                const div = document.createElement("div");
+                div.id = "svg-sprite-inline";
+                div.setAttribute("aria-hidden", "true");
+                div.style.cssText = "position:absolute;width:0;height:0;overflow:hidden";
+                div.innerHTML = svgText;
+                document.body.insertBefore(div, document.body.firstChild);
+            })
+            .catch(err => console.warn("SVG sprite load failed:", err));
+    }
+
+    // -------------------------
     // Utilities & Helpers
     // -------------------------
     const isApple = () => /Mac|iPhone|iPad|iPod/.test(navigator.platform);
@@ -465,6 +487,8 @@
     // Initialization
     // -------------------------
     document.addEventListener('DOMContentLoaded', () => {
+        loadSvgSpriteOnce(); // loads icons.svg sprite so fullscreen btn icons render
+
         // Cache Elements
         form = document.getElementById('report-form');
         submitButton = document.getElementById('submitButton');

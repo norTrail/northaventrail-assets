@@ -189,9 +189,8 @@ function updateMarker(herdCode, herdObj, map) {
   el.tabIndex = 0;
   el.className = "sheep-marker outlined-sheep-marker";
   el.innerHTML = `
-   <svg class="sheep-pin-svg" viewBox="0 0 54 72" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
-     <path d="M27,70 C27,70 3,44 3,27 C3,13.8 13.8,3 27,3 C40.2,3 51,13.8 51,27 C51,44 27,70 27,70 Z" fill="currentColor"/>
-     <circle cx="27" cy="25" r="18" fill="white"/>
+   <svg class="sheep-pin-svg" viewBox="0 0 54 72" aria-hidden="true">
+     <use href="#icon-sheep-pin"/>
    </svg>
    <span class="marker-inner" aria-hidden="true">🐑</span>
  `;

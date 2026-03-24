@@ -878,7 +878,8 @@ function installMapControls_() {
       this.button.type = 'button';
       this.button.title = 'Reset Map View';
       this.button.setAttribute('aria-label', 'Reset Map View');
-      this.button.innerHTML = '<span class="mapboxgl-ctrl-icon" aria-hidden="true" style="background-image: url(\'data:image/svg+xml;charset=UTF-8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2220%22 height=%2220%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23333%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z%22/><polyline points=%229 22 9 12 15 12 15 22%22/></svg>\'); background-size: 16px; background-position: center; background-repeat: no-repeat;"></span>';
+      this.button.style.cssText = "display:flex;align-items:center;justify-content:center";
+      this.button.innerHTML = '<svg aria-hidden="true" focusable="false" width="18" height="18" style="color:#555"><use href="#icon-home"/></svg>';
 
       this.button.onclick = () => {
         // Suppress zoomend/moveend URL updates during the fitBounds animation,
