@@ -101,7 +101,7 @@ async function bootstrapTailsApp() {
     mapView.appendChild(loader);
   }
 
-  loadSvgSpriteOnce();  // load shared icon sprite from /s/icons.svg
+  loadSvgSpriteOnce();  // load shared icon sprite from assets.northaventrail.org
   initMap(mapEl);
   wireUIControls();
   wireVisibilityHandling();
@@ -145,7 +145,15 @@ function initMap(container) {
       btn.type = "button";
       btn.title = "Reset map view";
       btn.setAttribute("aria-label", "Reset map view");
-      btn.innerHTML = `<span class="mapboxgl-ctrl-icon" aria-hidden="true" style="background-image:url('data:image/svg+xml;charset=UTF-8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2220%22 height=%2220%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23333%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z%22/><polyline points=%229 22 9 12 15 12 15 22%22/></svg>');background-size:16px;background-position:center;background-repeat:no-repeat"></span>`;
+      btn.style.cssText = "display:flex;align-items:center;justify-content:center";
+      // Inline SVG avoids data-URI encoding issues
+      btn.innerHTML = `<svg aria-hidden="true" focusable="false"
+        xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+        viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>`;
 
       btn.onclick = () => {
         if (typeof closeAllPopups === "function") closeAllPopups();
@@ -368,7 +376,7 @@ function wireSatelliteToggle(map) {
 
 function loadSvgSpriteOnce() {
   if (document.getElementById("svg-sprite-inline")) return;
-  fetch("/s/icons.svg", { cache: "force-cache" })
+  fetch("https://assets.northaventrail.org/img/icons.svg", { cache: "force-cache" })
     .then(r => {
       if (!r.ok) throw new Error(`SVG sprite fetch failed: ${r.status}`);
       return r.text();
