@@ -101,6 +101,7 @@ async function bootstrapTailsApp() {
     mapView.appendChild(loader);
   }
 
+  loadSvgSpriteOnce();  // load shared icon sprite from /s/icons.svg
   initMap(mapEl);
   wireUIControls();
   wireVisibilityHandling();
@@ -161,6 +162,7 @@ function initMap(container) {
     // Wire controls
     wireHistoryToggle(map);
     wireNoMowToggle(map);
+    wireSatelliteToggle(map);
   });
 
 
@@ -277,6 +279,59 @@ function wireVisibilityHandling() {
       handlePageVisibility(visible);
     }
   });
+}
+
+
+/* ----------------------------
+   Satellite toggle
+   ---------------------------- */
+
+function wireSatelliteToggle(map) {
+  // Inject checkbox into #controls if not already in HTML
+  let cb = document.getElementById("showSatellite");
+  if (!cb) {
+    const controls = document.getElementById("controls");
+    if (controls) {
+      const label = document.createElement("label");
+      label.className = "control-item";
+      label.innerHTML = `<input type="checkbox" id="showSatellite"> Satellite View`;
+      controls.appendChild(label);
+      cb = label.querySelector("input");
+    }
+  }
+  if (!cb) return;
+
+  cb.addEventListener("change", () => {
+    if (!map.getLayer("mapbox-satellite")) return;
+    map.setLayoutProperty(
+      "mapbox-satellite",
+      "visibility",
+      cb.checked ? "visible" : "none"
+    );
+  });
+}
+
+
+/* ----------------------------
+   Shared SVG sprite loader
+   (mirrors loadSvgSpriteOnce in trailmap-init.v1.js)
+   ---------------------------- */
+
+function loadSvgSpriteOnce() {
+  if (document.getElementById("svg-sprite-inline")) return;
+  fetch("/s/icons.svg", { cache: "force-cache" })
+    .then(r => {
+      if (!r.ok) throw new Error(`SVG sprite fetch failed: ${r.status}`);
+      return r.text();
+    })
+    .then(svgText => {
+      const wrap = document.createElement("div");
+      wrap.id = "svg-sprite-inline";
+      wrap.style.display = "none";
+      wrap.innerHTML = svgText;
+      document.body.prepend(wrap);
+    })
+    .catch(err => console.warn("Could not load SVG sprite:", err));
 }
 
 

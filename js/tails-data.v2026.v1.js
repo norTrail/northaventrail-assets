@@ -48,6 +48,22 @@ function getExistingTrailUrl() {
 function addExistingTrail(map) {
   if (map.getSource("existing-trail_source")) return;
 
+  // Satellite raster layer — hidden by default, toggled via hamburger checkbox
+  if (!map.getSource("mapbox-satellite-source")) {
+    map.addSource("mapbox-satellite-source", {
+      type: "raster",
+      url: "mapbox://mapbox.satellite",
+      tileSize: 256
+    });
+    map.addLayer({
+      id: "mapbox-satellite",
+      type: "raster",
+      source: "mapbox-satellite-source",
+      layout: { visibility: "none" }
+    });
+    // Trail line is added next so it renders on top of satellite
+  }
+
   map.addSource("existing-trail_source", {
     type: "geojson",
     data: getExistingTrailUrl()
