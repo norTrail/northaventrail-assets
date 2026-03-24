@@ -133,6 +133,35 @@ function initMap(container) {
     "top-right"
   );
 
+  // Home / Reset View control — returns map to default trail bounds
+  class HomeControl {
+    onAdd(m) {
+      this._map = m;
+      this._container = document.createElement("div");
+      this._container.className = "mapboxgl-ctrl mapboxgl-ctrl-group";
+
+      const btn = document.createElement("button");
+      btn.className = "mapboxgl-ctrl-home";
+      btn.type = "button";
+      btn.title = "Reset map view";
+      btn.setAttribute("aria-label", "Reset map view");
+      btn.innerHTML = `<span class="mapboxgl-ctrl-icon" aria-hidden="true" style="background-image:url('data:image/svg+xml;charset=UTF-8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2220%22 height=%2220%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23333%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z%22/><polyline points=%229 22 9 12 15 12 15 22%22/></svg>');background-size:16px;background-position:center;background-repeat:no-repeat"></span>`;
+
+      btn.onclick = () => {
+        if (typeof closeAllPopups === "function") closeAllPopups();
+        m.fitBounds(MAP_BOUNDS, { padding: 40 });
+      };
+
+      this._container.appendChild(btn);
+      return this._container;
+    }
+    onRemove() {
+      this._container.parentNode?.removeChild(this._container);
+      this._map = undefined;
+    }
+  }
+  map.addControl(new HomeControl(), "top-right");
+
   map.on("load", () => {
     mapReady = true;
 

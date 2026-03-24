@@ -554,17 +554,61 @@ function buildGrazingTable() {
  showTableView(zones);
 }
 
+/* ============================================================
+   VIEW FLIP ANIMATION (map ↔ table)
+   ============================================================ */
+
+/**
+ * Animate a horizontal card-flip between two full-height views.
+ * @param {HTMLElement} exitEl   – view currently visible
+ * @param {HTMLElement} enterEl  – view to show
+ * @param {"forward"|"back"} direction
+ * @param {Function}  [onReady] – called at the midpoint (while enterEl is
+ *                                still invisible) so the DOM can be populated
+ *                                before the enter animation begins.
+ */
+function flipToView(exitEl, enterEl, direction, onReady) {
+  const exitClass  = direction === "forward" ? "view-flip-exit-fwd"  : "view-flip-exit-back";
+  const enterClass = direction === "forward" ? "view-flip-enter-fwd" : "view-flip-enter-back";
+  const HALF_MS    = 170; // matches the CSS animation duration
+
+  // Prevent double-taps while animating
+  document.querySelectorAll(".map-bottom-button").forEach(b => (b.disabled = true));
+
+  exitEl.classList.add(exitClass);
+
+  setTimeout(() => {
+    exitEl.classList.remove(exitClass);
+    exitEl.style.display = "none";
+
+    // Populate the incoming view while it is still off-screen
+    if (onReady) onReady();
+
+    enterEl.style.display = "block";
+    void enterEl.offsetWidth; // force reflow so CSS animation triggers cleanly
+    enterEl.classList.add(enterClass);
+    updateBottomUiState();
+
+    setTimeout(() => {
+      enterEl.classList.remove(enterClass);
+      document.querySelectorAll(".map-bottom-button").forEach(b => (b.disabled = false));
+    }, HALF_MS);
+
+  }, HALF_MS);
+}
+
 UI.tableBtn?.addEventListener("click", () => {
-  document.getElementById("mapView").style.display = "none";
-  document.getElementById("tableView").style.display = "block";
-  buildGrazingTable();
-  updateBottomUiState();
+  const mapView   = document.getElementById("mapView");
+  const tableView = document.getElementById("tableView");
+  if (!mapView || !tableView) return;
+  flipToView(mapView, tableView, "forward", buildGrazingTable);
 });
 
 UI.backToMapBtn?.addEventListener("click", () => {
-  document.getElementById("tableView").style.display = "none";
-  document.getElementById("mapView").style.display = "block";
-  updateBottomUiState();
+  const mapView   = document.getElementById("mapView");
+  const tableView = document.getElementById("tableView");
+  if (!mapView || !tableView) return;
+  flipToView(tableView, mapView, "back");
 });
 
 function getTopVisibleZoneCode() {
@@ -912,12 +956,13 @@ function closeAllPopups() {
 }
 
 function focusNoMowZone(zoneCode) {
-  // Switch views
+  // Instant switch (no flip): user tapped a table row and expects immediate map response
   const tableView = document.getElementById("tableView");
   const mapView   = document.getElementById("mapView");
 
   if (tableView) tableView.style.display = "none";
-  if (mapView)   mapView.style.display = "block";
+  if (mapView)   mapView.style.display   = "block";
+  updateBottomUiState();
 
   const map = window.TAILS?.getMap?.();
   if (!map) {

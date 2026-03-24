@@ -308,6 +308,42 @@ body {
   50%       { transform: scale(0.65); opacity: 0.09; }
 }
 
+/* ----------------------------
+   Map ↔ Table flip transition
+   ---------------------------- */
+@keyframes viewFlipOut {
+  from { transform: scaleX(1); opacity: 1;   }
+  to   { transform: scaleX(0); opacity: 0.1; }
+}
+@keyframes viewFlipIn {
+  from { transform: scaleX(0); opacity: 0.1; }
+  to   { transform: scaleX(1); opacity: 1;   }
+}
+
+/* Forward (map → table): exit from right edge, enter from left edge */
+.view-flip-exit-fwd {
+  animation: viewFlipOut 0.17s ease-in  forwards;
+  transform-origin: right center;
+  pointer-events: none;
+}
+.view-flip-enter-fwd {
+  animation: viewFlipIn  0.17s ease-out forwards;
+  transform-origin: left  center;
+  pointer-events: none;
+}
+
+/* Back (table → map): exit from left edge, enter from right edge */
+.view-flip-exit-back {
+  animation: viewFlipOut 0.17s ease-in  forwards;
+  transform-origin: left  center;
+  pointer-events: none;
+}
+.view-flip-enter-back {
+  animation: viewFlipIn  0.17s ease-out forwards;
+  transform-origin: right center;
+  pointer-events: none;
+}
+
 /* Bottom-right anchored Google Maps button */
 .popup-gmaps {
   position: absolute;
