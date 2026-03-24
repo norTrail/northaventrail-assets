@@ -117,7 +117,26 @@ async function fetchJson(action) {
     });
 
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    console.log(`Data fetched for action: ${action}`);
+    return await res.json();
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+// For stable/rarely-changing data — allows browser caching
+async function fetchJsonStable(action) {
+  const controller = new AbortController();
+  const timeout = setTimeout(
+    () => controller.abort(),
+    DATA_CONFIG.fetchTimeoutMs
+  );
+
+  try {
+    const res = await fetch(`${WEBAPP_URL}?action=${action}`, {
+      signal: controller.signal
+    });
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json();
   } finally {
     clearTimeout(timeout);
@@ -162,7 +181,7 @@ async function fetchSheepData() {
 
 async function fetchNoMowZones() {
   try {
-    const geojson = await fetchJson("nomow");
+    const geojson = await fetchJsonStable("nomow");
 
     if (typeof updateNoMowLayers === "function") {
       updateNoMowLayers(mapRef, geojson);
@@ -279,7 +298,7 @@ function clearAllHerds() {
   Object.values(herdMarkers).forEach(marker => {
     try {
       marker.remove();
-    } catch (e) {}
+    } catch (e) { }
   });
   herdMarkers = {};
 

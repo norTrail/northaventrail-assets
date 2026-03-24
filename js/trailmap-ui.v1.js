@@ -1134,7 +1134,18 @@ function buildURL(urlParams = {}, makeShort = false) {
 
 /* ------------------------------------------------------------ */
 
+// Cache URL params between navigations — invalidated on pushState
+let _urlParamsCache = null;
+(function () {
+  const _orig = history.pushState.bind(history);
+  history.pushState = function (...args) {
+    _urlParamsCache = null;
+    return _orig(...args);
+  };
+})();
+
 function getURLParams() {
+  if (_urlParamsCache) return _urlParamsCache;
   const result = {};
   const params = new URLSearchParams(window.location.search);
 
@@ -1159,6 +1170,7 @@ function getURLParams() {
     catch { delete result[GROUP_FILTER_PARAM]; }
   }
 
+  _urlParamsCache = result;
   return result;
 }
 

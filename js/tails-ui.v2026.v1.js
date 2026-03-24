@@ -7,26 +7,26 @@
    ---------------------------- */
 
 const UI = {
-  overlayBanner:  document.getElementById("overlay-banner"),
+  overlayBanner: document.getElementById("overlay-banner"),
   overlayMessage: document.getElementById("overlayMessage"),
-  overlayImage:   document.getElementById("overlayImage"),
-  countdown:      document.getElementById("countdown"),
+  overlayImage: document.getElementById("overlayImage"),
+  countdown: document.getElementById("countdown"),
 
-  controls:       document.getElementById("controls"),
-  statusPill:     document.getElementById("status-pill"),
+  controls: document.getElementById("controls"),
+  statusPill: document.getElementById("status-pill"),
 
-  tableBtn:       document.getElementById("toggleTableBtn"),
-  zoomInBtn:      document.getElementById("zoom-sheep-btn"),
-  zoomOutBtn:     document.getElementById("zoom-out-btn"),
+  tableBtn: document.getElementById("toggleTableBtn"),
+  zoomInBtn: document.getElementById("zoom-sheep-btn"),
+  zoomOutBtn: document.getElementById("zoom-out-btn"),
 
-  mapView:        document.getElementById("mapView"),
-  tableView:      document.getElementById("tableView"),
-  backToMapBtn:   document.getElementById("backToMapBtn"),
+  mapView: document.getElementById("mapView"),
+  tableView: document.getElementById("tableView"),
+  backToMapBtn: document.getElementById("backToMapBtn"),
 
-  openMapBtn:     document.getElementById("open-map-btn"),
-  adaInfo:        document.getElementById("ada-info"),
-  adaInfoLong:    document.getElementById("ada-long-text"),
-  adaInfoShort:   document.getElementById("ada-short-text")
+  openMapBtn: document.getElementById("open-map-btn"),
+  adaInfo: document.getElementById("ada-info"),
+  adaInfoLong: document.getElementById("ada-long-text"),
+  adaInfoShort: document.getElementById("ada-short-text")
 };
 
 
@@ -96,9 +96,9 @@ function updateOverlayState(state) {
       if (state.grazingStartHour) {
         /*UI.countdown.innerHTML =
           `The herd returns at ${to12Hour(state.grazingStartHour)}:00 ${amPm(state.grazingStartHour)}.`;*/
-          const updateTextHour = `The herd returns at ${to12Hour(state.grazingStartHour)}:00 ${amPm(state.grazingStartHour)}.`;
-          UI.adaInfoLong.innerHTML = updateTextHour;
-          UI.adaInfoShort.innerHTML = updateTextHour;
+        const updateTextHour = `The herd returns at ${to12Hour(state.grazingStartHour)}:00 ${amPm(state.grazingStartHour)}.`;
+        UI.adaInfoLong.innerHTML = updateTextHour;
+        UI.adaInfoShort.innerHTML = updateTextHour;
       }
 
       break;
@@ -152,99 +152,99 @@ let herdHistorySources = {};
 function updateMarker(herdCode, herdObj, map) {
   const feature = herdObj.current?.features?.[0];
   if (!feature) {
-   console.warn(`No Sheep Data for Herd ${herdCode}: ${JSON.stringify(herdObj)}`);
-   return;
- }
+    console.warn(`No Sheep Data for Herd ${herdCode}: ${JSON.stringify(herdObj)}`);
+    return;
+  }
 
- const [lng, lat] = feature.geometry.coordinates;
+  const [lng, lat] = feature.geometry.coordinates;
 
- setCurrentHerdLocation(lat, lng);
- hideFlockLoader();
+  setCurrentHerdLocation(lat, lng);
+  hideFlockLoader();
 
-// Show zoom ONLY once we have a valid herd location
-if (UI.zoomInBtn && !isZoomedToHerd) {
-  UI.zoomInBtn.style.display = "block";
-  updateBottomUiState();
-}
+  // Show zoom ONLY once we have a valid herd location
+  if (UI.zoomInBtn && !isZoomedToHerd) {
+    UI.zoomInBtn.style.display = "block";
+    updateBottomUiState();
+  }
 
- const props = feature.properties;
- const color = herdObj.color || "#66BB66";
- const longText = props.trailSectionLong || "The herd is grazing on the trail."
- const shortText = feature.properties.trailSectionShort || "The herd is grazing on the trail."
+  const props = feature.properties;
+  const color = herdObj.color || "#66BB66";
+  const longText = props.trailSectionLong || "The herd is grazing on the trail."
+  const shortText = feature.properties.trailSectionShort || "The herd is grazing on the trail."
 
- // Update existing marker
- if (herdMarkers[herdCode]) {
-   herdMarkers[herdCode].setLngLat([lng, lat]);
-   // Updating the google map button and location text
-   showMapButtonAndLocation(lat, lng, shortText, longText)
-   return;
- }
+  // Update existing marker
+  if (herdMarkers[herdCode]) {
+    herdMarkers[herdCode].setLngLat([lng, lat]);
+    // Updating the google map button and location text
+    showMapButtonAndLocation(lat, lng, shortText, longText)
+    return;
+  }
 
- // Create marker element
- const el = document.createElement("button");
- el.type = "button";
- el.className = "sheep-marker outlined-sheep-marker";
- el.innerHTML = `
+  // Create marker element
+  const el = document.createElement("button");
+  el.type = "button";
+  el.className = "sheep-marker outlined-sheep-marker";
+  el.innerHTML = `
    <svg class="sheep-pin-svg" viewBox="0 0 54 72" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
      <path d="M27,70 C27,70 3,44 3,27 C3,13.8 13.8,3 27,3 C40.2,3 51,13.8 51,27 C51,44 27,70 27,70 Z" fill="currentColor"/>
      <circle cx="27" cy="25" r="18" fill="white"/>
    </svg>
    <span class="marker-inner" aria-hidden="true">🐑</span>
  `;
- el.style.color = color;
- el.dataset.outline = color;
- el.title=`${props.herdName}`
- el.setAttribute('aria-label', `${props.herdName}: open details`);
- el.setAttribute("role","button");
- el.setAttribute("aria-pressed","false");
+  el.style.color = color;
+  el.dataset.outline = color;
+  el.title = `${props.herdName}`
+  el.setAttribute('aria-label', `${props.herdName}: open details`);
+  el.setAttribute("role", "button");
+  el.setAttribute("aria-pressed", "false");
 
- el.addEventListener("mouseenter", () => el.classList.add("is-hover"));
- el.addEventListener("mouseleave", () => el.classList.remove("is-hover"));
- el.addEventListener('focus',      () => el.classList.add('is-hover'));
- el.addEventListener('blur',       () => el.classList.remove('is-hover'));
+  el.addEventListener("mouseenter", () => el.classList.add("is-hover"));
+  el.addEventListener("mouseleave", () => el.classList.remove("is-hover"));
+  el.addEventListener('focus', () => el.classList.add('is-hover'));
+  el.addEventListener('blur', () => el.classList.remove('is-hover'));
 
- el.addEventListener("click", e => {
-   e.stopPropagation();
+  el.addEventListener("click", e => {
+    e.stopPropagation();
 
-   closeAllPopups();
-   el.setAttribute("aria-pressed","true");
+    closeAllPopups();
+    el.setAttribute("aria-pressed", "true");
 
-   const shareText = props.trailSectionShort
-    ? `${props.herdName} is currently grazing at ${props.trailSectionShort}`
-    : `${props.herdName} is out grazing on the Northaven Trail`;
+    const shareText = props.trailSectionShort
+      ? `${props.herdName} is currently grazing at ${props.trailSectionShort}`
+      : `${props.herdName} is out grazing on the Northaven Trail`;
 
-  const popupHTML = `
+    const popupHTML = `
     <h3>${props.herdName}</h3>
     <p>${props.sheepInfo}</p>
     ${buildPopupNavIcons(lat, lng, shareText)}
   `;
-  const popup = new mapboxgl.Popup({ offset: [0, -76] })
+    const popup = new mapboxgl.Popup({ offset: [0, -76] })
+      .setLngLat([lng, lat])
+      .setHTML(popupHTML)
+      .addTo(map);
+    wirePopupShare(popup);
+    openPopups.push(popup);
+    popup.on("close", () => {
+      const i = openPopups.indexOf(popup);
+      if (i !== -1) openPopups.splice(i, 1);
+    });
+    currentFullPopup = popup;
+  });
+
+  herdMarkers[herdCode] = new mapboxgl.Marker({
+    element: el,
+    anchor: "bottom"
+  })
     .setLngLat([lng, lat])
-    .setHTML(popupHTML)
     .addTo(map);
-  wirePopupShare(popup);
-   openPopups.push(popup);
-   popup.on("close", () => {
-     const i = openPopups.indexOf(popup);
-     if (i !== -1) openPopups.splice(i, 1);
-   });
-   currentFullPopup = popup;
- });
-
- herdMarkers[herdCode] = new mapboxgl.Marker({
-   element: el,
-   anchor: "bottom"
- })
-   .setLngLat([lng, lat])
-   .addTo(map);
 
 
-// Show the hamburger
- const hamburgerElement = document.getElementById("hamburger");
- if (hamburgerElement) {hamburgerElement.style.display = "block";}
+  // Show the hamburger
+  const hamburgerElement = document.getElementById("hamburger");
+  if (hamburgerElement) { hamburgerElement.style.display = "block"; }
 
- // Updating the google map button and location text
- showMapButtonAndLocation(lat, lng, shortText, longText)
+  // Updating the google map button and location text
+  showMapButtonAndLocation(lat, lng, shortText, longText)
 }
 
 function updateHerdHistoryLine(herdCode, historyGeoJSON, color, map) {
@@ -254,7 +254,7 @@ function updateHerdHistoryLine(herdCode, historyGeoJSON, color, map) {
   }
 
   const sourceId = `herd-${herdCode}-history-src`;
-  const layerId  = `herd-${herdCode}-history-line`;
+  const layerId = `herd-${herdCode}-history-line`;
 
   // 🔑 RECORD THE SOURCE ID
   herdHistorySources[herdCode] = sourceId;
@@ -346,7 +346,13 @@ function renderAllHerds(data, map) {
 
 const noMowZoneMarkers = {};
 let selectedZoneCode = null;
-let lastNoMowJSONString = null;
+let lastNoMowHash = null;
+
+// Cheap structural hash — avoids full JSON.stringify on every poll
+function quickGeoHash_(geojson) {
+  const features = geojson.features || [];
+  return `${features.length}:${features[0]?.properties?.zoneCode ?? ""}:${features[features.length - 1]?.properties?.zoneCode ?? ""}`;
+}
 
 function featureCenter(geometry) {
   if (geometry.type === "Point") return geometry.coordinates;
@@ -368,11 +374,11 @@ function updateNoMowLayers(map, geojson, force = false) {
     return;
   }
 
-  const jsonString = JSON.stringify(geojson);
+  const hash = quickGeoHash_(geojson);
 
   // Skip unchanged unless forced
-  if (!force && jsonString === lastNoMowJSONString) return;
-  lastNoMowJSONString = jsonString;
+  if (!force && hash === lastNoMowHash) return;
+  lastNoMowHash = hash;
 
   // Show the table button
   UI.tableBtn.style.display = "block";
@@ -529,22 +535,22 @@ function openZoneGoogleMaps(lat, lng) {
   window.open(url, "_blank", "noopener");
 }
 function buildGrazingTable() {
- const zones = Object.values(noMowZoneMarkers).map(z => {
-   const f = z.feature;
-   return {
-     name: f.properties.zoneName.replace(/^Grazing Area<br>\s*/i, ""),
-     status: f.properties.status,
-     statusIcon: f.properties.icon,
-     grazeDateLong: f.properties.estimatedDateLong,
-     grazeDateShort: f.properties.estimatedDateShort,
-     code: f.properties.zoneCode,
-     lng: f.properties.centerLng,
-     lat: f.properties.centerLat,
-     color: f.properties.color
-   };
- });
+  const zones = Object.values(noMowZoneMarkers).map(z => {
+    const f = z.feature;
+    return {
+      name: f.properties.zoneName.replace(/^Grazing Area<br>\s*/i, ""),
+      status: f.properties.status,
+      statusIcon: f.properties.icon,
+      grazeDateLong: f.properties.estimatedDateLong,
+      grazeDateShort: f.properties.estimatedDateShort,
+      code: f.properties.zoneCode,
+      lng: f.properties.centerLng,
+      lat: f.properties.centerLat,
+      color: f.properties.color
+    };
+  });
 
- showTableView(zones);
+  showTableView(zones);
 }
 
 /* ============================================================
@@ -561,9 +567,9 @@ function buildGrazingTable() {
  *                                before the enter animation begins.
  */
 function flipToView(exitEl, enterEl, direction, onReady) {
-  const exitClass  = direction === "forward" ? "view-flip-exit-fwd"  : "view-flip-exit-back";
+  const exitClass = direction === "forward" ? "view-flip-exit-fwd" : "view-flip-exit-back";
   const enterClass = direction === "forward" ? "view-flip-enter-fwd" : "view-flip-enter-back";
-  const HALF_MS    = 170; // matches the CSS animation duration
+  const HALF_MS = 170; // matches the CSS animation duration
 
   // Prevent double-taps while animating
   document.querySelectorAll(".map-bottom-button").forEach(b => (b.disabled = true));
@@ -591,14 +597,14 @@ function flipToView(exitEl, enterEl, direction, onReady) {
 }
 
 UI.tableBtn?.addEventListener("click", () => {
-  const mapView   = document.getElementById("mapView");
+  const mapView = document.getElementById("mapView");
   const tableView = document.getElementById("tableView");
   if (!mapView || !tableView) return;
   flipToView(mapView, tableView, "forward", buildGrazingTable);
 });
 
 UI.backToMapBtn?.addEventListener("click", () => {
-  const mapView   = document.getElementById("mapView");
+  const mapView = document.getElementById("mapView");
   const tableView = document.getElementById("tableView");
   if (!mapView || !tableView) return;
   flipToView(tableView, mapView, "back");
@@ -647,18 +653,18 @@ function showTableView(zones) {
     return new Date(a.grazeDateLong) - new Date(b.grazeDateLong);
   });
 
+  // Pre-build Set of dates that have at least one "Coming" zone — O(n) vs O(n²)
+  const comingDates = new Set(
+    sorted.filter(z => z.status === "Coming").map(z => z.grazeDateLong)
+  );
+
   let lastDateLabel = "";
 
   sorted.forEach(zone => {
     const currentDate = zone.grazeDateLong;
 
     if (currentDate !== lastDateLabel) {
-      const zonesForDate = sorted.filter(
-        z => z.grazeDateLong === currentDate
-      );
-      const hasComing = zonesForDate.some(
-        z => z.status === "Coming"
-      );
+      const hasComing = comingDates.has(currentDate);
 
       const headerTr = document.createElement("tr");
       headerTr.className = "date-header-row";
@@ -788,13 +794,13 @@ function showSheepUI() {
 function hideSheepUI() {
   isZoomedToHerd = false;
 
-  if (UI.zoomInBtn)  UI.zoomInBtn.style.display  = "none";
+  if (UI.zoomInBtn) UI.zoomInBtn.style.display = "none";
   if (UI.zoomOutBtn) UI.zoomOutBtn.style.display = "none";
   updateBottomUiState();
 
   // hide the hamburger
-   const hamburgerElement = document.getElementById("hamburger");
-   if (hamburgerElement) {hamburgerElement.style.display = "none";}
+  const hamburgerElement = document.getElementById("hamburger");
+  if (hamburgerElement) { hamburgerElement.style.display = "none"; }
 }
 
 
@@ -857,15 +863,15 @@ function hideFlockLoader() {
    ============================================================ */
 
 function showMapButtonAndLocation(lat, lng, shortText, longText) {
- if (!UI.openMapBtn || !UI.adaInfoLong || !UI.adaInfoShort) return;
- if (lat == null || lng == null) return;
+  if (!UI.openMapBtn || !UI.adaInfoLong || !UI.adaInfoShort) return;
+  if (lat == null || lng == null) return;
 
- UI.openMapBtn.href = `https://www.google.com/maps?q=${lat},${lng}`;
- UI.openMapBtn.style.display = "inline-block";
- updateBottomUiState();
+  UI.openMapBtn.href = `https://www.google.com/maps?q=${lat},${lng}`;
+  UI.openMapBtn.style.display = "inline-block";
+  updateBottomUiState();
 
- UI.adaInfoLong.innerHTML = longText || "";
- UI.adaInfoShort.innerHTML = shortText || "";
+  UI.adaInfoLong.innerHTML = longText || "";
+  UI.adaInfoShort.innerHTML = shortText || "";
 }
 
 function hideMapButtonAndLocation() {
@@ -899,8 +905,8 @@ function clickShare(title, text, url) {
   if (!navigator.share) return;
   navigator.share({
     title: String(title || ""),
-    text:  String(text  || ""),
-    url:   String(url   || location.href)
+    text: String(text || ""),
+    url: String(url || location.href)
   }).catch(err => console.log("Share dismissed:", err?.name));
 }
 
@@ -915,7 +921,7 @@ function clickShare(title, text, url) {
  */
 function buildPopupNavIcons(lat, lng, shareText) {
   const googleHref = `https://maps.google.com/maps?q=${lat},${lng}`;
-  const appleHref  = `https://maps.apple.com/?z=20&q=${lat},${lng}`;
+  const appleHref = `https://maps.apple.com/?z=20&q=${lat},${lng}`;
 
   const appleLink = isApple() ? `
     <a class="popupIconLink" href="${appleHref}" target="_blank" rel="noopener noreferrer"
@@ -1025,10 +1031,10 @@ function closeAllPopups() {
 function focusNoMowZone(zoneCode) {
   // Instant switch (no flip): user tapped a table row and expects immediate map response
   const tableView = document.getElementById("tableView");
-  const mapView   = document.getElementById("mapView");
+  const mapView = document.getElementById("mapView");
 
   if (tableView) tableView.style.display = "none";
-  if (mapView)   mapView.style.display   = "block";
+  if (mapView) mapView.style.display = "block";
   updateBottomUiState();
 
   const map = window.TAILS?.getMap?.();
@@ -1109,8 +1115,8 @@ function updateBottomUiState() {
    ============================================================ */
 
 window.updateOverlayState = updateOverlayState;
-window.renderAllHerds  = renderAllHerds;
-window.updateNoMowLayers  = updateNoMowLayers;
+window.renderAllHerds = renderAllHerds;
+window.updateNoMowLayers = updateNoMowLayers;
 window.zoomToHerd = zoomToHerd;
 window.closeAllPopups = closeAllPopups;
 window.showSheepUI = showSheepUI;
