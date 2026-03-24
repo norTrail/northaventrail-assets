@@ -74,6 +74,7 @@ function updateOverlayState(state) {
       UI.statusPill.style.display = "block";
 
       UI.overlayImage.src = state.image || "";
+      UI.overlayImage.alt = "The sheep and goats are coming to the Northaven Trail.";
       startCountdown(state.startDate);
 
       break;
@@ -87,6 +88,7 @@ function updateOverlayState(state) {
 
       UI.overlayMessage.innerHTML = "SHHHH!<br>The sheep and goats are sleeping!";
       UI.overlayImage.src = state.image || "";
+      UI.overlayImage.alt = "The herd is resting overnight off the trail.";
 
       // Update the Status Pill
       UI.statusPill.innerText = "Sleeping";
@@ -119,6 +121,7 @@ function updateOverlayState(state) {
 
 
       UI.overlayImage.src = state.image || "";
+      UI.overlayImage.alt = "The herd has completed grazing on this section of the Northaven Trail.";
 
       // Update the Status Pill
       UI.statusPill.innerText = "Finished";
@@ -223,8 +226,16 @@ function updateMarker(herdCode, herdObj, map) {
       .setHTML(popupHTML)
       .addTo(map);
     wirePopupShare(popup);
+    // Move focus into popup for keyboard/screen-reader users
+    setTimeout(() => {
+      const popupEl = popup.getElement();
+      const focusTarget = popupEl?.querySelector(".mapboxgl-popup-close-button, a[href], button");
+      if (focusTarget) focusTarget.focus();
+    }, 50);
     openPopups.push(popup);
     popup.on("close", () => {
+      el.setAttribute("aria-pressed", "false"); // reset toggle state when popup closes
+      el.focus();                                // return focus to the marker button
       const i = openPopups.indexOf(popup);
       if (i !== -1) openPopups.splice(i, 1);
     });
@@ -567,14 +578,16 @@ function buildGrazingTable() {
  *                                before the enter animation begins.
  */
 function flipToView(exitEl, enterEl, direction, onReady) {
-  const exitClass = direction === "forward" ? "view-flip-exit-fwd" : "view-flip-exit-back";
+  // Respect user's motion preference (WCAG 2.1 AA — no animation if reduced-motion)
+  const prefersNoMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const exitClass  = direction === "forward" ? "view-flip-exit-fwd"  : "view-flip-exit-back";
   const enterClass = direction === "forward" ? "view-flip-enter-fwd" : "view-flip-enter-back";
-  const HALF_MS = 170; // matches the CSS animation duration
+  const HALF_MS    = prefersNoMotion ? 0 : 170;
 
   // Prevent double-taps while animating
   document.querySelectorAll(".map-bottom-button").forEach(b => (b.disabled = true));
 
-  exitEl.classList.add(exitClass);
+  if (!prefersNoMotion) exitEl.classList.add(exitClass);
 
   setTimeout(() => {
     exitEl.classList.remove(exitClass);
@@ -585,12 +598,17 @@ function flipToView(exitEl, enterEl, direction, onReady) {
 
     enterEl.style.display = "block";
     void enterEl.offsetWidth; // force reflow so CSS animation triggers cleanly
-    enterEl.classList.add(enterClass);
+    if (!prefersNoMotion) enterEl.classList.add(enterClass);
     updateBottomUiState();
 
     setTimeout(() => {
       enterEl.classList.remove(enterClass);
       document.querySelectorAll(".map-bottom-button").forEach(b => (b.disabled = false));
+      // Move focus to first usable element in the new view (WCAG 2.1 A — focus management)
+      const firstFocusable = enterEl.querySelector(
+        "button:not(:disabled), a[href], [tabindex='0']"
+      );
+      if (firstFocusable) firstFocusable.focus();
     }, HALF_MS);
 
   }, HALF_MS);
@@ -683,10 +701,21 @@ function showTableView(zones) {
     tr.dataset.code = zone.code;
     tr.style.color = zone.color;
     tr.title = "Click to see this no-mow zone on the map.";
+    // Make rows keyboard-accessible (WCAG 2.1 A — keyboard operability)
+    tr.setAttribute("role", "button");
+    tr.setAttribute("tabindex", "0");
 
-    tr.addEventListener("click", () => {
+    const activateRow = () => {
       selectedZoneCode = zone.code;
       focusNoMowZone(zone.code);
+    };
+
+    tr.addEventListener("click", activateRow);
+    tr.addEventListener("keydown", ev => {
+      if (ev.key === "Enter" || ev.key === " ") {
+        ev.preventDefault();
+        activateRow();
+      }
     });
 
     tr.innerHTML = `

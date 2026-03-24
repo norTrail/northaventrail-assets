@@ -82,8 +82,9 @@ async function bootstrapTailsApp() {
     const loader = document.createElement("div");
     loader.id = "flock-loader";
     loader.className = "flock-loader";
+    loader.setAttribute("role", "status");          // screen reader announces when injected
     loader.setAttribute("aria-live", "polite");
-    loader.setAttribute("aria-label", "Loading herd location");
+    loader.setAttribute("aria-label", "Finding the herd location. Please wait.");
     loader.innerHTML = `
       <div class="flock-loader-inner">
         <div class="flock-loader-pin">
@@ -101,6 +102,23 @@ async function bootstrapTailsApp() {
     mapView.appendChild(loader);
   }
 
+  // Inject sr-only page heading and skip link for screen readers / keyboard users
+  // (WCAG 2.1 A — page titled; 2.4.1 — bypass blocks)
+  const appRoot = document.getElementById("tails-app");
+  if (appRoot && !document.getElementById("tails-skip-link")) {
+    const skip = document.createElement("a");
+    skip.id = "tails-skip-link";
+    skip.href = "#map";
+    skip.className = "sr-only";
+    skip.textContent = "Skip to map";
+    appRoot.prepend(skip);
+
+    const h1 = document.createElement("h1");
+    h1.className = "sr-only";
+    h1.textContent = "Northaven TAILS — Herd Grazing Map";
+    appRoot.prepend(h1);
+  }
+
   loadSvgSpriteOnce();  // load shared icon sprite from assets.northaventrail.org
   initMap(mapEl);
   wireUIControls();
@@ -113,6 +131,10 @@ async function bootstrapTailsApp() {
    ---------------------------- */
 
 function initMap(container) {
+  // Label the map region for screen readers (WCAG 2.1 A — landmarks & labels)
+  container.setAttribute("role", "region");
+  container.setAttribute("aria-label", "Northaven Trail interactive map");
+
   map = new mapboxgl.Map({
     container,
     style: MAP_STYLE,
@@ -281,6 +303,15 @@ function wireUIControls() {
     hamburger.addEventListener("click", () => {
       const open = controls.classList.toggle("show");
       hamburger.setAttribute("aria-expanded", String(open));
+    });
+
+    // Dismiss menu with Escape key and return focus to trigger (WCAG 2.1 A)
+    document.addEventListener("keydown", ev => {
+      if (ev.key === "Escape" && controls.classList.contains("show")) {
+        controls.classList.remove("show");
+        hamburger.setAttribute("aria-expanded", "false");
+        hamburger.focus();
+      }
     });
   }
 
