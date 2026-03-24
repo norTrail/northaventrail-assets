@@ -751,11 +751,17 @@ function attachTableScrollTrackingOnce() {
   const container = document.getElementById("tableWrapper");
   if (!container) return;
 
+  let _scrollThrottlePending = false;
   container.addEventListener(
     "scroll",
     () => {
-      userHasScrolledTable = true;
-      lastVisibleZoneCode = getTopVisibleZoneCode();
+      if (_scrollThrottlePending) return;
+      _scrollThrottlePending = true;
+      requestAnimationFrame(() => {
+        _scrollThrottlePending = false;
+        userHasScrolledTable = true;
+        lastVisibleZoneCode = getTopVisibleZoneCode();
+      });
     },
     { passive: true }
   );
@@ -1075,7 +1081,17 @@ function focusNoMowZone(zoneCode) {
   });
 }
 
+let _bottomUiPending = false;
 function updateBottomUiState() {
+  if (_bottomUiPending) return;
+  _bottomUiPending = true;
+  requestAnimationFrame(() => {
+    _bottomUiPending = false;
+    _doUpdateBottomUiState();
+  });
+}
+
+function _doUpdateBottomUiState() {
   const groupSelectors = [
     '#bottomUiGroupMap',
     '#bottomUiGroupTable'
