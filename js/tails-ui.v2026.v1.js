@@ -186,6 +186,7 @@ function updateMarker(herdCode, herdObj, map) {
   // Create marker element
   const el = document.createElement("button");
   el.type = "button";
+  el.tabIndex = 0;
   el.className = "sheep-marker outlined-sheep-marker";
   el.innerHTML = `
    <svg class="sheep-pin-svg" viewBox="0 0 54 72" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -443,6 +444,7 @@ function updateNoMowLayers(map, geojson, force = false) {
 
     const el = document.createElement("button");
     el.type = "button";
+    el.tabIndex = 0;
     el.className = "no-mow-marker";
     el.innerHTML = `<span class="marker-inner">${props.icon || "🌼"}</span>`;
     el.title = props.zoneCode || "";

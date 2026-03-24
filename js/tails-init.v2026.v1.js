@@ -303,6 +303,11 @@ function wireUIControls() {
     hamburger.addEventListener("click", () => {
       const open = controls.classList.toggle("show");
       hamburger.setAttribute("aria-expanded", String(open));
+      if (open) {
+        // Move focus to first interactive element in the menu
+        const firstFocusable = controls.querySelector("input, button, a[href]");
+        if (firstFocusable) firstFocusable.focus();
+      }
     });
 
     // Dismiss menu with Escape key and return focus to trigger (WCAG 2.1 A)

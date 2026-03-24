@@ -10,6 +10,11 @@
   scroll-margin-top: 120px;
 }
 
+#tableWrapper tr[data-code]:focus-visible {
+  outline: 3px solid #1a73e8;
+  outline-offset: -2px;      /* inset so outline stays within the row */
+}
+
 #tableView {
   position: relative;
   width: 100%;

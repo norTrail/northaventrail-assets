@@ -203,6 +203,11 @@ body {
   transform: scale(1.2);
 }
 
+.no-mow-marker:focus-visible {
+  outline: 3px solid #1a73e8;
+  outline-offset: 3px;
+}
+
 /* Pin-style herd marker */
 .sheep-marker {
   position: relative;
@@ -411,6 +416,12 @@ body {
 
 .outlined-sheep-marker {
   animation: pin-pulse 2.2s ease-in-out infinite;
+  will-change: filter;        /* GPU compositing layer for drop-shadow animation */
+}
+
+.outlined-sheep-marker:focus-visible {
+  outline: 3px solid #1a73e8;
+  outline-offset: 3px;
 }
 
 .mapboxgl-popup,
@@ -519,6 +530,11 @@ body {
 
 .map-bottom-button:active {
   background: #22728C;
+}
+
+.map-bottom-button:focus-visible {
+  outline: 3px solid #1a73e8;
+  outline-offset: 2px;
 }
 
 #bottomUiGroupMap > .is-only,
