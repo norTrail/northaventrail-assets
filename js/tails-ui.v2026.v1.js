@@ -70,6 +70,7 @@ function updateOverlayState(state) {
 
       // Update the Status Pill
       UI.statusPill.innerText = "Coming";
+      UI.statusPill.dataset.state = "coming";
       UI.statusPill.style.display = "block";
 
       UI.overlayImage.src = state.image || "";
@@ -89,6 +90,8 @@ function updateOverlayState(state) {
 
       // Update the Status Pill
       UI.statusPill.innerText = "Sleeping";
+      UI.statusPill.dataset.state = "sleeping";
+      UI.statusPill.style.display = "block";
 
       if (state.grazingStartHour) {
         /*UI.countdown.innerHTML =
@@ -119,6 +122,7 @@ function updateOverlayState(state) {
 
       // Update the Status Pill
       UI.statusPill.innerText = "Finished";
+      UI.statusPill.dataset.state = "history";
       UI.statusPill.style.display = "block";
 
       break;
@@ -130,6 +134,7 @@ function updateOverlayState(state) {
 
       // Update the Status Pill
       UI.statusPill.innerText = "Grazing";
+      UI.statusPill.dataset.state = "grazing";
       UI.statusPill.style.display = "block";
       showSheepUI();
       break;
@@ -726,8 +731,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 function showBanner() {
-  UI.overlayBanner.style.display = "block";
-  UI.statusPill.style.display = "none";
+  if (UI.overlayBanner) UI.overlayBanner.style.display = "block";
+  if (UI.statusPill) UI.statusPill.style.display = "none";
 }
 
 function hideBanner() {

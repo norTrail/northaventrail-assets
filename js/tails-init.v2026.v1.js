@@ -124,6 +124,14 @@ function initMap(container) {
 
 
   map.addControl(new mapboxgl.NavigationControl(), "top-right");
+  map.addControl(
+    new mapboxgl.GeolocateControl({
+      positionOptions: { enableHighAccuracy: true },
+      trackUserLocation: false,
+      showUserHeading: true
+    }),
+    "top-right"
+  );
 
   map.on("load", () => {
     mapReady = true;
@@ -173,20 +181,25 @@ function initMap(container) {
    ---------------------------- */
 
 function wireHistoryToggle(map) {
- const checkbox = document.getElementById("showHistory");
- if (!checkbox) return;
+  const checkbox = document.getElementById("showHistory");
+  if (!checkbox) return;
 
- checkbox.addEventListener("change", () => {
-   const visible = checkbox.checked ? "visible" : "none";
+  // Restore saved preference; default to ON (checked)
+  const saved = localStorage.getItem("tails-pref-showHistory");
+  checkbox.checked = saved === null ? true : saved === "true";
 
-   // Toggle all herd history layers
-   Object.keys(herdHistorySources || {}).forEach(herdCode => {
-     const layerId = `herd-${herdCode}-history-line`;
-     if (map.getLayer(layerId)) {
-       map.setLayoutProperty(layerId, "visibility", visible);
-     }
-   });
- });
+  checkbox.addEventListener("change", () => {
+    localStorage.setItem("tails-pref-showHistory", String(checkbox.checked));
+    const visible = checkbox.checked ? "visible" : "none";
+
+    // Toggle all herd history layers
+    Object.keys(herdHistorySources || {}).forEach(herdCode => {
+      const layerId = `herd-${herdCode}-history-line`;
+      if (map.getLayer(layerId)) {
+        map.setLayoutProperty(layerId, "visibility", visible);
+      }
+    });
+  });
 }
 
 function wireNoMowToggle(map) {
@@ -195,7 +208,14 @@ function wireNoMowToggle(map) {
 
   closeAllPopups();
 
+  // Restore saved preference; default to ON (checked)
+  const saved = localStorage.getItem("tails-pref-showNoMow");
+  checkbox.checked = saved === null ? true : saved === "true";
+  // Mark initialized so updateNoMowLayers won't override this preference
+  checkbox.dataset.initialized = "1";
+
   checkbox.addEventListener("change", () => {
+    localStorage.setItem("tails-pref-showNoMow", String(checkbox.checked));
     const show = checkbox.checked;
     const visibility = show ? "visible" : "none";
 

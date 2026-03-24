@@ -162,7 +162,15 @@ body {
   font-size: 2rem;
   color: white;
   z-index: 10;
+  background: rgba(0, 0, 0, 0.55); /* fallback if state not yet set */
+  text-shadow: 0 1px 3px rgba(0,0,0,0.4);
 }
+
+/* Per-state background colors */
+.floating-status[data-state="grazing"]  { background: rgba(56, 142, 60, 0.88); }
+.floating-status[data-state="coming"]   { background: rgba(230, 119, 0, 0.88); }
+.floating-status[data-state="sleeping"] { background: rgba(25, 118, 210, 0.88); }
+.floating-status[data-state="history"]  { background: rgba(97, 97, 97, 0.88); }
 
 /* ----------------------------
    Map markers
