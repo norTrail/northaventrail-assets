@@ -903,8 +903,18 @@ function showMapButtonAndLocation(lat, lng, shortText, longText) {
   if (!UI.openMapBtn || !UI.adaInfoLong || !UI.adaInfoShort) return;
   if (lat == null || lng == null) return;
 
+  // Inject icon + label once (idempotent — skip if already set)
+  if (!UI.openMapBtn.dataset.iconSet) {
+    UI.openMapBtn.innerHTML =
+      `<svg aria-hidden="true" focusable="false" width="16" height="16" style="flex-shrink:0">` +
+        `<use href="#icon-location"/>` +
+      `</svg>` +
+      `<span>Open in Maps</span>`;
+    UI.openMapBtn.dataset.iconSet = "1";
+  }
+
   UI.openMapBtn.href = `https://www.google.com/maps?q=${lat},${lng}`;
-  UI.openMapBtn.style.display = "inline-block";
+  UI.openMapBtn.style.display = "inline-flex";
   updateBottomUiState();
 
   UI.adaInfoLong.innerHTML = longText || "";

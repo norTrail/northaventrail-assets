@@ -172,6 +172,20 @@ function initGestureControl(mapboxMap) {
   // ------------------------------------------------------------
   // Desktop wheel handling (Ctrl/⌘ or pinch-to-zoom)
   // ------------------------------------------------------------
+
+  // Non-passive listener: prevents the page from scrolling (or the browser
+  // from zooming) at the same time the map is being intentionally zoomed.
+  canvas.addEventListener(
+    "wheel",
+    (e) => {
+      if (!isFullscreen && (e.ctrlKey || e.metaKey || ctrlUnlocked)) {
+        e.preventDefault();
+      }
+    },
+    { passive: false }
+  );
+
+  // Logic listener (passive — no preventDefault needed here)
   canvas.addEventListener(
     "wheel",
     (e) => {

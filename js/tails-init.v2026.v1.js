@@ -321,6 +321,20 @@ function wireUIControls() {
   }
 
 
+  // Replace the ← arrow in the Back to Map button with the map sprite icon
+  const backToMapBtn = document.getElementById("backToMapBtn");
+  if (backToMapBtn) {
+    backToMapBtn.innerHTML =
+      `<svg aria-hidden="true" focusable="false" width="26" height="26" style="display:block">` +
+        `<use href="#icon-map"/>` +
+      `</svg>`;
+    backToMapBtn.setAttribute("aria-label", "Back to map view");
+    backToMapBtn.title = "Back to map view";
+  }
+
+  // Build the static no-mow zone legend at the bottom of the controls menu
+  buildNoMowLegend();
+
   // Zoom buttons
   const zoomSheepBtn = document.getElementById("zoom-sheep-btn");
   const zoomOutBtn = document.getElementById("zoom-out-btn");
@@ -354,6 +368,42 @@ function wireUIControls() {
       });
     });
   }
+}
+
+
+/* ----------------------------
+   No-mow zone legend (injected into #controls)
+   ---------------------------- */
+
+function buildNoMowLegend() {
+  const controls = document.getElementById("controls");
+  if (!controls || document.getElementById("nomow-legend")) return;
+
+  const section = document.createElement("div");
+  section.id = "nomow-legend";
+  section.setAttribute("role", "region");
+  section.setAttribute("aria-label", "No-mow zone map key");
+
+  section.innerHTML = `
+    <p class="section-title legend-heading">No-Mow Zone Key</p>
+    <div class="legend-item">
+      <span class="legend-swatch" style="background:rgb(95,160,219)" aria-hidden="true"></span>
+      <span class="legend-emoji" aria-hidden="true">🐐</span>
+      <span class="legend-label">Grazing now</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-swatch" style="background:rgb(102,187,102)" aria-hidden="true"></span>
+      <span class="legend-emoji" aria-hidden="true">🌼</span>
+      <span class="legend-label">Coming up</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-swatch" style="background:rgb(150,75,0)" aria-hidden="true"></span>
+      <span class="legend-emoji" aria-hidden="true">🌱</span>
+      <span class="legend-label">Grazed / finished</span>
+    </div>
+  `;
+
+  controls.appendChild(section);
 }
 
 
