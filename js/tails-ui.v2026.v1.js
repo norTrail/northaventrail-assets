@@ -156,6 +156,7 @@ function updateMarker(herdCode, herdObj, map) {
   const feature = herdObj.current?.features?.[0];
   if (!feature) {
     console.warn(`No Sheep Data for Herd ${herdCode}: ${JSON.stringify(herdObj)}`);
+    logCaughtError?.("updateMarker", new Error(`No sheep data for herd ${herdCode}`), { herdCode });
     return;
   }
 
@@ -321,6 +322,7 @@ function renderAllHerds(data, map) {
 
     if (!feature) {
       console.warn(`No data for herd ${herdCode}: ${JSON.stringify(herdObj)}`);
+      logCaughtError?.("renderAllHerds", new Error(`No data for herd ${herdCode}`), { herdCode });
       return;
     }
 
@@ -1096,7 +1098,8 @@ function closeAllPopups() {
     }
     selectedZoneCode = null;
   } catch (error) {
-    handleError?.(error.message, error.stack);
+    console.warn("closeAllPopups error:", error);
+    logCaughtError?.("closeAllPopups", error);
   }
 }
 

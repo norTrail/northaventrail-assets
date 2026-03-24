@@ -58,16 +58,19 @@ async function bootstrapTailsApp() {
   const mapEl = document.getElementById("map");
   if (!mapEl) {
     console.error("TAILS init: #map element not found");
+    logClientError("bootstrapTailsApp", "TAILS init: #map element not found");
     return;
   }
 
   if (!window.mapboxgl) {
     console.error("TAILS init: Mapbox GL JS not loaded");
+    logClientError("bootstrapTailsApp", "TAILS init: Mapbox GL JS not loaded");
     return;
   }
 
   if (!MAPBOX_TOKEN && !mapboxgl.accessToken) {
     console.error("TAILS init: Mapbox access token missing");
+    logClientError("bootstrapTailsApp", "TAILS init: Mapbox access token missing");
     return;
   }
 
@@ -141,7 +144,16 @@ function initMap(container) {
     attributionControl: true
   });
 
-
+  // Report Mapbox tile / style load errors to the remote logger
+  map.on("error", (e) => {
+    const msg = e?.error?.message || e?.message || "Mapbox map error";
+    // Suppress noisy tile 403/404s to avoid flooding the log
+    if (/\b(403|404)\b/.test(msg)) return;
+    logClientError("mapbox.error", msg, {
+      stack: e?.error?.stack || null,
+      type: e?.type || null
+    });
+  });
 
   map.addControl(new mapboxgl.NavigationControl(), "top-right");
   map.addControl(
@@ -542,7 +554,10 @@ function loadSvgSpriteOnce() {
       wrap.innerHTML = svgText;
       document.body.prepend(wrap);
     })
-    .catch(err => console.warn("Could not load SVG sprite:", err));
+    .catch(err => {
+      console.warn("Could not load SVG sprite:", err);
+      logClientError("loadSvgSpriteOnce", err?.message || String(err), { stack: err?.stack || null });
+    });
 }
 
 

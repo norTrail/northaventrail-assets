@@ -298,7 +298,10 @@ function clearAllHerds() {
   Object.values(herdMarkers).forEach(marker => {
     try {
       marker.remove();
-    } catch (e) { }
+    } catch (e) {
+      console.warn("clearAllHerds: marker removal failed:", e);
+      logCaughtError?.("clearAllHerds", e);
+    }
   });
   herdMarkers = {};
 
