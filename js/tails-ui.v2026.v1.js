@@ -209,24 +209,20 @@ if (UI.zoomInBtn && !isZoomedToHerd) {
    closeAllPopups();
    el.setAttribute("aria-pressed","true");
 
-   const popupHTML = `
-     <h3>${props.herdName}</h3>
-     <p>${props.sheepInfo}</p>
-     <span
-       class="gmaps-emoji"
-       style="float:right;"
-       onclick="openZoneGoogleMaps(${lat}, ${lng})"
-       title="Open location in Google Maps"
-     >
-       <svg class="gmap-icon" width="22" height="22">
-         <use href="#google-logo-color"></use>
-       </svg>
-     </span>
-   `;
-   const popup = new mapboxgl.Popup({ offset: [0, -76] })
-     .setLngLat([lng, lat])
-     .setHTML(popupHTML)
-     .addTo(map);
+   const shareText = props.trailSectionShort
+    ? `${props.herdName} is currently grazing at ${props.trailSectionShort}`
+    : `${props.herdName} is out grazing on the Northaven Trail`;
+
+  const popupHTML = `
+    <h3>${props.herdName}</h3>
+    <p>${props.sheepInfo}</p>
+    ${buildPopupNavIcons(lat, lng, shareText)}
+  `;
+  const popup = new mapboxgl.Popup({ offset: [0, -76] })
+    .setLngLat([lng, lat])
+    .setHTML(popupHTML)
+    .addTo(map);
+  wirePopupShare(popup);
    openPopups.push(popup);
    popup.on("close", () => {
      const i = openPopups.indexOf(popup);
@@ -457,19 +453,15 @@ function updateNoMowLayers(map, geojson, force = false) {
 
       selectedZoneCode = code;
 
+      const noMowShareText = desc
+        ? `${name} — ${desc}`
+        : `${name} on the Northaven Trail`;
+
       const popupHTML = `
         <div class="popup-container">
           <h3>${name}</h3>
           <p>${desc}</p>
-
-          <span
-            class="gmaps-emoji popup-gmaps"
-            onclick="openZoneGoogleMaps(${lat}, ${lng})"
-            title="Open location in Google Maps">
-            <svg class="gmap-icon" width="22" height="22">
-              <use href="#google-logo-color"></use>
-            </svg>
-          </span>
+          ${buildPopupNavIcons(lat, lng, noMowShareText)}
         </div>
       `;
 
@@ -482,6 +474,7 @@ function updateNoMowLayers(map, geojson, force = false) {
         .setLngLat(center)
         .setHTML(popupHTML)
         .addTo(map);
+      wirePopupShare(popup);
       popup.on("close", () => {
         selectedZoneCode = null;
         const i = openPopups.indexOf(popup);
@@ -894,6 +887,80 @@ function hideMapButtonAndLocation() {
 /* ============================================================
    UTILITIES
    ============================================================ */
+
+/** Returns true on iPhone, iPad, iPod, or Mac (where Apple Maps is native) */
+const isApple = () => /(Mac|iPhone|iPad|iPod)/i.test(navigator.platform);
+
+/**
+ * Trigger the OS-native share sheet via the Web Share API.
+ * Safe to call — silently no-ops if navigator.share is unavailable.
+ */
+function clickShare(title, text, url) {
+  if (!navigator.share) return;
+  navigator.share({
+    title: String(title || ""),
+    text:  String(text  || ""),
+    url:   String(url   || location.href)
+  }).catch(err => console.log("Share dismissed:", err?.name));
+}
+
+/**
+ * Build the navigation icon row (Google Maps, Apple Maps, Share)
+ * shown at the bottom of every popup.
+ *
+ * @param {number} lat
+ * @param {number} lng
+ * @param {string} shareText  – human-readable description for the share payload
+ * @returns {string}  HTML string for a .popup-nav-icons div
+ */
+function buildPopupNavIcons(lat, lng, shareText) {
+  const googleHref = `https://maps.google.com/maps?q=${lat},${lng}`;
+  const appleHref  = `https://maps.apple.com/?z=20&q=${lat},${lng}`;
+
+  const appleLink = isApple() ? `
+    <a class="popupIconLink" href="${appleHref}" target="_blank" rel="noopener noreferrer"
+       title="Open in Apple Maps" aria-label="Open in Apple Maps">
+      <svg class="popupIcon" aria-hidden="true"><use href="#apple-logo"/></svg>
+    </a>` : "";
+
+  const shareBtn = navigator.share ? `
+    <button class="popupIconLink shareButton" type="button"
+            title="Share" aria-label="Share location"
+            data-share-title="Northaven TAILS"
+            data-share-text="${shareText.replace(/"/g, "&quot;")}"
+            data-share-url="${location.href}">
+      <svg class="popupIcon" aria-hidden="true"><use href="#share-icon"/></svg>
+    </button>` : "";
+
+  return `
+    <div class="popup-nav-icons">
+      <a class="popupIconLink" href="${googleHref}" target="_blank" rel="noopener noreferrer"
+         title="Open in Google Maps" aria-label="Open in Google Maps">
+        <svg class="popupIcon" aria-hidden="true"><use href="#google-logo-color"/></svg>
+      </a>
+      ${appleLink}
+      ${shareBtn}
+    </div>`;
+}
+
+/** Wire the share button inside a Mapbox popup after it has been added to the map. */
+function wirePopupShare(popup) {
+  const el = popup.getElement();
+  if (!el || el.dataset.shareWired === "1") return;
+  el.dataset.shareWired = "1";
+
+  el.addEventListener("click", e => {
+    const btn = e.target?.closest?.(".shareButton");
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    clickShare(
+      btn.dataset.shareTitle,
+      btn.dataset.shareText,
+      btn.dataset.shareUrl
+    );
+  });
+}
 
 function formatLongDate(dateStr) {
   try {

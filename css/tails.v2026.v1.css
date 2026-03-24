@@ -344,7 +344,7 @@ body {
   pointer-events: none;
 }
 
-/* Bottom-right anchored Google Maps button */
+/* Bottom-right anchored Google Maps button (legacy; kept for existing usage) */
 .popup-gmaps {
   position: absolute;
   bottom: 6px;
@@ -357,11 +357,48 @@ body {
 .gmap-icon {
   transition: filter 0.18s ease;
 }
-
 .gmap-icon:hover {
-  /* Creates a 1px white outline around the SVG paths */
   filter: drop-shadow(0 0 0 white)
           drop-shadow(0 0 1px white);
+}
+
+/* ----------------------------
+   Popup navigation icon row
+   (Google Maps / Apple Maps / Share)
+   ---------------------------- */
+.popup-nav-icons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid #eee;
+}
+
+.popupIconLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  padding: 3px;
+  line-height: 0;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+.popupIconLink:hover  { background: #f0f0f0; }
+.popupIconLink:focus  { outline: none; }
+.popupIconLink:focus-visible {
+  outline: 2px solid #108452;
+  outline-offset: 2px;
+}
+
+.popupIcon {
+  width: 24px;
+  height: 24px;
+  color: #108452;
 }
 
 /* Smooth pulsing glow for the pin marker */
