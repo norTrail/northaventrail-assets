@@ -1,0 +1,763 @@
+.sale {
+  background-color: #ff6289 !important;
+  background: #ff6289 !important;
+  font-size: 20px;
+}
+
+.mapsize {
+  overflow: auto;
+  position: relative;
+  top: 0;
+  bottom: 0;
+  height: 350px;
+  width: 100%;
+  z-index: 5;
+}
+
+.mapsize:-webkit-full-screen {
+  overflow: auto;
+  position: relative;
+  top: 0;
+  bottom: 0;
+  height: 100%;
+  width: 100%;
+}
+
+.mapsize:fullscreen {
+  position: relative;
+  top: 0;
+  bottom: 0;
+  height: 100%;
+  width: 100%;
+}
+
+.satellite-custom-control {
+  width: 30px;
+  height: 30px;
+  pointer-events: auto;
+  padding: 2px;
+  border-radius: 4px;
+  margin: 2px;
+  cursor: pointer;
+}
+
+.satellite:hover {
+  background-color: #f8f8f8;
+  color: #404040;
+  width: 40px;
+  height: 40px;
+}
+
+.satellite.active {
+  background-color: #3887be;
+  color: #ffffff;
+  width: 50px;
+  height: 50px;
+}
+
+.cling_location {
+  position: absolute;
+  /*background-size: cover;*/
+  width: 22px;
+  height: 34px;
+  cursor: pointer;
+  transition: transform 0.15s ease, filter 0.15s ease;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.unclaimed_cling_location {
+  background-image: url('https://northaventrail.org/s/purple_marker_active.svg');
+}
+
+.claimed_cling_location {
+  background-image: url('https://northaventrail.org/s/pink_marker_active.svg');
+}
+
+.installed_cling_location {
+  background-image: url('https://northaventrail.org/s/red_marker_active.svg');
+}
+
+.cling_location:hover,
+.cling_location:focus,
+.cling_location.active {
+  transform: scale(1.15);
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.35));
+  z-index: 10;
+}
+
+.cling_location:focus {
+  outline: 3px solid #000;
+  outline-offset: 2px;
+}
+
+.show {
+  opacity: 1;
+  transition: opacity 2s ease-in;
+  -moz-transition: opacity 2s ease-in;
+  -webkit-transition: opacity 2s ease-in;
+}
+
+.transitionToHide {
+  opacity: 0;
+  transition: opacity 2s ease-out;
+  -moz-transition: opacity 2s ease-out;
+  -webkit-transition: opacity 2s ease-out;
+}
+
+.hide {
+  display: none;
+}
+
+.activeMapMarker {
+  width: 32px;
+  height: 52px;
+}
+
+#mapKeyContainer {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  align-items: center;
+  justify-items: center;
+  margin: 10px 0;
+}
+
+.center {
+  display: table;
+  width: 100%;
+  height: 80px;
+}
+
+.v-align {
+  padding: 10px;
+  display: table-cell;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.box {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  height: auto;
+  /* Remove forced height */
+  padding: 4px 0;
+}
+
+.buttonGreen {
+  background-color: #108452;
+  /* green */
+  border: 2px solid #108452;
+  color: white;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  display: table-cell;
+  border-radius: 60px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  transition: background-color .1s 0s ease-in-out, color .1s 0s ease-in-out;
+  bottom: 0;
+  right: 0;
+  position: relative;
+  padding: 2px 2px;
+  cursor: pointer;
+  width: 100%;
+  min-width: 200px;
+  max-width: 500px;
+  min-height: 60px;
+  margin-top: 15px;
+  margin-right: 1px;
+  margin-bottom: 2px;
+  margin-left: 1px;
+  font-size: 20px;
+  height: 52px;
+}
+
+.buttonGreen:hover {
+  background-color: white;
+  color: #108452;
+}
+
+.buttonGreen:disabled {
+  background-color: grey;
+  color: white;
+}
+
+@media screen and (max-width: 680px) {
+  #mapKeyContainer {
+    height: auto;
+  }
+
+  .center {
+    height: 50px;
+  }
+
+  .v-align {
+    display: block;
+    width: 100%;
+    height: auto;
+    padding: 1px;
+  }
+}
+
+.shareIcon {
+  width: 20px;
+  height: 20px;
+  margin-right: 7px;
+}
+
+.copyIcon {
+  width: 28px;
+  height: 30px;
+}
+
+.locationID {
+  vertical-align: 13px;
+  color: #108452;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.claimedText {
+  color: pink;
+  font-weight: normal;
+}
+
+.installedText {
+  color: red;
+  font-weight: normal;
+}
+
+.logo {
+  width: 200px;
+  height: 200px;
+}
+
+.buttonGreen:hover .googleIconColor {
+  display: inline;
+}
+
+.buttonGreen:hover .googleIcon {
+  display: none;
+}
+
+.buttonGreen:hover .appleIcon {
+  color: black;
+}
+
+.appleIcon {
+  width: 20px;
+  height: 20px;
+  margin-right: 7px;
+}
+
+.googleIcon {
+  width: 20px;
+  height: 20px;
+  margin-right: 7px;
+}
+
+.googleIconColor {
+  width: 20px;
+  height: 20px;
+  margin-right: 7px;
+  display: none;
+}
+
+@media only screen and (max-width: 480px) {
+  .mapboxgl-popup-content {
+    max-width: 250px;
+  }
+
+  .mapboxgl-popup-content div {
+    padding: 0em;
+  }
+
+  .mapboxgl-popup-content p {
+    margin: 0.5em 0.5em;
+  }
+}
+
+.keyIcons {
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.keyText {
+  font-size: 14px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+
+/* The Modal (background) */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0px;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: rgba(0, 0, 0, 0.9);
+}
+
+/* Modal Content (image) */
+.modal-content {
+  margin: auto;
+  display: block;
+  width: 80%;
+  max-width: 700px;
+}
+
+/* Caption of Modal Image */
+#caption {
+  margin: auto;
+  display: block;
+  width: 80%;
+  max-width: 700px;
+  text-align: center;
+  color: #ccc;
+  padding: 10px 0;
+  height: 250px;
+}
+
+/* Add Animation */
+.modal-content,
+#caption {
+  -webkit-animation-name: zoom;
+  -webkit-animation-duration: 0.6s;
+  animation-name: zoom;
+  animation-duration: 0.6s;
+}
+
+@-webkit-keyframes zoom {
+  from {
+    -webkit-transform: scale(0)
+  }
+
+  to {
+    -webkit-transform: scale(1)
+  }
+}
+
+@keyframes zoom {
+  from {
+    transform: scale(0)
+  }
+
+  to {
+    transform: scale(1)
+  }
+}
+
+/* The Close Button */
+.close {
+  position: absolute;
+  top: 90px;
+  /* 15px*/
+  right: 35px;
+  color: #f1f1f1;
+  font-size: 40px;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.close:hover,
+.close:focus {
+  color: #bbb;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* 100% Image Width on Smaller Screens */
+@media only screen and (max-width: 680px) {
+  .modal-content {
+    width: 100%;
+  }
+}
+
+@media only screen and (max-width: 680px) {
+  .popUpClingImage {
+    width: 70px;
+  }
+}
+
+.popUpClingImage {
+  width: 130px;
+}
+
+.popUpClingImage:hover {
+  cursor: pointer;
+}
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 140px;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px;
+  position: absolute;
+  z-index: 1;
+  bottom: 150%;
+  left: 50%;
+  margin-left: -75px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tooltip .tooltiptext::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #555 transparent transparent transparent;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+
+
+.val-carousel {
+  position: relative;
+  max-width: 500px;
+  margin: 0 auto
+}
+
+.val-carousel__stage {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #f6f6f6
+}
+
+.val-carousel__img {
+  display: block;
+  width: 100%;
+  height: auto;
+  cursor: zoom-in
+}
+
+.val-carousel__caption {
+  padding: 10px 12px;
+  font-size: 14px;
+  line-height: 1.35
+}
+
+.val-carousel__nav {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between
+}
+
+.val-carousel__btn {
+  pointer-events: auto;
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 12px;
+  margin: 10px;
+  background: rgba(255, 255, 255, .92);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .12);
+  cursor: pointer
+}
+
+.val-carousel__btn:focus {
+  outline: 3px solid rgba(0, 0, 0, .35);
+  outline-offset: 2px
+}
+
+.val-carousel__counter {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  pointer-events: none;
+  background: rgba(255, 255, 255, .92);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px
+}
+
+
+/* Popup toolbar (close/clock button) */
+.val-popup__toolbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin: -6px -6px 6px -6px;
+  padding: 0
+}
+
+.val-popup__clock {
+  border: 0;
+  background: rgba(255, 255, 255, .92);
+  border-radius: 999px;
+  cursor: pointer;
+  padding: 6px 8px;
+  line-height: 1;
+  font-size: 18px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .12)
+}
+
+.val-popup__clock:focus {
+  outline: 3px solid rgba(0, 0, 0, .35);
+  outline-offset: 2px
+}
+
+
+/* ----------------------------
+   Accessibility helpers
+   ---------------------------- */
+.sr-only {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  border: 0;
+  padding: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+
+#mapView {
+  position: relative;
+}
+
+
+/* ----------------------------
+   Map key (legend) interactions
+   ---------------------------- */
+
+/* Key text color utility classes */
+.keyText--available {
+  color: #A02B93;
+}
+
+/* Available */
+.keyText--claimed {
+  color: #D883FF;
+}
+
+/* Claimed  */
+.keyText--installed {
+  color: #FF0000;
+}
+
+/* Installed */
+
+/* Make legend items interactive + contain ripple */
+#mapKeyContainer .v-align {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  overflow: hidden;
+  /* ripple clipping */
+  border-radius: 10px;
+  padding: 6px 10px;
+  transition: transform 0.15s ease,
+    background-color 0.15s ease,
+    box-shadow 0.15s ease,
+    opacity 0.15s ease,
+    filter 0.15s ease;
+}
+
+/* Hover + keyboard focus affordance */
+#mapKeyContainer .v-align:hover,
+#mapKeyContainer .v-align:focus-visible {
+  transform: translateY(-2px);
+  background-color: rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+/* Pressed feel */
+#mapKeyContainer .v-align:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+/* Icon + text emphasis on hover/focus */
+.keyIcons {
+  transition: transform 0.15s ease;
+}
+
+#mapKeyContainer .v-align:hover .keyIcons,
+#mapKeyContainer .v-align:focus-visible .keyIcons {
+  transform: scale(1.10);
+}
+
+#mapKeyContainer .v-align:hover .keyText,
+#mapKeyContainer .v-align:focus-visible .keyText {
+  font-weight: 600;
+}
+
+/* Dim when off */
+#mapKeyContainer .v-align.is-off {
+  opacity: 0.4;
+  filter: grayscale(1);
+}
+
+/* Tooltip (uses data-tooltip set by JS) */
+#mapKeyContainer .v-align[data-tooltip]::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%) translateY(4px);
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 10;
+
+  font-size: 12px;
+  line-height: 1;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+#mapKeyContainer .v-align:hover::before,
+#mapKeyContainer .v-align:focus-visible::before {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Share buttons row: center reliably */
+#shareButtonContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin: 10px 0;
+}
+
+/* Undo the table/table-cell layout just for this row */
+#shareButtonContainer.center {
+  display: flex;
+  height: auto;
+}
+
+#shareButtonContainer .v-align {
+  display: block;
+  padding: 10px;
+}
+
+/* Center contents inside each item */
+#shareButtonContainer .box {
+  justify-content: center;
+}
+
+/* Prevent the button from stretching across the row */
+#shareButtonContainer .buttonGreen {
+  width: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Eye-slash overlay (animates in/out) */
+#mapKeyContainer .v-align::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+
+  background-image: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'>\
+<path d='M17.94 17.94A10.94 10.94 0 0 1 12 19C7 19 2.73 15.11 1 12c.73-1.31 1.67-2.53 2.77-3.63M9.88 9.88A3 3 0 0 0 14.12 14.12'/>\
+<path d='M1 1l22 22'/>\
+</svg>");
+  background-size: contain;
+  background-repeat: no-repeat;
+
+  opacity: 0;
+  transform: scale(0.85);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+#mapKeyContainer .v-align.is-off::after {
+  opacity: 0.85;
+  transform: scale(1);
+}
+
+/* Focus accessibility fallback */
+#mapKeyContainer .v-align:focus {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+  border-radius: 10px;
+}
+
+/* Ripple element injected by JS */
+#mapKeyContainer .legend-ripple {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  transform: scale(0);
+  opacity: 0.35;
+  background: currentColor;
+  animation: legendRipple 420ms ease-out;
+}
+
+@keyframes legendRipple {
+  to {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+
+/* Popup text inside the Mapbox popup */
+.clingText {
+  font-size: 16px;
+  line-height: 1.25;
+  padding: 6px 0;
+  text-align: center;
+  color: #FF0000;
+}
+
+
+.popupHeading {
+  color: #108452;
+  text-transform: uppercase;
+  font-weight: 400;
+  letter-spacing: 2px;
+  font-size: 16px;
+  font-family: proxima-nova;
+  font-style: normal;
+}
+
+
+.popupWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
