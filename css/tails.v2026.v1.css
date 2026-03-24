@@ -579,6 +579,7 @@ body {
   align-self: center;
   flex-shrink: 0;
   align-items: center;        /* vertical centering of icon + text */
+  justify-content: center;    /* horizontal centering of icon + text within the pill */
   gap: 5px;
   background: #388E3C;        /* darker green: #4CAF50 was ~4.3:1 (fail); #388E3C is ~6.5:1 ✓ */
   color: #fff !important;
@@ -756,6 +757,11 @@ body.is-map-fullscreen {
     width: 70px;
     min-width: 44px;
     max-width: 70px;
+  }
+
+  /* Hide text labels on bottom buttons — icon only on mobile */
+  .map-bottom-button .btn-label {
+    display: none;
   }
 
   a.map-bottom-button,

@@ -936,7 +936,9 @@ function showMapButtonAndLocation(lat, lng, shortText, longText) {
   if (!UI.openMapBtn || !UI.adaInfoLong || !UI.adaInfoShort) return;
   if (lat == null || lng == null) return;
 
-  UI.openMapBtn.href = `https://www.google.com/maps?q=${lat},${lng}`;
+  UI.openMapBtn.href  = `https://www.google.com/maps?q=${lat},${lng}`;
+  UI.openMapBtn.title = "Open herd location in Google Maps";
+  UI.openMapBtn.setAttribute("aria-label", "Open herd location in Google Maps");
   UI.openMapBtn.style.display = "inline-flex";
   updateBottomUiState();
 

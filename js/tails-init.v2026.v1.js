@@ -351,6 +351,9 @@ function wireUIControls() {
   const controls = document.getElementById("controls");
 
   if (hamburger && controls) {
+    hamburger.title = "Map options";
+    hamburger.setAttribute("aria-label", hamburger.getAttribute("aria-label") || "Map options");
+
     hamburger.addEventListener("click", () => {
       const open = controls.classList.toggle("show");
       hamburger.setAttribute("aria-expanded", String(open));
@@ -394,7 +397,7 @@ function wireUIControls() {
       `<svg aria-hidden="true" focusable="false" width="22" height="22" style="flex-shrink:0">` +
         `<use href="#icon-map"/>` +
       `</svg>` +
-      `<span>Back to Map</span>`;
+      `<span class="btn-label">Back to Map</span>`;
     backToMapBtn.setAttribute("aria-label", "Back to map view");
     backToMapBtn.title = "Back to map view";
   }
@@ -404,6 +407,8 @@ function wireUIControls() {
   const zoomOutBtn = document.getElementById("zoom-out-btn");
 
   if (zoomSheepBtn) {
+    zoomSheepBtn.title = "Zoom to herd location";
+    zoomSheepBtn.setAttribute("aria-label", zoomSheepBtn.getAttribute("aria-label") || "Zoom to herd location");
     zoomSheepBtn.addEventListener("click", () => {
       isZoomedToHerd = true;
 
@@ -417,6 +422,8 @@ function wireUIControls() {
   }
 
   if (zoomOutBtn) {
+    zoomOutBtn.title = "Zoom to full trail";
+    zoomOutBtn.setAttribute("aria-label", zoomOutBtn.getAttribute("aria-label") || "Zoom to full trail");
     zoomOutBtn.addEventListener("click", () => {
       if (!map) return;
       isZoomedToHerd = false;
