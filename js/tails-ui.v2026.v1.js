@@ -743,16 +743,31 @@ function showTableView(zones) {
       <td>${zone.name}</td>
       <td class="status-cell">${zone.status}</td>
       <td class="map-icons">
-        <span class="status-emoji">${zone.statusIcon}</span>
-        <span class="gmaps-emoji"
-              onclick='event.stopPropagation();
-                       openZoneGoogleMaps("${zone.lat}", "${zone.lng}")'>
-          <svg class="gmap-icon" width="22" height="22">
+        <span class="status-emoji" aria-hidden="true">${zone.statusIcon}</span>
+        <span class="gmaps-emoji" role="button" tabindex="-1"
+              aria-label="Open ${zone.name} in Google Maps">
+          <svg class="gmap-icon" width="22" height="22" aria-hidden="true">
             <use href="#google-logo-color"></use>
           </svg>
         </span>
       </td>
     `;
+
+    // Wire the Google Maps icon via event listener (not inline onclick)
+    const gmapsSpan = tr.querySelector(".gmaps-emoji");
+    if (gmapsSpan) {
+      gmapsSpan.addEventListener("click", ev => {
+        ev.stopPropagation();
+        openZoneGoogleMaps(zone.lat, zone.lng);
+      });
+      gmapsSpan.addEventListener("keydown", ev => {
+        if (ev.key === "Enter" || ev.key === " ") {
+          ev.preventDefault();
+          ev.stopPropagation();
+          openZoneGoogleMaps(zone.lat, zone.lng);
+        }
+      });
+    }
 
     table.appendChild(tr);
   });

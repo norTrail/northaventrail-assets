@@ -189,6 +189,42 @@ function initMap(container) {
   }
   map.addControl(new HomeControl(), "top-right");
 
+  // -------------------------------------------------------------------
+  // No-Mow Zone Legend — always-visible map control (like the trailmap)
+  // Shown/hidden by wireNoMowToggle when the toggle changes.
+  // -------------------------------------------------------------------
+  class NoMowLegendControl {
+    onAdd() {
+      this._container = document.createElement("div");
+      this._container.className = "mapboxgl-ctrl nomow-legend-ctrl";
+      this._container.setAttribute("role", "region");
+      this._container.setAttribute("aria-label", "No-mow zone map key");
+
+      this._container.innerHTML = `
+        <p class="nomow-legend-title">No-Mow Key</p>
+        <div class="legend-item">
+          <span class="legend-swatch" style="background:rgb(95,160,219)" aria-hidden="true"></span>
+          <span class="legend-emoji" aria-hidden="true">🐐</span>
+          <span class="legend-label">Grazing now</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-swatch" style="background:rgb(102,187,102)" aria-hidden="true"></span>
+          <span class="legend-emoji" aria-hidden="true">🌼</span>
+          <span class="legend-label">Coming up</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-swatch" style="background:rgb(150,75,0)" aria-hidden="true"></span>
+          <span class="legend-emoji" aria-hidden="true">🌱</span>
+          <span class="legend-label">Grazed / finished</span>
+        </div>
+      `;
+      return this._container;
+    }
+    onRemove() {
+      this._container.parentNode?.removeChild(this._container);
+    }
+  }
+
   map.on("load", () => {
     mapReady = true;
 
@@ -227,6 +263,12 @@ function initMap(container) {
     wireHistoryToggle(map);
     wireNoMowToggle(map);
     wireSatelliteToggle(map);
+
+    // Legend always last so it sits below all toggle items
+    buildNoMowLegend();
+
+    // Add legend as a visible Mapbox control on the map itself
+    map.addControl(new NoMowLegendControl(), "bottom-left");
   });
 
 
@@ -270,6 +312,11 @@ function wireNoMowToggle(map) {
   // Mark initialized so updateNoMowLayers won't override this preference
   checkbox.dataset.initialized = "1";
 
+  const syncLegendCtrl = (show) => {
+    const ctrl = document.querySelector(".nomow-legend-ctrl");
+    if (ctrl) ctrl.style.display = show ? "" : "none";
+  };
+
   checkbox.addEventListener("change", () => {
     localStorage.setItem("tails-pref-showNoMow", String(checkbox.checked));
     const show = checkbox.checked;
@@ -286,7 +333,13 @@ function wireNoMowToggle(map) {
         obj.element.style.display = show ? "inline-flex" : "none";
       }
     });
+
+    // Show/hide the map legend control to match
+    syncLegendCtrl(show);
   });
+
+  // Sync legend visibility with saved initial state
+  syncLegendCtrl(checkbox.checked);
 }
 
 
@@ -318,6 +371,18 @@ function wireUIControls() {
         hamburger.focus();
       }
     });
+
+    // Dismiss menu when clicking outside of it
+    document.addEventListener("click", ev => {
+      if (
+        controls.classList.contains("show") &&
+        !controls.contains(ev.target) &&
+        !hamburger.contains(ev.target)
+      ) {
+        controls.classList.remove("show");
+        hamburger.setAttribute("aria-expanded", "false");
+      }
+    });
   }
 
 
@@ -335,9 +400,6 @@ function wireUIControls() {
     backToMapBtn.setAttribute("aria-label", "Back to map view");
     backToMapBtn.title = "Back to map view";
   }
-
-  // Build the static no-mow zone legend at the bottom of the controls menu
-  buildNoMowLegend();
 
   // Zoom buttons
   const zoomSheepBtn = document.getElementById("zoom-sheep-btn");

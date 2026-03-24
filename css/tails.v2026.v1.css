@@ -47,6 +47,10 @@ body {
 /* ----------------------------
    Map container
    ---------------------------- */
+#tableView {
+  display: none;              /* hidden by default; flipToView() shows it */
+}
+
 #mapView {
   position: relative;
   width: 100%;
@@ -157,6 +161,43 @@ body {
 
 .legend-label {
   color: #333;
+}
+
+/* ----------------------------
+   NoMowLegendControl — always-visible map control
+   Positioned bottom-left by Mapbox; matches trailmap legend style
+   ---------------------------- */
+.nomow-legend-ctrl {
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+  padding: 6px 8px 4px;
+  font: 11px/1.4 'Helvetica Neue', Arial, sans-serif;
+  pointer-events: none;       /* display-only; no interaction needed */
+  margin-bottom: 6px;
+}
+
+.nomow-legend-title {
+  font-weight: 700;
+  font-size: 11px;
+  margin: 0 0 4px;
+  color: #333;
+}
+
+/* Shrink legend items slightly inside the map control */
+.nomow-legend-ctrl .legend-item {
+  padding: 2px 0;
+  gap: 5px;
+  font-size: 0.78rem;
+}
+
+.nomow-legend-ctrl .legend-swatch {
+  width: 18px;
+  height: 11px;
+}
+
+.nomow-legend-ctrl .legend-emoji {
+  font-size: 0.85rem;
 }
 
 
