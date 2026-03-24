@@ -679,6 +679,7 @@ function showTableView(zones) {
   );
 
   let lastDateLabel = "";
+  let firstDataRow = true;   // roving tabindex — only the first row is in the tab order
 
   sorted.forEach(zone => {
     const currentDate = zone.grazeDateLong;
@@ -703,9 +704,10 @@ function showTableView(zones) {
     tr.dataset.code = zone.code;
     tr.style.color = zone.color;
     tr.title = "Click to see this no-mow zone on the map.";
-    // Make rows keyboard-accessible (WCAG 2.1 A — keyboard operability)
+    // Roving tabindex: first row = 0 (Tab entry point); rest = -1 (arrow-key only)
     tr.setAttribute("role", "button");
-    tr.setAttribute("tabindex", "0");
+    tr.setAttribute("tabindex", firstDataRow ? "0" : "-1");
+    firstDataRow = false;
 
     const activateRow = () => {
       selectedZoneCode = zone.code;
@@ -714,9 +716,26 @@ function showTableView(zones) {
 
     tr.addEventListener("click", activateRow);
     tr.addEventListener("keydown", ev => {
+      // Enter / Space — activate the row
       if (ev.key === "Enter" || ev.key === " ") {
         ev.preventDefault();
         activateRow();
+        return;
+      }
+
+      // Up / Down arrows — move focus within the table (roving tabindex)
+      if (ev.key === "ArrowDown" || ev.key === "ArrowUp") {
+        ev.preventDefault();   // stop the page from scrolling
+        const rows = Array.from(table.querySelectorAll("tr[data-code]"));
+        const idx  = rows.indexOf(tr);
+        const next = ev.key === "ArrowDown"
+          ? Math.min(idx + 1, rows.length - 1)
+          : Math.max(idx - 1, 0);
+        if (next !== idx) {
+          tr.setAttribute("tabindex", "-1");
+          rows[next].setAttribute("tabindex", "0");
+          rows[next].focus();
+        }
       }
     });
 
@@ -902,16 +921,6 @@ function hideFlockLoader() {
 function showMapButtonAndLocation(lat, lng, shortText, longText) {
   if (!UI.openMapBtn || !UI.adaInfoLong || !UI.adaInfoShort) return;
   if (lat == null || lng == null) return;
-
-  // Inject icon + label once (idempotent — skip if already set)
-  if (!UI.openMapBtn.dataset.iconSet) {
-    UI.openMapBtn.innerHTML =
-      `<svg aria-hidden="true" focusable="false" width="16" height="16" style="flex-shrink:0">` +
-        `<use href="#icon-location"/>` +
-      `</svg>` +
-      `<span>Open in Maps</span>`;
-    UI.openMapBtn.dataset.iconSet = "1";
-  }
 
   UI.openMapBtn.href = `https://www.google.com/maps?q=${lat},${lng}`;
   UI.openMapBtn.style.display = "inline-flex";

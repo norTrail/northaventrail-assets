@@ -321,13 +321,17 @@ function wireUIControls() {
   }
 
 
-  // Replace the ← arrow in the Back to Map button with the map sprite icon
+  // Replace the ← arrow in the Back to Map button with the map sprite icon + label
   const backToMapBtn = document.getElementById("backToMapBtn");
   if (backToMapBtn) {
+    backToMapBtn.style.display      = "inline-flex";
+    backToMapBtn.style.alignItems   = "center";
+    backToMapBtn.style.gap          = "6px";
     backToMapBtn.innerHTML =
-      `<svg aria-hidden="true" focusable="false" width="26" height="26" style="display:block">` +
+      `<svg aria-hidden="true" focusable="false" width="22" height="22" style="flex-shrink:0">` +
         `<use href="#icon-map"/>` +
-      `</svg>`;
+      `</svg>` +
+      `<span>Back to Map</span>`;
     backToMapBtn.setAttribute("aria-label", "Back to map view");
     backToMapBtn.title = "Back to map view";
   }
