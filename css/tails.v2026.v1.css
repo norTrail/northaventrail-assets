@@ -20,6 +20,17 @@
 }
 
 /* ----------------------------
+   Invisible hash-link anchors
+   ---------------------------- */
+.anchor {
+  display: block;
+  height: 0;
+  overflow: hidden;
+  font-size: 0;
+  line-height: 0;
+}
+
+/* ----------------------------
    Base layout
    ---------------------------- */
 html, body {
