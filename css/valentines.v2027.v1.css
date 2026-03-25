@@ -761,3 +761,93 @@
   justify-content: center;
   align-items: center;
 }
+
+/* -------------------------------------------------------
+   Hamburger menu
+   ------------------------------------------------------- */
+#val-hamburger {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  font-size: 22px;
+  background: white;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  min-width: 44px;
+  min-height: 44px;
+  z-index: 10;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+  line-height: 1;
+}
+
+#val-hamburger:hover,
+#val-hamburger:focus {
+  background: #f0f0f0;
+  outline: 2px solid #333;
+  outline-offset: 1px;
+}
+
+#val-hamburger-controls {
+  position: absolute;
+  z-index: 50;
+  top: 58px;
+  left: 12px;
+  min-width: 180px;
+  max-width: 260px;
+  background: rgba(255,255,255,0.97);
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  display: none;
+}
+
+#val-hamburger-controls.is-open {
+  display: block;
+}
+
+.val-menu-section-title {
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin: 0 0 4px;
+  color: #333;
+}
+
+.val-menu-label {
+  display: block;
+  padding: 6px 4px;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+/* -------------------------------------------------------
+   Find Nearest button
+   ------------------------------------------------------- */
+#val-find-nearest-wrap {
+  margin: 8px 0;
+  text-align: center;
+}
+
+#val-find-nearest-btn {
+  padding: 10px 20px;
+  background: #c0116a;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  min-height: 44px;
+}
+
+#val-find-nearest-btn:hover,
+#val-find-nearest-btn:focus {
+  background: #a00058;
+  outline: 3px solid #a00058;
+  outline-offset: 2px;
+}
+
+#val-find-nearest-btn:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}

@@ -435,6 +435,8 @@ function initCarouselUIOnce() {
   nextBtn.addEventListener("click", () => go(1), { passive: true });
 
   mount.tabIndex = 0;
+  mount.setAttribute('role', 'region');
+  mount.setAttribute('aria-label', 'Valentine cling image carousel');
   mount.addEventListener("keydown", (e) => {
     if (e.key === "ArrowLeft") { e.preventDefault(); go(-1); }
     if (e.key === "ArrowRight") { e.preventDefault(); go(1); }
@@ -817,7 +819,7 @@ function openPopupForFeature(feature, lngLat, verboseFlag) {
   if (!map || !feature || !feature.properties) return;
 
   let html = buildPopupHTMLFromProps(feature.properties);
-  if (verboseFlag === 'yes') {
+  if (verboseFlag === 'yes' && typeof buildVerbosePopupHTMLFromProps === 'function') {
     html = `${html}${buildVerbosePopupHTMLFromProps(feature.properties)}`;
   }
 
@@ -1233,6 +1235,33 @@ function loadWindow() {
       );
     }
 
+    // Home button — resets map to full trail bounds
+    class HomeControl {
+      onAdd(m) {
+        this._map = m;
+        this._container = document.createElement('div');
+        this._container.className = 'mapboxgl-ctrl mapboxgl-ctrl-group';
+        const btn = document.createElement('button');
+        btn.className = 'mapboxgl-ctrl-home';
+        btn.type = 'button';
+        btn.title = 'Reset map view';
+        btn.setAttribute('aria-label', 'Reset map view');
+        btn.style.cssText = 'display:flex;align-items:center;justify-content:center';
+        btn.innerHTML = `<svg aria-hidden="true" focusable="false" width="18" height="18" style="color:#555"><use href="#icon-home"/></svg>`;
+        btn.onclick = () => {
+          if (typeof closeActivePopup === 'function') closeActivePopup();
+          m.fitBounds(MAP_BOUNDS, { padding: 40 });
+        };
+        this._container.appendChild(btn);
+        return this._container;
+      }
+      onRemove() {
+        this._container.parentNode?.removeChild(this._container);
+        this._map = undefined;
+      }
+    }
+    map.addControl(new HomeControl(), 'top-right');
+
     // Load icons, then add source/layers, then wire clicks
     await loadMapIcons();
     addClingSourceIfMissing({ type:'FeatureCollection', features: [] });
@@ -1335,6 +1364,192 @@ function loadWindow() {
   setShareButton();
 
   initModalHandlers();
+
+  // --- Hamburger menu ---
+  (function initHamburger() {
+    const mapEl = document.getElementById('map');
+    const host = mapEl?.parentElement || document.body;
+    if (host && !host.style.position) host.style.position = 'relative';
+
+    const btn = document.createElement('button');
+    btn.id = 'val-hamburger';
+    btn.type = 'button';
+    btn.setAttribute('aria-label', 'Map menu');
+    btn.setAttribute('aria-expanded', 'false');
+    btn.setAttribute('aria-controls', 'val-hamburger-controls');
+    btn.title = 'Map menu';
+    btn.textContent = '☰';
+
+    const panel = document.createElement('div');
+    panel.id = 'val-hamburger-controls';
+    panel.setAttribute('role', 'dialog');
+    panel.setAttribute('aria-label', 'Map menu');
+    panel.innerHTML = `
+      <p class="val-menu-section-title">Filter Locations</p>
+      <label class="val-menu-label"><input type="checkbox" id="val-filter-unclaimed" checked> Available</label>
+      <label class="val-menu-label"><input type="checkbox" id="val-filter-claimed" checked> Claimed</label>
+      <label class="val-menu-label"><input type="checkbox" id="val-filter-installed" checked> Installed</label>
+      <hr style="margin:8px 0;border:none;border-top:1px solid rgba(0,0,0,0.12)">
+      <p class="val-menu-section-title">Map View</p>
+      <label class="val-menu-label"><input type="checkbox" id="val-satellite-toggle"> Satellite</label>
+    `;
+
+    if (host) {
+      host.appendChild(btn);
+      host.appendChild(panel);
+    }
+
+    btn.addEventListener('click', () => {
+      const open = panel.classList.toggle('is-open');
+      btn.setAttribute('aria-expanded', String(open));
+      if (open) syncHamburgerCheckboxes();
+      const firstFocusable = panel.querySelector('button,a[href],input');
+      if (open && firstFocusable) firstFocusable.focus();
+    });
+
+    document.addEventListener('keydown', ev => {
+      if (ev.key === 'Escape' && panel.classList.contains('is-open')) {
+        panel.classList.remove('is-open');
+        btn.setAttribute('aria-expanded', 'false');
+        btn.focus();
+      }
+    });
+
+    document.addEventListener('click', ev => {
+      if (
+        panel.classList.contains('is-open') &&
+        !panel.contains(ev.target) &&
+        !btn.contains(ev.target)
+      ) {
+        panel.classList.remove('is-open');
+        btn.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    const filterMap = [
+      { id: 'val-filter-unclaimed', status: LOCATION_UNCLAIMED },
+      { id: 'val-filter-claimed',   status: LOCATION_CLAIMED },
+      { id: 'val-filter-installed', status: LOCATION_INSTALLED }
+    ];
+    filterMap.forEach(({ id, status }) => {
+      const cb = panel.querySelector('#' + id);
+      if (!cb) return;
+      cb.addEventListener('change', () => toggleLegendStatus(status));
+    });
+
+    const satCb = panel.querySelector('#val-satellite-toggle');
+    if (satCb) {
+      satCb.addEventListener('change', () => {
+        try {
+          const visibility = map.getLayoutProperty('mapbox-satellite', 'visibility');
+          map.setLayoutProperty('mapbox-satellite', 'visibility',
+            visibility === 'visible' ? 'none' : 'visible');
+        } catch {}
+      });
+    }
+  })();
+
+  injectFindNearestButton();
+}
+
+function syncHamburgerCheckboxes() {
+  const filterMap = [
+    { id: 'val-filter-unclaimed', status: LOCATION_UNCLAIMED },
+    { id: 'val-filter-claimed',   status: LOCATION_CLAIMED },
+    { id: 'val-filter-installed', status: LOCATION_INSTALLED }
+  ];
+  filterMap.forEach(({ id, status }) => {
+    const cb = document.getElementById(id);
+    if (cb) cb.checked = !!legendVisibility[status];
+  });
+  const satCb = document.getElementById('val-satellite-toggle');
+  if (satCb && map) {
+    try {
+      satCb.checked = map.getLayoutProperty('mapbox-satellite', 'visibility') === 'visible';
+    } catch {}
+  }
+}
+
+function injectFindNearestButton() {
+  const mapEl = document.getElementById('map');
+  if (!mapEl) return;
+
+  const wrapper = document.createElement('div');
+  wrapper.id = 'val-find-nearest-wrap';
+
+  const btn = document.createElement('button');
+  btn.id = 'val-find-nearest-btn';
+  btn.type = 'button';
+  btn.textContent = '📍 Find Locations Near Me';
+  btn.setAttribute('aria-label', 'Find cling locations near your current location');
+
+  wrapper.appendChild(btn);
+  mapEl.insertAdjacentElement('afterend', wrapper);
+
+  btn.addEventListener('click', () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser.');
+      return;
+    }
+    btn.disabled = true;
+    btn.textContent = '⏳ Finding your location…';
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const userLng = pos.coords.longitude;
+        const userLat = pos.coords.latitude;
+        const features = currentClingGeojson?.features ?? [];
+
+        btn.disabled = false;
+        btn.textContent = '📍 Find Locations Near Me';
+
+        if (!features.length) {
+          alert('Map data not yet loaded. Please wait and try again.');
+          return;
+        }
+
+        function haversine(lat1, lon1, lat2, lon2) {
+          const R = 6371;
+          const dLat = (lat2 - lat1) * Math.PI / 180;
+          const dLon = (lon2 - lon1) * Math.PI / 180;
+          const a = Math.sin(dLat / 2) ** 2 +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) ** 2;
+          return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        }
+
+        const sorted = features
+          .filter(f => f.geometry?.type === 'Point')
+          .map(f => ({
+            f,
+            dist: haversine(userLat, userLng, f.geometry.coordinates[1], f.geometry.coordinates[0])
+          }))
+          .sort((a, b) => a.dist - b.dist)
+          .slice(0, 5);
+
+        if (!sorted.length) return;
+
+        const lngs = sorted.map(x => x.f.geometry.coordinates[0]);
+        const lats = sorted.map(x => x.f.geometry.coordinates[1]);
+        lngs.push(userLng);
+        lats.push(userLat);
+
+        map.fitBounds(
+          [[Math.min(...lngs), Math.min(...lats)], [Math.max(...lngs), Math.max(...lats)]],
+          { padding: 80, maxZoom: 16 }
+        );
+      },
+      (err) => {
+        btn.disabled = false;
+        btn.textContent = '📍 Find Locations Near Me';
+        if (err.code !== err.PERMISSION_DENIED) {
+          console.warn('Geolocation error', err);
+          alert('Could not get your location. Please ensure location access is enabled.');
+        }
+      },
+      { timeout: 10000, maximumAge: 60000 }
+    );
+  });
 }
 
 // ---------------------------------------------------------------------
