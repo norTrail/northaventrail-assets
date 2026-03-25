@@ -11,10 +11,7 @@ mapboxgl.accessToken = 'pk.eyJ1Ijoid2Rhd3NvIiwiYSI6ImNqb2c3MmJ5czAwbXYzd2xoN2o0c
 const SALES_DIV_ID = ['block-yui_3_17_2_1_1673283235024_2521','block-yui_3_17_2_1_1673289954674_3052','block-yui_3_17_2_1_1673896880328_4180','block-63c18efae56ef1315372db3a', 'block-yui_3_17_2_1_1673896880328_3826'];
 const LAST_SALES_DATE = new Date(2026, 1, 5, 23, 59, 59);  // months are 0-11
 
-// Google Service for retrieving data
-const GOOGLE_API = `https://script.google.com/macros/s/AKfycbwVF85_AHR_Wa6kkW_BaETQDTPcYZ8vjG0wikke5GgX1wQI0I9bBfPghIGrgl0Ah6ngPQ/exec`;
-
-const CLING_GEOJSON_URL = `${GOOGLE_API}?page=clingGeodata`;
+const CLING_GEOJSON_URL = `https://assets.northaventrail.org/json/valinetine-cling.v2027.geojson`;
 
 // POPUP
 const markerHeight = 52;
@@ -978,9 +975,7 @@ function goToParamFeature() {
 // Refresh: fetch GeoJSON once, update source + carousel + indexes
 // ---------------------------------------------------------------------
 async function refreshClingData() {
-  const url = withCacheBust(CLING_GEOJSON_URL);
-
-  const fc = normalizeFeatureCollection(await fetchJson(url));
+  const fc = normalizeFeatureCollection(await fetchJson(CLING_GEOJSON_URL));
   currentClingGeojson = fc;
   indexFeatures(fc);
 
