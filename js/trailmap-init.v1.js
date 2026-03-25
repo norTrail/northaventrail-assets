@@ -663,8 +663,11 @@ function getMarkerData() {
   const reqId = ++__markerReqId;
   const mapAtStart = map; // capture current instance
 
-  fetch(URL_MARKER_DATA)
-    .then((r) => r.json())
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+  fetch(URL_MARKER_DATA, { signal: controller.signal })
+    .then((r) => { clearTimeout(timeoutId); return r.json(); })
     .then((payload) => {
       // If a newer request started, or map instance changed, ignore this response
       if (reqId !== __markerReqId) return;
@@ -685,6 +688,7 @@ function getMarkerData() {
       applyMarkerPayload_(mapAtStart, payload);
     })
     .catch((err) => {
+      clearTimeout(timeoutId);
       console.error("Marker fetch failed:", err);
       window.__trailCrumbs?.add("markers:fetch_fail", { msg: err?.message });
       window.TrailmapError?.logClientErrorToServer?.({
@@ -695,6 +699,10 @@ function getMarkerData() {
         page: window.location?.pathname,
         ua: navigator?.userAgent
       });
+      // Retry once after 8s (guards against stale map instance)
+      setTimeout(() => {
+        if (reqId === __markerReqId) getMarkerData();
+      }, 8000);
     });
 }
 
