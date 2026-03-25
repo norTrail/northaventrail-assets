@@ -803,8 +803,10 @@
                 announce(document.getElementById('sr-updates'), "Marker moved to the location you dragged it to.");
             });
 
-            // Fetch POI data for the location search
-            map.once('idle', async () => {
+            // Fetch POI data for the location search.
+            // Note: onIssueTrackerMapReady is already called from inside map.once('idle') in
+            // trailmap-init, so the map is already idle here — no need to wait for another idle.
+            (async () => {
                 try {
                     const res = await fetch(POI_API_URL);
                     const payload = await res.json();
@@ -813,7 +815,7 @@
                 } catch (e) {
                     console.error("Failed to load POIs", e);
                 }
-            });
+            })();
 
             // Wire search UI listeners (only once — safe across WebGL reinits)
             attachSearchListeners_();
