@@ -1,0 +1,22 @@
+.fund-title { margin: 0 0 8px 0; letter-spacing: .02em; text-align: center; }
+.fund-bar   { max-width: 920px; margin: 0 auto 18px auto; text-align: center; }
+.meter {
+  position: relative; height: 45px; background: lightgrey !important;
+  border-radius: 10px; max-width: 90%; margin: 0 auto; overflow: hidden;
+}
+.greenbar {
+  display: flex; align-items: center; justify-content: center;
+  height: 100%; background-color: rgb(16,132,82) !important;
+  width: 0; transition: width 1s ease-in-out;
+  color: white !important; font-weight: 700;
+}
+.progress  { font-size: 16px; margin: 0; pointer-events: none; }
+.fund-msg  { margin-top: 12px; font-size: 16px; }
+.statusLine  { display: inline-block; line-height: 1.35; }
+.updatedLine { font-size: 0.9em; font-style: italic; }
+.fund-match {
+  margin: 12px auto 0 auto; font-size: 16px; font-weight: 600;
+  color: #0a5a3d; text-align: center; line-height: 1.5em;
+  min-height: 1.5em;
+}
+@media (prefers-reduced-motion: reduce) { .greenbar { transition: none !important; } }
