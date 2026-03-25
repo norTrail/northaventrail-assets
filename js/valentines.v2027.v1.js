@@ -135,7 +135,23 @@ function isMobileUI() {
 // ---------------------------------------------------------------------
 // Legend (key) click-to-filter (show/hide by status)
 // ---------------------------------------------------------------------
-const LEGEND_STORAGE_KEY = 'valentines.legend.visibility.v1';
+const LEGEND_STORAGE_KEY    = 'valentines.legend.visibility.v1';
+const SATELLITE_STORAGE_KEY = 'valentines.satellite.v1';
+
+function saveSatelliteToStorage(isOn) {
+  try {
+    if (!window.localStorage) return;
+    localStorage.setItem(SATELLITE_STORAGE_KEY, isOn ? '1' : '0');
+  } catch { /* ignore */ }
+}
+
+function loadSatelliteFromStorage() {
+  try {
+    const val = window.localStorage ? localStorage.getItem(SATELLITE_STORAGE_KEY) : null;
+    if (val === null) return false; // default off
+    return val === '1';
+  } catch { return false; }
+}
 
 const legendVisibility = {
   [LOCATION_UNCLAIMED]: true,
@@ -1303,9 +1319,11 @@ function loadWindow() {
         if (visibility === VISIBLE) {
           map.setLayoutProperty('mapbox-satellite', 'visibility', 'none');
           el.src = '/s/SatelliteOn.png';
+          saveSatelliteToStorage(false);
         } else {
           map.setLayoutProperty('mapbox-satellite', 'visibility', VISIBLE);
           el.src = '/s/SatelliteOff.png';
+          saveSatelliteToStorage(true);
         }
       }, false);
 
@@ -1437,12 +1455,20 @@ function loadWindow() {
       satCb.addEventListener('change', () => {
         try {
           const visibility = map.getLayoutProperty('mapbox-satellite', 'visibility');
-          map.setLayoutProperty('mapbox-satellite', 'visibility',
-            visibility === 'visible' ? 'none' : 'visible');
+          const newVis = visibility === 'visible' ? 'none' : 'visible';
+          map.setLayoutProperty('mapbox-satellite', 'visibility', newVis);
+          saveSatelliteToStorage(newVis === 'visible');
         } catch {}
       });
     }
   })();
+
+  // Restore satellite state from previous session
+  try {
+    if (loadSatelliteFromStorage()) {
+      map.setLayoutProperty('mapbox-satellite', 'visibility', 'visible');
+    }
+  } catch { /* ignore */ }
 
   injectFindNearestButton();
 }
