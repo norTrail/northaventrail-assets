@@ -206,22 +206,21 @@ function attachErrorLogging(map, opts = {}) {
   async function defaultSend(payload) {
     if (!endpoint) return;
 
-    // Prefer sendBeacon (survives unload on iOS), fallback to fetch keepalive
     const context = { kind: payload.kind, app: payload.app, page: payload.page };
-    const data = encodePayloadForGet(payload, context); // doGet-friendly
-    const url = endpoint + (endpoint.includes("?") ? "&" : "?") + "p=" + encodeURIComponent(data);
+    const json = safeJson(payload, 20000, context);
 
     try {
       if (navigator.sendBeacon) {
-        // sendBeacon is POST; still okay with doGet endpoint if you accept only GET.
-        // So we use GET via fetch. Keep sendBeacon path commented for reference.
-        // navigator.sendBeacon(url);
+        navigator.sendBeacon(endpoint, new Blob([json], { type: "text/plain" }));
+        return;
       }
-      await fetch(url, {
-        method: "GET",
+      await fetch(endpoint, {
+        method: "POST",
         mode: "no-cors",
         cache: "no-store",
-        keepalive: true
+        keepalive: true,
+        body: json,
+        headers: { "Content-Type": "text/plain" }
       });
     } catch (e) {
       // last resort: don't throw
@@ -403,20 +402,6 @@ function attachErrorLogging(map, opts = {}) {
   return { crumbs };
 }
 
-/* doGet-friendly encoding (base64url JSON) */
-function encodePayloadForGet(payload, context = {}) {
-  const json = safeJson(payload, 20000, context);
-
-  // UTF-8 safe base64url
-  const bytes = new TextEncoder().encode(json);
-  let binary = "";
-  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
-
-  const b64 = btoa(binary);
-  return b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
-}
-
-
 /* ============================================================
    Log the client side errors on the server
 
@@ -441,15 +426,16 @@ function logClientErrorToServer(payloadObj, endpointOverride) {
   };
 
   const context = { kind: finalPayload.kind, app: finalPayload.app, page: finalPayload.page };
-  const data = encodePayloadForGet(finalPayload, context);
-  const url = endpoint + (endpoint.includes("?") ? "&" : "?") + "p=" + encodeURIComponent(data);
+  const json = safeJson(finalPayload, 20000, context);
 
-  return fetch(url, {
-    method: "GET",
+  return fetch(endpoint, {
+    method: "POST",
     mode: "no-cors",
     cache: "no-store",
-    keepalive: true
-  }).catch(() => { });
+    keepalive: true,
+    body: json,
+    headers: { "Content-Type": "text/plain" }
+  }).catch(() => {});
 }
 
 /* ============================================================
