@@ -14,9 +14,9 @@ const HIDE = 'Hide';*/
 const VISIBLE = 'visible';
 
 const GOOGLE_POI_API =
-  'https://script.google.com/macros/s/AKfycbwBqR4y-aGF7R-pZPrhPI7hnejhd9_0_PK53whCQBICIvVULNgtFB7MW1syjhEVtNWhwQ/exec';
+  'https://assets.northaventrail.org/json/trail-poi.json';
 
-const URL_MARKER_DATA = encodeURI(GOOGLE_POI_API + "?page=geo_slim2");
+const URL_MARKER_DATA = GOOGLE_POI_API;
 
 const GOOGLE_MAP_URL = 'https://maps.google.com/maps?q=';
 const APPLE_MAP_URL = 'https://maps.apple.com/?z=20&q=';
@@ -913,7 +913,7 @@ function installMapControls_() {
 
   // Search control only if location list exists and not in issue tracker mode (which has its own search)
   if (typeof window.initTrailmapSearch === "function" &&
-      !(typeof ISSUE_TRACKER_MODE !== 'undefined' && ISSUE_TRACKER_MODE)) {
+    !(typeof ISSUE_TRACKER_MODE !== 'undefined' && ISSUE_TRACKER_MODE)) {
     window.initTrailmapSearch(map);
   }
 

@@ -6,7 +6,7 @@
     // Globals & Constants
     // -------------------------
     const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbygx5-v6xF0qyd9riNo3Rf0IPSzf5PmUmS3OBH-fCITcI2qqFcaVY4CFWl-rHMUUgEQTQ/exec";
-    const POI_API_URL = "https://script.google.com/macros/s/AKfycbwBqR4y-aGF7R-pZPrhPI7hnejhd9_0_PK53whCQBICIvVULNgtFB7MW1syjhEVtNWhwQ/exec";
+    const POI_API_URL = "https://assets.northaventrail.org/json/trail-poi.json";
     const GAS_API_KEY = "NATA_ISSUE_TRACKER_SECURE_TOKEN_2026";
 
     const searchValues = [];
@@ -772,7 +772,7 @@
 
             // Remove stale marker from previous map instance (WebGL recovery case)
             if (marker) {
-                try { marker.remove(); } catch (_) {}
+                try { marker.remove(); } catch (_) { }
             }
 
             // Create draggable marker
@@ -806,7 +806,7 @@
             // Fetch POI data for the location search
             map.once('idle', async () => {
                 try {
-                    const res = await fetch(`${POI_API_URL}?page=geo_slim2&requester=issueTracker`);
+                    const res = await fetch(POI_API_URL);
                     const payload = await res.json();
                     _poiFeatures = payload.features || [];
                     renderPOIResult_(_poiFeatures);

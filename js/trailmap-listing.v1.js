@@ -19,7 +19,7 @@ if ('scrollRestoration' in history) {
     tableClass: "listing-table",
     // If you don't set window.TRAILMAP_DATA_URL, this is the fallback endpoint:
     dataUrl:
-      "https://script.google.com/macros/s/AKfycbwBqR4y-aGF7R-pZPrhPI7hnejhd9_0_PK53whCQBICIvVULNgtFB7MW1syjhEVtNWhwQ/exec?page=geo_slim2",
+      "https://assets.northaventrail.org/json/trail-poi.json",
   };
 
   // ---------------------------
