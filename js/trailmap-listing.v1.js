@@ -1,8 +1,8 @@
 /* ============================================================
-   trailmap-listing.js (GeoSlim2 / GeoJSON version)
+   trailmap-listing.js
    - Single table: TrailmapListing.initTrailListing(cfg)
    - Multi table:  TrailmapListing.hydratePoiTables(cfg)
-   - Uses same geo_slim2 data as map (reuses window.poiData when present)
+   - Uses trail-poi.json from CDN (reuses window.poiData when present)
    ============================================================ */
 
 /* prevent scroll to hash on page load */
@@ -17,7 +17,7 @@ if ('scrollRestoration' in history) {
     emptyMessage: "No locations found.",
     errorMessage: "Unable to load locations at this time.",
     tableClass: "listing-table",
-    // If you don't set window.TRAILMAP_DATA_URL, this is the fallback endpoint:
+    // Default CDN endpoint:
     dataUrl:
       "https://assets.northaventrail.org/json/trail-poi.json",
   };
@@ -459,7 +459,7 @@ if ('scrollRestoration' in history) {
       return Promise.resolve(window.poiData);
     }
 
-    const url = String(window.TRAILMAP_DATA_URL || dataUrl || "").trim() || DEFAULTS.dataUrl;
+    const url = String(dataUrl || "").trim() || DEFAULTS.dataUrl;
 
     return fetch(url, { cache: "no-store" })
       .then((r) => {
