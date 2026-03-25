@@ -617,6 +617,11 @@ function flipToView(exitEl, enterEl, direction, onReady) {
   }, HALF_MS);
 }
 
+if (UI.tableBtn) {
+  UI.tableBtn.title = "View no-mow zones as a table";
+  UI.tableBtn.setAttribute("aria-label", "View no-mow zones as a table");
+}
+
 UI.tableBtn?.addEventListener("click", () => {
   const mapView = document.getElementById("mapView");
   const tableView = document.getElementById("tableView");
