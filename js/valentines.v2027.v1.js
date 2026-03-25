@@ -1242,7 +1242,7 @@ function loadWindow() {
         btn.title = 'Reset map view';
         btn.setAttribute('aria-label', 'Reset map view');
         btn.style.cssText = 'display:flex;align-items:center;justify-content:center';
-        btn.innerHTML = `<svg aria-hidden="true" focusable="false" width="18" height="18" style="color:#555"><use href="#icon-home"/></svg>`;
+        btn.innerHTML = `<svg aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#555"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`;
         btn.onclick = () => {
           if (typeof closeActivePopup === 'function') closeActivePopup();
           m.fitBounds(MAP_BOUNDS, { padding: 40 });
@@ -1381,9 +1381,9 @@ function loadWindow() {
     panel.setAttribute('aria-label', 'Map menu');
     panel.innerHTML = `
       <p class="val-menu-section-title">Filter Locations</p>
-      <label class="val-menu-label"><input type="checkbox" id="val-filter-unclaimed" checked> Available</label>
-      <label class="val-menu-label"><input type="checkbox" id="val-filter-claimed" checked> Claimed</label>
-      <label class="val-menu-label"><input type="checkbox" id="val-filter-installed" checked> Installed</label>
+      <label class="val-menu-label"><input type="checkbox" id="val-filter-unclaimed" checked> <img src="/s/purple_marker_active_2x.png" width="14" height="20" alt="" aria-hidden="true" style="vertical-align:middle;margin-right:4px"> <span style="color:#7e3af2;font-weight:500">Available</span></label>
+      <label class="val-menu-label"><input type="checkbox" id="val-filter-claimed" checked> <img src="/s/pink_marker_active_2x.png" width="14" height="20" alt="" aria-hidden="true" style="vertical-align:middle;margin-right:4px"> <span style="color:#db2777;font-weight:500">Claimed</span></label>
+      <label class="val-menu-label"><input type="checkbox" id="val-filter-installed" checked> <img src="/s/red_marker_active_2x.png" width="14" height="20" alt="" aria-hidden="true" style="vertical-align:middle;margin-right:4px"> <span style="color:#dc2626;font-weight:500">Installed</span></label>
       <hr style="margin:8px 0;border:none;border-top:1px solid rgba(0,0,0,0.12)">
       <p class="val-menu-section-title">Map View</p>
       <label class="val-menu-label"><input type="checkbox" id="val-satellite-toggle"> Satellite</label>
