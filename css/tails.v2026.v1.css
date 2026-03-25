@@ -30,7 +30,9 @@
   font-size: 0;
   line-height: 0;
 }
-.sqs-block:has(.anchor) {
+.sqs-block:has(.anchor),
+.sqs-block:has(.anchor) .sqs-block-content,
+.sqs-block:has(.anchor) .sqs-code-container {
   height: 0 !important;
   min-height: 0 !important;
   overflow: hidden !important;
