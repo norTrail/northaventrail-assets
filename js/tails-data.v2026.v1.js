@@ -13,6 +13,8 @@ const DATA_CONFIG = {
   errorBackoffMs: 30 * 1000
 };
 
+const CDN_BASE = "https://assets.northaventrail.org/json";
+
 /* ----------------------------
    Internal state
    ---------------------------- */
@@ -103,7 +105,7 @@ function initializeDataPipeline(map) {
    Fetch helper
    ---------------------------- */
 
-async function fetchJson(action) {
+async function fetchJson(url) {
   const controller = new AbortController();
   const timeout = setTimeout(
     () => controller.abort(),
@@ -111,7 +113,7 @@ async function fetchJson(action) {
   );
 
   try {
-    const res = await fetch(`${WEBAPP_URL}?action=${action}`, {
+    const res = await fetch(url, {
       cache: "no-store",
       signal: controller.signal
     });
@@ -123,8 +125,8 @@ async function fetchJson(action) {
   }
 }
 
-// For stable/rarely-changing data — allows browser caching
-async function fetchJsonStable(action) {
+// For stable/rarely-changing data — allows browser and CDN caching
+async function fetchJsonStable(url) {
   const controller = new AbortController();
   const timeout = setTimeout(
     () => controller.abort(),
@@ -132,7 +134,7 @@ async function fetchJsonStable(action) {
   );
 
   try {
-    const res = await fetch(`${WEBAPP_URL}?action=${action}`, {
+    const res = await fetch(url, {
       signal: controller.signal
     });
 
@@ -163,7 +165,7 @@ async function fetchSheepData() {
   if (!pageVisible || !grazingActive) return;
 
   try {
-    const data = await fetchJson("sheep");
+    const data = await fetchJson(`${CDN_BASE}/sheep-locations.v2026.geojson`);
     lastSheepFetch = Date.now();
 
     if (typeof renderAllHerds === "function") {
@@ -181,7 +183,7 @@ async function fetchSheepData() {
 
 async function fetchNoMowZones() {
   try {
-    const geojson = await fetchJsonStable("nomow");
+    const geojson = await fetchJsonStable(`${CDN_BASE}/no-mow-zones.v2026.geojson`);
 
     if (typeof updateNoMowLayers === "function") {
       updateNoMowLayers(mapRef, geojson);
@@ -200,7 +202,7 @@ async function fetchOverlayState(isInitial = false) {
   if (!pageVisible) return;
 
   try {
-    const overlay = await fetchJson("overlay");
+    const overlay = await fetchJson(`${CDN_BASE}/overlay-state.v2026.json`);
     lastOverlayFetch = Date.now();
 
     if (!overlay || !overlay.state) return;

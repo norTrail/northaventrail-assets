@@ -11,8 +11,6 @@
 // For native use, define explicitly here.
 
 const MAPBOX_TOKEN = "pk.eyJ1Ijoid2Rhd3NvIiwiYSI6ImNqb2c3MmJ5czAwbXYzd2xoN2o0cmFwZHYifQ.xhCPovJ-VNHHbVOrkjNdMA";
-const WEBAPP_URL =
-  "https://script.google.com/macros/s/AKfycbzZl6YsZZCYpm2K5R9O4y9FP_WkgPSBtE3cJ99IyGu7Cab5wK48bC4qP8vKt_vTkYJC9Q/exec";
 
 // Map defaults
 const MAP_STYLE = "mapbox://styles/mapbox/streets-v11";
