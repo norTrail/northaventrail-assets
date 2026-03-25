@@ -21,6 +21,7 @@
 
 /* ----------------------------
    Invisible hash-link anchors
+   Collapses the span and its Squarespace wrapper divs
    ---------------------------- */
 .anchor {
   display: block;
@@ -28,6 +29,13 @@
   overflow: hidden;
   font-size: 0;
   line-height: 0;
+}
+.sqs-block:has(.anchor) {
+  height: 0 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
 /* ----------------------------
