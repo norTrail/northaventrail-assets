@@ -975,6 +975,13 @@ function installMapControls_() {
         updatePageDetails();
       });
 
+      this.button.addEventListener('mouseover', () => {
+        this.button.style.backgroundColor = 'rgba(0,0,0,0.05)';
+      });
+
+      this.button.addEventListener('mouseout', () => {
+        this.button.style.backgroundColor = '';
+      });
 
       return this.container;
     }

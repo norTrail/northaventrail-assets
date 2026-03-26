@@ -229,10 +229,6 @@ html, body {
  cursor: pointer;
 }
 
-.satellite-custom-control button:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
 /* =========================
   Search Control
   ========================== */
@@ -244,10 +240,6 @@ html, body {
   border-radius: 4px;
   margin: 2px;
   pointer-events: auto;
-}
-
-.search-custom-control:hover {
-  background-color: rgba(0, 0, 0, 0.05);
 }
 
 /* =========================

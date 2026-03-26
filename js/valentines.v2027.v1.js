@@ -1606,7 +1606,7 @@ function outFunc() {
 function loadSvgSpriteOnce() {
   if (document.getElementById("svg-sprite-inline")) return;
 
-  fetch("/s/icons.svg", { cache: "force-cache" })
+  fetch("https://assets.northaventrail.org/img/icons.svg", { cache: "force-cache" })
     .then(r => {
       if (!r.ok) throw new Error(`SVG sprite fetch failed: ${r.status}`);
       return r.text();

@@ -1227,6 +1227,14 @@ window.initTrailmapSearch = function initTrailmapSearch(map) {
           }
         });
 
+        el.addEventListener("mouseover", () => {
+          this.container.style.backgroundColor = 'rgba(0,0,0,0.05)';
+        });
+
+        el.addEventListener("mouseout", () => {
+          this.container.style.backgroundColor = '';
+        });
+
         el.addEventListener("keydown", (e) => {
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault(); // prevents page scroll on Space
