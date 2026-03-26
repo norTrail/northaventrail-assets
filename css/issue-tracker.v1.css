@@ -12,6 +12,10 @@
     max-width: 95vw;
 }
 
+#issue-tracker-container h2 {
+    color: rgb(11, 102, 64); /* Darker green: 6.6:1 contrast on #f4faf7, overrides Squarespace theme */
+}
+
 /* Shared map styles are now pulled from trailMap4.css and trailmap-fullscreen.css */
 
 fieldset {

@@ -1200,8 +1200,6 @@ window.initTrailmapSearch = function initTrailmapSearch(map) {
         const el = document.createElement("img");
         el.id = "searchButton";
         el.src = "https://assets.northaventrail.org/img/searchOff.avif";
-        el.width = 30;
-        el.height = 30;
         el.role = "button";
         el.ariaLabel = "Search the trail for points of interest";
         el.tabIndex = 0;
@@ -1707,8 +1705,9 @@ function ensureLegendExists(options = {}) {
   legend.className = "legend notFullScreen";
   if (!startCollapsed) legend.classList.add("visible");
 
-  const header = document.createElement("h3");
+  const header = document.createElement("div");
   header.id = headerId;
+  header.className = "legend-header";
   const headerBtn = document.createElement("button");
   headerBtn.textContent = "Legend";
   header.appendChild(headerBtn);
