@@ -950,7 +950,7 @@ function installMapControls_() {
       this.iconSpan = document.createElement('span');
       this.iconSpan.className = 'mapboxgl-ctrl-icon';
       this.iconSpan.setAttribute('aria-hidden', 'true');
-      this.iconSpan.style.backgroundImage = 'url("/s/SatelliteOn.png")';
+      this.iconSpan.style.backgroundImage = 'url("https://assets.northaventrail.org/img/SatelliteOn.avif")';
       this.iconSpan.style.backgroundSize = '18px';
       this.iconSpan.style.backgroundPosition = 'center';
       this.iconSpan.style.backgroundRepeat = 'no-repeat';
@@ -963,12 +963,12 @@ function installMapControls_() {
 
         if (visibility === VISIBLE) {
           this.map.setLayoutProperty('mapbox-satellite', 'visibility', 'none');
-          this.iconSpan.style.backgroundImage = 'url("/s/SatelliteOn.png")';
+          this.iconSpan.style.backgroundImage = 'url("https://assets.northaventrail.org/img/SatelliteOn.avif")';
           this.button.title = 'Turn on satellite imagery';
           this.button.setAttribute('aria-label', 'Turn on satellite imagery');
         } else {
           this.map.setLayoutProperty('mapbox-satellite', 'visibility', VISIBLE);
-          this.iconSpan.style.backgroundImage = 'url("/s/SatelliteOff.png")';
+          this.iconSpan.style.backgroundImage = 'url("https://assets.northaventrail.org/img/SatelliteOff.avif")';
           this.button.title = 'Turn off satellite imagery';
           this.button.setAttribute('aria-label', 'Turn off satellite imagery');
         }
@@ -977,12 +977,12 @@ function installMapControls_() {
 
       this.button.addEventListener('mouseover', () => {
         const vis = this.map.getLayoutProperty('mapbox-satellite', 'visibility');
-        this.iconSpan.style.backgroundImage = vis === VISIBLE ? 'url("/s/SatelliteOffMouseOver.png")' : 'url("/s/SatelliteOnMouseOver.png")';
+        this.iconSpan.style.backgroundImage = vis === VISIBLE ? 'url("https://assets.northaventrail.org/img/SatelliteOffMouseOver.avif")' : 'url("https://assets.northaventrail.org/img/SatelliteOnMouseOver.avif")';
       });
 
       this.button.addEventListener('mouseout', () => {
         const vis = this.map.getLayoutProperty('mapbox-satellite', 'visibility');
-        this.iconSpan.style.backgroundImage = vis === VISIBLE ? 'url("/s/SatelliteOff.png")' : 'url("/s/SatelliteOn.png")';
+        this.iconSpan.style.backgroundImage = vis === VISIBLE ? 'url("https://assets.northaventrail.org/img/SatelliteOff.avif")' : 'url("https://assets.northaventrail.org/img/SatelliteOn.avif")';
       });
 
       return this.container;

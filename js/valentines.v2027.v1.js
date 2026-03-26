@@ -1312,7 +1312,7 @@ function loadWindow() {
     };
     _createButton(className) {
       const el = window.document.createElement('img');
-      el.src = '/s/SatelliteOn.png';
+      el.src = 'https://assets.northaventrail.org/img/SatelliteOn.avif';
       el.className = "satellite-custom-control";
       el.alt = "Toggle Satellite View";
       el.setAttribute("role", "button");
@@ -1327,23 +1327,23 @@ function loadWindow() {
         const visibility = map.getLayoutProperty('mapbox-satellite', 'visibility');
         if (visibility === VISIBLE) {
           map.setLayoutProperty('mapbox-satellite', 'visibility', 'none');
-          el.src = '/s/SatelliteOn.png';
+          el.src = 'https://assets.northaventrail.org/img/SatelliteOn.avif';
           saveSatelliteToStorage(false);
         } else {
           map.setLayoutProperty('mapbox-satellite', 'visibility', VISIBLE);
-          el.src = '/s/SatelliteOff.png';
+          el.src = 'https://assets.northaventrail.org/img/SatelliteOff.avif';
           saveSatelliteToStorage(true);
         }
       }, false);
 
       el.addEventListener("mouseover", () => {
         const visibility = map.getLayoutProperty('mapbox-satellite', 'visibility');
-        el.src = (visibility === VISIBLE) ? '/s/SatelliteOffMouseOver.png' : '/s/SatelliteOnMouseOver.png';
+        el.src = (visibility === VISIBLE) ? 'https://assets.northaventrail.org/img/SatelliteOffMouseOver.avif' : 'https://assets.northaventrail.org/img/SatelliteOnMouseOver.avif';
       }, false);
 
       el.addEventListener("mouseout", () => {
         const visibility = map.getLayoutProperty('mapbox-satellite', 'visibility');
-        el.src = (visibility === VISIBLE) ? '/s/SatelliteOff.png' : '/s/SatelliteOn.png';
+        el.src = (visibility === VISIBLE) ? 'https://assets.northaventrail.org/img/SatelliteOff.avif' : 'https://assets.northaventrail.org/img/SatelliteOn.avif';
       }, false);
 
       return el;

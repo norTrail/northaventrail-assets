@@ -596,7 +596,7 @@ function getCategoryDefaults_(category, feature = null) {
     case "parking":
       return {
         // leave d blank if you don’t want boilerplate
-        icon: "/s/Parking_Icon.png"
+        icon: "https://assets.northaventrail.org/img/Parking_Icon.avif"
       };
 
     case "water":
@@ -1199,7 +1199,9 @@ window.initTrailmapSearch = function initTrailmapSearch(map) {
 
         const el = document.createElement("img");
         el.id = "searchButton";
-        el.src = "/s/searchOff.png";
+        el.src = "https://assets.northaventrail.org/img/searchOff.avif";
+        el.width = 52;
+        el.height = 57;
         el.role = "button";
         el.ariaLabel = "Search the trail for points of interest";
         el.tabIndex = 0;
@@ -1209,7 +1211,7 @@ window.initTrailmapSearch = function initTrailmapSearch(map) {
         el.addEventListener("click", () => {
           if (inputDiv.classList.contains("visible")) {
             closeSearchControl();
-            el.src = "/s/searchOff.png";
+            el.src = "https://assets.northaventrail.org/img/searchOff.avif";
             el.title = "Search the trail for points of interest";
           } else {
             // Close other popups
@@ -1221,7 +1223,7 @@ window.initTrailmapSearch = function initTrailmapSearch(map) {
             // IMPORTANT: allow dropdown to extend (you’ll also do this via CSS)
             // inputDiv.style.overflow = "visible";
 
-            el.src = "/s/searchOnMouseOver.png";
+            el.src = "https://assets.northaventrail.org/img/searchOnMouseOver.avif";
             if (!isMobile()) input.focus();
             el.title = "Hide search";
           }
