@@ -390,6 +390,9 @@ html, body {
   font: inherit;
   font-weight: bold;
   cursor: pointer;
+  display: block;
+  width: 100%;
+  text-align: left;
 }
 
 .legend h3 {
