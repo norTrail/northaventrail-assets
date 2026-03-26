@@ -382,7 +382,7 @@ html, body {
 
 #legendHeader { cursor: pointer; }
 
-.legend h4 button {
+.legend h3 button {
   appearance: none;
   background: none;
   border: none;
@@ -392,12 +392,17 @@ html, body {
   cursor: pointer;
 }
 
-.legend h4 {
+.legend h3 {
   margin: 0 0 1px;
+  padding: 0;
+  font-size: 1em;
+  line-height: inherit;
+  letter-spacing: inherit;
+  text-transform: none;
   position: relative;
 }
 
-.legend h4:after {
+.legend h3:after {
   position: absolute;
   content: "";
   border-left: 2px solid black;
@@ -408,7 +413,7 @@ html, body {
   transform: rotate(-135deg);
 }
 
-.legend.visible h4:after {
+.legend.visible h3:after {
   transform: rotate(-225deg);
 }
 
