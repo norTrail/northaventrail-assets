@@ -592,9 +592,9 @@ function buildPopupHTMLFromProps(props) {
 // Mapbox: load marker icons into the style
 // ---------------------------------------------------------------------
 const ICONS = {
-  unclaimed: { name: 'val-marker-unclaimed', url: '/s/purple_marker_active_2x.png' },
-  claimed:   { name: 'val-marker-claimed',   url: '/s/pink_marker_active_2x.png'   },
-  installed: { name: 'val-marker-installed', url: '/s/red_marker_active_2x.png'    }
+  unclaimed: { name: 'val-marker-unclaimed', url: 'https://assets.northaventrail.org/img/val-marker-purple.avif' },
+  claimed:   { name: 'val-marker-claimed',   url: 'https://assets.northaventrail.org/img/val-marker-pink.avif'   },
+  installed: { name: 'val-marker-installed', url: 'https://assets.northaventrail.org/img/val-marker-red.avif'    }
 };
 
 function loadMapIcons() {
@@ -1296,62 +1296,6 @@ function loadWindow() {
     updateZoomHintText();
   });
 
-  // Satellite toggle control (unchanged)
-  class SatelliteCustomControl {
-    onAdd(map) {
-      this.map = map;
-      this.container = document.createElement('div');
-      this.container.className = 'satellite-custom-control';
-      const button = this._createButton('monitor_button');
-      this.container.appendChild(button);
-      return this.container;
-    };
-    onRemove() {
-      this.container.parentNode.removeChild(this.container);
-      this.map = undefined;
-    };
-    _createButton(className) {
-      const el = window.document.createElement('img');
-      el.src = 'https://assets.northaventrail.org/img/SatelliteOn.avif';
-      el.className = "satellite-custom-control";
-      el.alt = "Toggle Satellite View";
-      el.setAttribute("role", "button");
-      el.tabIndex = 0;
-      el.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          el.click();
-        }
-      });
-      el.addEventListener('click', () => {
-        const visibility = map.getLayoutProperty('mapbox-satellite', 'visibility');
-        if (visibility === VISIBLE) {
-          map.setLayoutProperty('mapbox-satellite', 'visibility', 'none');
-          el.src = 'https://assets.northaventrail.org/img/SatelliteOn.avif';
-          saveSatelliteToStorage(false);
-        } else {
-          map.setLayoutProperty('mapbox-satellite', 'visibility', VISIBLE);
-          el.src = 'https://assets.northaventrail.org/img/SatelliteOff.avif';
-          saveSatelliteToStorage(true);
-        }
-      }, false);
-
-      el.addEventListener("mouseover", () => {
-        const visibility = map.getLayoutProperty('mapbox-satellite', 'visibility');
-        el.src = (visibility === VISIBLE) ? 'https://assets.northaventrail.org/img/SatelliteOffMouseOver.avif' : 'https://assets.northaventrail.org/img/SatelliteOnMouseOver.avif';
-      }, false);
-
-      el.addEventListener("mouseout", () => {
-        const visibility = map.getLayoutProperty('mapbox-satellite', 'visibility');
-        el.src = (visibility === VISIBLE) ? 'https://assets.northaventrail.org/img/SatelliteOff.avif' : 'https://assets.northaventrail.org/img/SatelliteOn.avif';
-      }, false);
-
-      return el;
-    };
-  };
-
-  map.addControl(new SatelliteCustomControl(), 'top-left');
-
   // Share button (native)
   const shareBtn = getElementById('share-button');
   const shareContainer = getElementById('shareButtonContainer');
@@ -1408,9 +1352,9 @@ function loadWindow() {
     panel.setAttribute('aria-label', 'Map menu');
     panel.innerHTML = `
       <p class="val-menu-section-title">Filter Locations</p>
-      <label class="val-menu-label"><input type="checkbox" id="val-filter-unclaimed" checked> <svg width="14" height="20" aria-hidden="true" style="vertical-align:middle;margin-right:4px"><use href="#val-marker-purple"></use></svg> <span style="color:#7e3af2;font-weight:500">Available</span></label>
-      <label class="val-menu-label"><input type="checkbox" id="val-filter-claimed" checked> <svg width="14" height="20" aria-hidden="true" style="vertical-align:middle;margin-right:4px"><use href="#val-marker-pink"></use></svg> <span style="color:#db2777;font-weight:500">Claimed</span></label>
-      <label class="val-menu-label"><input type="checkbox" id="val-filter-installed" checked> <svg width="14" height="20" aria-hidden="true" style="vertical-align:middle;margin-right:4px"><use href="#val-marker-red"></use></svg> <span style="color:#dc2626;font-weight:500">Installed</span></label>
+      <label class="val-menu-label"><input type="checkbox" id="val-filter-unclaimed" checked> <img src="https://assets.northaventrail.org/img/val-marker-purple.avif" width="14" height="20" alt="" aria-hidden="true" style="vertical-align:middle;margin-right:4px"> <span style="color:#7e3af2;font-weight:500">Available</span></label>
+      <label class="val-menu-label"><input type="checkbox" id="val-filter-claimed" checked> <img src="https://assets.northaventrail.org/img/val-marker-pink.avif" width="14" height="20" alt="" aria-hidden="true" style="vertical-align:middle;margin-right:4px"> <span style="color:#db2777;font-weight:500">Claimed</span></label>
+      <label class="val-menu-label"><input type="checkbox" id="val-filter-installed" checked> <img src="https://assets.northaventrail.org/img/val-marker-red.avif" width="14" height="20" alt="" aria-hidden="true" style="vertical-align:middle;margin-right:4px"> <span style="color:#dc2626;font-weight:500">Installed</span></label>
       <hr style="margin:8px 0;border:none;border-top:1px solid rgba(0,0,0,0.12)">
       <p class="val-menu-section-title">Map View</p>
       <label class="val-menu-label"><input type="checkbox" id="val-satellite-toggle"> Satellite</label>
@@ -1606,7 +1550,7 @@ function outFunc() {
 function loadSvgSpriteOnce() {
   if (document.getElementById("svg-sprite-inline")) return;
 
-  fetch("https://assets.northaventrail.org/img/icons.svg", { cache: "force-cache" })
+  fetch("/s/icons.svg", { cache: "force-cache" })
     .then(r => {
       if (!r.ok) throw new Error(`SVG sprite fetch failed: ${r.status}`);
       return r.text();
