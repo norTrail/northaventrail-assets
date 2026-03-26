@@ -951,7 +951,7 @@ function installMapControls_() {
       this.iconSpan.className = 'mapboxgl-ctrl-icon';
       this.iconSpan.setAttribute('aria-hidden', 'true');
       this.iconSpan.style.backgroundImage = 'url("https://assets.northaventrail.org/img/SatelliteOn.avif")';
-      this.iconSpan.style.backgroundSize = '18px';
+      this.iconSpan.style.backgroundSize = 'contain';
       this.iconSpan.style.backgroundPosition = 'center';
       this.iconSpan.style.backgroundRepeat = 'no-repeat';
 

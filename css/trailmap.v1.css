@@ -229,20 +229,6 @@ html, body {
  cursor: pointer;
 }
 
-.satellite:hover {
- background-color: #f8f8f8;
- color: #404040;
- width: 40px;
- height: 40px;
-}
-
-.satellite .active {
- background-color: #3887be;
- color: #ffffff;
- width: 50px;
- height: 50px;
-}
-
 /* =========================
   Search Control
   ========================== */
@@ -254,6 +240,10 @@ html, body {
   border-radius: 4px;
   margin: 2px;
   pointer-events: auto;
+}
+
+.search-custom-control:hover {
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
 /* =========================
