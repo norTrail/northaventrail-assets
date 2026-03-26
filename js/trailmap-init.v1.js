@@ -954,6 +954,7 @@ function installMapControls_() {
       this.iconSpan.style.backgroundSize = 'contain';
       this.iconSpan.style.backgroundPosition = 'center';
       this.iconSpan.style.backgroundRepeat = 'no-repeat';
+      this.iconSpan.style.mixBlendMode = 'multiply';
 
       this.button.appendChild(this.iconSpan);
       this.container.appendChild(this.button);

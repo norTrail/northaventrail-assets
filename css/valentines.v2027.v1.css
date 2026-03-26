@@ -96,9 +96,17 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
-  align-items: center;
-  justify-items: center;
+  align-items: stretch;
   margin: 10px 0;
+}
+
+#mapKeyContainer .v-align {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
 }
 
 .center {
@@ -527,22 +535,18 @@
    Map key (legend) interactions
    ---------------------------- */
 
-/* Key text color utility classes */
+/* Key text color utility classes — match marker fill colors */
 .keyText--available {
-  color: #A02B93;
+  color: #7e3af2;
 }
 
-/* Available */
 .keyText--claimed {
-  color: #D883FF;
+  color: #db2777;
 }
 
-/* Claimed  */
 .keyText--installed {
-  color: #FF0000;
+  color: #dc2626;
 }
-
-/* Installed */
 
 /* Make legend items interactive + contain ripple */
 #mapKeyContainer .v-align {

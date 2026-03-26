@@ -240,6 +240,7 @@ html, body {
   border-radius: 4px;
   margin: 2px;
   pointer-events: auto;
+  background-color: #fff;
 }
 
 /* =========================

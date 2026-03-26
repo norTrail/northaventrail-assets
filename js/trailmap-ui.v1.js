@@ -1205,6 +1205,7 @@ window.initTrailmapSearch = function initTrailmapSearch(map) {
         el.tabIndex = 0;
         el.alt = "Search";
         el.title = "Search the trail for points of interest";
+        el.style.mixBlendMode = 'multiply';
 
         el.addEventListener("click", () => {
           if (inputDiv.classList.contains("visible")) {
@@ -1228,7 +1229,7 @@ window.initTrailmapSearch = function initTrailmapSearch(map) {
         });
 
         el.addEventListener("mouseover", () => {
-          this.container.style.backgroundColor = 'rgba(0,0,0,0.05)';
+          this.container.style.backgroundColor = 'rgb(242, 242, 242)';
         });
 
         el.addEventListener("mouseout", () => {
