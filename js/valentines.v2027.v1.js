@@ -683,7 +683,7 @@ function addClingLayersIfMissing() {
       filter: ['all', baseFilter, ['==', ['get','status'], statusValue]],
       layout: {
         'icon-image': iconName,
-        'icon-size': 0.4,
+        'icon-size': 1.0,
         'icon-anchor': 'bottom',
         'icon-allow-overlap': true,
         'icon-ignore-placement': true

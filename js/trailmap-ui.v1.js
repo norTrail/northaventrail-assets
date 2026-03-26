@@ -1195,23 +1195,33 @@ window.initTrailmapSearch = function initTrailmapSearch(map) {
       onAdd(mapInstance) {
         this.map = mapInstance;
         this.container = document.createElement("div");
-        this.container.className = "search-custom-control";
+        this.container.className = "mapboxgl-ctrl mapboxgl-ctrl-group search-custom-control";
 
-        const el = document.createElement("img");
-        el.id = "searchButton";
-        el.src = "https://assets.northaventrail.org/img/searchOff.avif";
-        el.role = "button";
-        el.ariaLabel = "Search the trail for points of interest";
-        el.tabIndex = 0;
-        el.alt = "Search";
-        el.title = "Search the trail for points of interest";
-        el.style.mixBlendMode = 'multiply';
+        this.button = document.createElement("button");
+        this.button.id = "searchButton";
+        this.button.className = "mapboxgl-ctrl-search";
+        this.button.type = "button";
+        this.button.title = "Search the trail for points of interest";
+        this.button.setAttribute("aria-label", "Search the trail for points of interest");
 
-        el.addEventListener("click", () => {
+        this.iconSpan = document.createElement("span");
+        this.iconSpan.className = "mapboxgl-ctrl-icon";
+        this.iconSpan.setAttribute("aria-hidden", "true");
+        this.iconSpan.style.backgroundImage = ‘url("https://assets.northaventrail.org/img/searchOff.avif")’;
+        this.iconSpan.style.backgroundSize = "contain";
+        this.iconSpan.style.backgroundPosition = "center";
+        this.iconSpan.style.backgroundRepeat = "no-repeat";
+        this.iconSpan.style.mixBlendMode = "multiply";
+
+        this.button.appendChild(this.iconSpan);
+        this.container.appendChild(this.button);
+
+        this.button.addEventListener("click", () => {
           if (inputDiv.classList.contains("visible")) {
             closeSearchControl();
-            el.src = "https://assets.northaventrail.org/img/searchOff.avif";
-            el.title = "Search the trail for points of interest";
+            this.iconSpan.style.backgroundImage = ‘url("https://assets.northaventrail.org/img/searchOff.avif")’;
+            this.button.title = "Search the trail for points of interest";
+            this.button.setAttribute("aria-label", "Search the trail for points of interest");
           } else {
             // Close other popups
             forceClosePopups();
@@ -1219,31 +1229,20 @@ window.initTrailmapSearch = function initTrailmapSearch(map) {
             inputDiv.style.display = "";
             inputDiv.classList.add("visible");
 
-            // IMPORTANT: allow dropdown to extend (you’ll also do this via CSS)
-            // inputDiv.style.overflow = "visible";
-
-            el.src = "https://assets.northaventrail.org/img/searchOnMouseOver.avif";
+            this.iconSpan.style.backgroundImage = ‘url("https://assets.northaventrail.org/img/searchOnMouseOver.avif")’;
             if (!isMobile()) input.focus();
-            el.title = "Hide search";
+            this.button.title = "Hide search";
+            this.button.setAttribute("aria-label", "Hide search");
           }
         });
 
-        el.addEventListener("mouseover", () => {
-          this.container.style.backgroundColor = 'rgb(242, 242, 242)';
-        });
-
-        el.addEventListener("mouseout", () => {
-          this.container.style.backgroundColor = '';
-        });
-
-        el.addEventListener("keydown", (e) => {
+        this.button.addEventListener("keydown", (e) => {
           if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault(); // prevents page scroll on Space
-            el.click();
+            e.preventDefault();
+            this.button.click();
           }
         });
 
-        this.container.appendChild(el);
         return this.container;
       }
       onRemove() {

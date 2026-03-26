@@ -233,14 +233,7 @@ html, body {
   Search Control
   ========================== */
 .search-custom-control {
-  cursor: pointer;
-  padding: 7px;
-  width: 30px;
-  height: 30px;
-  border-radius: 4px;
-  margin: 2px;
   pointer-events: auto;
-  background-color: #fff;
 }
 
 /* =========================
