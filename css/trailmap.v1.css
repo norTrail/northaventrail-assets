@@ -23,7 +23,8 @@ html, body {
 }
 
 /* Screen-reader-only helper for map image elements.
-   Uses !important throughout to override Squarespace's injected styles. */
+   Uses !important throughout to override Squarespace's injected styles.
+   NOTE: This class is applied to the wrapper div in Squarespace, not the img itself. */
 .sr-only-map-image {
   position: absolute !important;
   width: 1px !important;
@@ -35,6 +36,24 @@ html, body {
   clip-path: inset(50%) !important;
   white-space: nowrap !important;
   border: 0 !important;
+}
+
+/* Fix aspect ratio on the img inside — Lighthouse checks the img element,
+   not the wrapper div. height: auto preserves the natural ratio at 1px width. */
+.sr-only-map-image img {
+  width: 100% !important;
+  height: auto !important;
+}
+
+/* Collapse the Squarespace code block wrapping the ADA image.
+   :has() avoids needing a custom ID in Squarespace.
+   overflow: visible keeps the abs-positioned img in the accessibility tree. */
+.sqs-block:has(.sr-only-map-image) {
+  height: 0 !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: visible !important;
 }
 
 #mapView { position: relative; }
