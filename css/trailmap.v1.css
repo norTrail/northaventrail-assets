@@ -382,12 +382,12 @@ html, body {
 
 #legendHeader { cursor: pointer; }
 
-.legend h4, .legend h3 {
+.legend h4 {
   margin: 0 0 1px;
   position: relative;
 }
 
-.legend h4:after, .legend h3:after {
+.legend h4:after {
   position: absolute;
   content: "";
   border-left: 2px solid black;
@@ -398,7 +398,7 @@ html, body {
   transform: rotate(-135deg);
 }
 
-.legend.visible h4:after, .legend.visible h3:after {
+.legend.visible h4:after {
   transform: rotate(-225deg);
 }
 

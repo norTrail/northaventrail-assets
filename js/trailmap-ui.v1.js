@@ -1707,8 +1707,10 @@ function ensureLegendExists(options = {}) {
   legend.className = "legend notFullScreen";
   if (!startCollapsed) legend.classList.add("visible");
 
-  const header = document.createElement("h3");
+  const header = document.createElement("h4");
   header.id = headerId;
+  header.setAttribute("role", "heading");
+  header.setAttribute("aria-level", "3");
   const headerBtn = document.createElement("button");
   headerBtn.textContent = "Legend";
   header.appendChild(headerBtn);
