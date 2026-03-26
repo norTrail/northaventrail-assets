@@ -1353,7 +1353,7 @@ function loadWindow() {
     panel.innerHTML = `
       <p class="val-menu-section-title">Filter Locations</p>
       <label class="val-menu-label"><input type="checkbox" id="val-filter-unclaimed" checked> <img src="https://assets.northaventrail.org/img/val-marker-purple.avif" width="14" height="20" alt="" aria-hidden="true" style="vertical-align:middle;margin-right:4px"> <span style="color:#7e3af2;font-weight:500">Available</span></label>
-      <label class="val-menu-label"><input type="checkbox" id="val-filter-claimed" checked> <img src="https://assets.northaventrail.org/img/val-marker-pink.avif" width="14" height="20" alt="" aria-hidden="true" style="vertical-align:middle;margin-right:4px"> <span style="color:#db2777;font-weight:500">Claimed</span></label>
+      <label class="val-menu-label"><input type="checkbox" id="val-filter-claimed" checked> <img src="https://assets.northaventrail.org/img/val-marker-pink.avif" width="14" height="20" alt="" aria-hidden="true" style="vertical-align:middle;margin-right:4px"> <span style="color:#9333ea;font-weight:500">Claimed</span></label>
       <label class="val-menu-label"><input type="checkbox" id="val-filter-installed" checked> <img src="https://assets.northaventrail.org/img/val-marker-red.avif" width="14" height="20" alt="" aria-hidden="true" style="vertical-align:middle;margin-right:4px"> <span style="color:#dc2626;font-weight:500">Installed</span></label>
       <hr style="margin:8px 0;border:none;border-top:1px solid rgba(0,0,0,0.12)">
       <p class="val-menu-section-title">Map View</p>
