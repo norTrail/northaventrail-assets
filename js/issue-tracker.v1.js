@@ -779,6 +779,7 @@
             const el = document.createElement('div');
             el.className = 'issueMarker map';
             el.id = 'issueMarker';
+            el.setAttribute('role', 'img');
             el.style.touchAction = 'none';
             marker = new mapboxgl.Marker(el, { draggable: false, anchor: 'bottom' })
                 .setLngLat([DEFAULT_MARKER_LONGITUDE, DEFAULT_MARKER_LATITUDE])
