@@ -595,7 +595,7 @@ function getCategoryDefaults_(category, feature = null) {
 
     case "parking":
       return {
-        // leave d blank if you don’t want boilerplate
+        // leave d blank if you don't want boilerplate
         icon: "https://assets.northaventrail.org/img/Parking_Icon.avif"
       };
 
@@ -742,7 +742,7 @@ function createPopUp(currentFeature) {
       e.preventDefault();
       e.stopPropagation();
 
-      // Use real values (don’t rely on inline onclick="clickShare()")
+      // Use real values (don't rely on inline onclick="clickShare()")
       clickShare(
         "Northaven Trail Map",
         title ? `${title} on the Northaven Trail` : "Northaven Trail Map",
@@ -809,7 +809,7 @@ function normalizeAbsUrl_(u) {
   try {
     return new URL(s, location.href).toString();
   } catch {
-    return s; // leave as-is if it can’t parse
+    return s; // leave as-is if it can't parse
   }
 }
 
@@ -1181,10 +1181,10 @@ window.initTrailmapSearch = function initTrailmapSearch(map) {
   // NEW: custom dropdown panel (replaces <datalist>)
   const listbox = document.getElementById("locationListbox");
 
-  // If the page doesn’t have the search HTML, just no-op.
+  // If the page doesn't have the search HTML, just no-op.
   if (!inputDiv || !input || !listbox) return;
 
-  // Optional but recommended aria wiring (if you didn’t already add these in HTML)
+  // Optional but recommended aria wiring (if you didn't already add these in HTML)
   input.setAttribute("aria-controls", "locationListbox");
   input.setAttribute("aria-autocomplete", "list");
   input.setAttribute("aria-expanded", "false");
@@ -1207,7 +1207,7 @@ window.initTrailmapSearch = function initTrailmapSearch(map) {
         this.iconSpan = document.createElement("span");
         this.iconSpan.className = "mapboxgl-ctrl-icon";
         this.iconSpan.setAttribute("aria-hidden", "true");
-        this.iconSpan.style.backgroundImage = ‘url("https://assets.northaventrail.org/img/searchOff.avif")’;
+        this.iconSpan.style.backgroundImage = 'url("https://assets.northaventrail.org/img/searchOff.avif")';
         this.iconSpan.style.backgroundSize = "contain";
         this.iconSpan.style.backgroundPosition = "center";
         this.iconSpan.style.backgroundRepeat = "no-repeat";
@@ -1219,7 +1219,7 @@ window.initTrailmapSearch = function initTrailmapSearch(map) {
         this.button.addEventListener("click", () => {
           if (inputDiv.classList.contains("visible")) {
             closeSearchControl();
-            this.iconSpan.style.backgroundImage = ‘url("https://assets.northaventrail.org/img/searchOff.avif")’;
+            this.iconSpan.style.backgroundImage = 'url("https://assets.northaventrail.org/img/searchOff.avif")';
             this.button.title = "Search the trail for points of interest";
             this.button.setAttribute("aria-label", "Search the trail for points of interest");
           } else {
@@ -1229,7 +1229,7 @@ window.initTrailmapSearch = function initTrailmapSearch(map) {
             inputDiv.style.display = "";
             inputDiv.classList.add("visible");
 
-            this.iconSpan.style.backgroundImage = ‘url("https://assets.northaventrail.org/img/searchOnMouseOver.avif")’;
+            this.iconSpan.style.backgroundImage = 'url("https://assets.northaventrail.org/img/searchOnMouseOver.avif")';
             if (!isMobile()) input.focus();
             this.button.title = "Hide search";
             this.button.setAttribute("aria-label", "Hide search");
@@ -1564,7 +1564,7 @@ function getAllowedTypeKeysFromOnlyShow_(data) {
   const labelSetLower = new Set(labels.map(x => String(x).trim().toLowerCase()).filter(Boolean));
   const allowed = buildAllowedTypeKeySetByLabels_(data, labelSetLower);
 
-  // If defs.types is missing/empty, we can’t map labels -> keys; do not filter.
+  // If defs.types is missing/empty, we can't map labels -> keys; do not filter.
   if (!allowed.size) return null;
   return allowed;
 }
