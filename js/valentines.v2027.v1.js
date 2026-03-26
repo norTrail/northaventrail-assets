@@ -779,7 +779,7 @@ function indexFeatures(fc) {
   // Toggle legend keys
   toggleEl(getElementById('claimedKey'), claimedKeySeen);
   toggleEl(getElementById('installedKey'), installedKeySeen);
-  toggleEl(getElementById('unclaimedKey'), unclaimedKeySeen);
+  toggleEl(getElementById('unclaimedKey'), true);
 
   // Zoom hint text
   updateZoomHintText();
@@ -1408,9 +1408,9 @@ function loadWindow() {
     panel.setAttribute('aria-label', 'Map menu');
     panel.innerHTML = `
       <p class="val-menu-section-title">Filter Locations</p>
-      <label class="val-menu-label"><input type="checkbox" id="val-filter-unclaimed" checked> <img src="/s/purple_marker_active_2x.png" width="14" height="20" alt="" aria-hidden="true" style="vertical-align:middle;margin-right:4px"> <span style="color:#7e3af2;font-weight:500">Available</span></label>
-      <label class="val-menu-label"><input type="checkbox" id="val-filter-claimed" checked> <img src="/s/pink_marker_active_2x.png" width="14" height="20" alt="" aria-hidden="true" style="vertical-align:middle;margin-right:4px"> <span style="color:#db2777;font-weight:500">Claimed</span></label>
-      <label class="val-menu-label"><input type="checkbox" id="val-filter-installed" checked> <img src="/s/red_marker_active_2x.png" width="14" height="20" alt="" aria-hidden="true" style="vertical-align:middle;margin-right:4px"> <span style="color:#dc2626;font-weight:500">Installed</span></label>
+      <label class="val-menu-label"><input type="checkbox" id="val-filter-unclaimed" checked> <svg width="14" height="20" aria-hidden="true" style="vertical-align:middle;margin-right:4px"><use href="#val-marker-purple"></use></svg> <span style="color:#7e3af2;font-weight:500">Available</span></label>
+      <label class="val-menu-label"><input type="checkbox" id="val-filter-claimed" checked> <svg width="14" height="20" aria-hidden="true" style="vertical-align:middle;margin-right:4px"><use href="#val-marker-pink"></use></svg> <span style="color:#db2777;font-weight:500">Claimed</span></label>
+      <label class="val-menu-label"><input type="checkbox" id="val-filter-installed" checked> <svg width="14" height="20" aria-hidden="true" style="vertical-align:middle;margin-right:4px"><use href="#val-marker-red"></use></svg> <span style="color:#dc2626;font-weight:500">Installed</span></label>
       <hr style="margin:8px 0;border:none;border-top:1px solid rgba(0,0,0,0.12)">
       <p class="val-menu-section-title">Map View</p>
       <label class="val-menu-label"><input type="checkbox" id="val-satellite-toggle"> Satellite</label>

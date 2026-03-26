@@ -220,4 +220,24 @@
       </g>
     </symbol>
 
+  <!-- =====================
+       Valentine map-pin markers
+       Available (#val-marker-purple), Claimed (#val-marker-pink), Installed (#val-marker-red)
+       viewBox 0 0 25 40 — matches displayed size of 25×40
+       ===================== -->
+  <symbol id="val-marker-purple" viewBox="0 0 25 40">
+    <path d="M12.5,38 C12.5,38 1.5,24 1.5,12.5 A11,11 0 0 1 23.5,12.5 C23.5,24 12.5,38 12.5,38 Z" fill="#7e3af2"/>
+    <circle cx="12.5" cy="12.5" r="4.5" fill="#fff" opacity="0.7"/>
+  </symbol>
+
+  <symbol id="val-marker-pink" viewBox="0 0 25 40">
+    <path d="M12.5,38 C12.5,38 1.5,24 1.5,12.5 A11,11 0 0 1 23.5,12.5 C23.5,24 12.5,38 12.5,38 Z" fill="#db2777"/>
+    <circle cx="12.5" cy="12.5" r="4.5" fill="#fff" opacity="0.7"/>
+  </symbol>
+
+  <symbol id="val-marker-red" viewBox="0 0 25 40">
+    <path d="M12.5,38 C12.5,38 1.5,24 1.5,12.5 A11,11 0 0 1 23.5,12.5 C23.5,24 12.5,38 12.5,38 Z" fill="#dc2626"/>
+    <circle cx="12.5" cy="12.5" r="4.5" fill="#fff" opacity="0.7"/>
+  </symbol>
+
 </svg>
