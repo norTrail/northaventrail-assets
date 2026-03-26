@@ -1797,7 +1797,8 @@ function initLegendUIFor_(legendEl, { startOpen = false } = {}) {
   legendEl.classList.toggle("visible", !!startOpen);
   headerBtn.title = startOpen ? "Click to close map legend" : "Click to open map legend";
 
-  headerBtn.addEventListener("click", () => {
+  headerBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
     const isOpen = legendEl.classList.toggle("visible");
     headerBtn.title = isOpen ? "Click to close map legend" : "Click to open map legend";
   });
