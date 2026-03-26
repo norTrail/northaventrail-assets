@@ -975,15 +975,6 @@ function installMapControls_() {
         updatePageDetails();
       });
 
-      this.button.addEventListener('mouseover', () => {
-        const vis = this.map.getLayoutProperty('mapbox-satellite', 'visibility');
-        this.iconSpan.style.backgroundImage = vis === VISIBLE ? 'url("https://assets.northaventrail.org/img/SatelliteOffMouseOver.avif")' : 'url("https://assets.northaventrail.org/img/SatelliteOnMouseOver.avif")';
-      });
-
-      this.button.addEventListener('mouseout', () => {
-        const vis = this.map.getLayoutProperty('mapbox-satellite', 'visibility');
-        this.iconSpan.style.backgroundImage = vis === VISIBLE ? 'url("https://assets.northaventrail.org/img/SatelliteOff.avif")' : 'url("https://assets.northaventrail.org/img/SatelliteOn.avif")';
-      });
 
       return this.container;
     }
