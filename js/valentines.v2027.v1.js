@@ -1314,6 +1314,15 @@ function loadWindow() {
       const el = window.document.createElement('img');
       el.src = '/s/SatelliteOn.png';
       el.className = "satellite-custom-control";
+      el.alt = "Toggle Satellite View";
+      el.setAttribute("role", "button");
+      el.tabIndex = 0;
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          el.click();
+        }
+      });
       el.addEventListener('click', () => {
         const visibility = map.getLayoutProperty('mapbox-satellite', 'visibility');
         if (visibility === VISIBLE) {

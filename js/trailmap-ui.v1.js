@@ -1707,7 +1707,9 @@ function ensureLegendExists(options = {}) {
 
   const header = document.createElement("h4");
   header.id = headerId;
-  header.textContent = "Legend";
+  const headerBtn = document.createElement("button");
+  headerBtn.textContent = "Legend";
+  header.appendChild(headerBtn);
   legend.appendChild(header);
 
   const body = document.createElement("div");
@@ -1784,24 +1786,16 @@ function initLegendUIFor_(legendEl, { startOpen = false } = {}) {
   legendEl.dataset.legendWired = "1";
 
   const header = legendEl.querySelector("#legendHeader");
+  const headerBtn = header ? header.querySelector("button") : null;
   const body = legendEl.querySelector("#hideLegend");
-  if (!header || !body) return;
-
-  header.setAttribute("tabindex", "0");
-  header.setAttribute("role", "button");
+  if (!headerBtn || !body) return;
 
   legendEl.classList.toggle("visible", !!startOpen);
-  header.title = startOpen ? "Click to close map legend" : "Click to open map legend";
+  headerBtn.title = startOpen ? "Click to close map legend" : "Click to open map legend";
 
-  header.addEventListener("click", () => {
+  headerBtn.addEventListener("click", () => {
     const isOpen = legendEl.classList.toggle("visible");
-    header.title = isOpen ? "Click to close map legend" : "Click to open map legend";
-  });
-  header.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault(); // prevents page scroll on Space
-      header.click();
-    }
+    headerBtn.title = isOpen ? "Click to close map legend" : "Click to open map legend";
   });
 }
 

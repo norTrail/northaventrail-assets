@@ -572,9 +572,6 @@ if ('scrollRestoration' in history) {
 
             const tr = document.createElement("tr");
             tr.dataset.featureId = id;
-            tr.tabIndex = 0;
-            tr.setAttribute("role", "button");
-            tr.setAttribute("aria-label", `Show ${poi.title} on the map`);
 
             const desc = poi.descText || "";
             tr.innerHTML = `
@@ -597,13 +594,6 @@ if ('scrollRestoration' in history) {
             tr.addEventListener("click", (e) => {
               if (e.target && e.target.closest && e.target.closest(".poiMaps")) return;
               setActiveFeature_(id, pageTitle, tableClass);
-            });
-            tr.addEventListener("keydown", (e) => {
-              if (e.target && e.target.closest && e.target.closest(".poiMaps")) return;
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                setActiveFeature_(id, pageTitle, tableClass);
-              }
             });
 
             tbody.appendChild(tr);
@@ -713,20 +703,10 @@ if ('scrollRestoration' in history) {
 
     const tr = document.createElement("tr");
     tr.dataset.featureId = id;
-    tr.tabIndex = 0;
-    tr.setAttribute("role", "button");
-    tr.setAttribute("aria-label", `Show ${poi.title} on the map`);
 
     tr.addEventListener("click", (e) => {
       if (e.target && e.target.closest && e.target.closest(".poiMaps")) return;
       setActiveFeature_(id, pageTitle, tableClass);
-    });
-    tr.addEventListener("keydown", (e) => {
-      if (e.target && e.target.closest && e.target.closest(".poiMaps")) return;
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        setActiveFeature_(id, pageTitle, tableClass);
-      }
     });
 
     const cellHtml = columns.map((col) => {
