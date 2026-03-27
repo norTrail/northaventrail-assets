@@ -273,9 +273,6 @@ function initMap(container) {
     wireNoMowToggle(map);
     wireSatelliteToggle(map);
 
-    // Legend always last so it sits below all toggle items
-    buildNoMowLegend();
-
     // Add legend as a visible Mapbox control on the map itself
     map.addControl(new NoMowLegendControl(), "bottom-left");
 
@@ -464,42 +461,6 @@ function wireUIControls() {
       });
     });
   }
-}
-
-
-/* ----------------------------
-   No-mow zone legend (injected into #controls)
-   ---------------------------- */
-
-function buildNoMowLegend() {
-  const controls = document.getElementById("controls");
-  if (!controls || document.getElementById("nomow-legend")) return;
-
-  const section = document.createElement("div");
-  section.id = "nomow-legend";
-  section.setAttribute("role", "region");
-  section.setAttribute("aria-label", "No-mow zone map key");
-
-  section.innerHTML = `
-    <p class="section-title legend-heading">No-Mow Zone Key</p>
-    <div class="legend-item">
-      <span class="legend-swatch" style="background:rgb(95,160,219)" aria-hidden="true"></span>
-      <span class="legend-emoji" aria-hidden="true">🐐</span>
-      <span class="legend-label">Grazing now</span>
-    </div>
-    <div class="legend-item">
-      <span class="legend-swatch" style="background:rgb(102,187,102)" aria-hidden="true"></span>
-      <span class="legend-emoji" aria-hidden="true">🌼</span>
-      <span class="legend-label">Coming up</span>
-    </div>
-    <div class="legend-item">
-      <span class="legend-swatch" style="background:rgb(150,75,0)" aria-hidden="true"></span>
-      <span class="legend-emoji" aria-hidden="true">🌱</span>
-      <span class="legend-label">Grazed / finished</span>
-    </div>
-  `;
-
-  controls.appendChild(section);
 }
 
 

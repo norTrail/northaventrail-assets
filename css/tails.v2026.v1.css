@@ -142,20 +142,9 @@ body {
 }
 
 /* ----------------------------
-   No-mow zone legend (inside #controls)
+   No-mow zone legend
    Match trailmap legend item style: swatch + emoji + label
    ---------------------------- */
-#nomow-legend {
-  border-top: 1px solid rgba(0, 0, 0, 0.12);
-  margin-top: 4px;
-  padding-top: 4px;
-}
-
-#nomow-legend .legend-heading {
-  margin: 0 0 2px;
-  padding: 2px 6px 0;
-}
-
 .legend-item {
   display: flex;
   align-items: center;
@@ -303,7 +292,7 @@ body {
   align-items: center;
   justify-content: center;
   transition: transform 120ms ease;
-  filter: drop-shadow(0 0 3px white) drop-shadow(0 0 5px white);
+  text-shadow: -1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white, 1px 1px 0 white;
 }
 
 .no-mow-marker.is-hover .marker-inner {
