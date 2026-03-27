@@ -122,6 +122,7 @@ async function bootstrapTailsApp() {
   initMap(mapEl);
   wireUIControls();
   wireVisibilityHandling();
+  labelUntiledIframes();
 }
 
 
@@ -277,10 +278,24 @@ function initMap(container) {
 
     // Add legend as a visible Mapbox control on the map itself
     map.addControl(new NoMowLegendControl(), "bottom-left");
+
+    labelUntiledIframes();
   });
 
 
 }
+
+/* ----------------------------
+   Accessibility: title untitled iframes (Squarespace / Mapbox inject these)
+   ---------------------------- */
+
+function labelUntiledIframes() {
+  const pageTitle = document.title || 'Northaven Trail';
+  document.querySelectorAll('iframe:not([title])').forEach(f => {
+    f.setAttribute('title', `${pageTitle} Video`);
+  });
+}
+
 
 /* ----------------------------
    UI wiring for controls check boxes

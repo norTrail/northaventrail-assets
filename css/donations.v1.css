@@ -6,7 +6,7 @@
 }
 .greenbar {
   display: flex; align-items: center; justify-content: center;
-  height: 100%; background-color: rgb(16,132,82) !important;
+  height: 100%; background-color: rgb(0,100,60) !important;
   width: 0; transition: width 1s ease-in-out;
   color: white !important; font-weight: 700;
 }
