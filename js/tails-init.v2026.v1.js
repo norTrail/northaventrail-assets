@@ -20,8 +20,7 @@ const MAP_BOUNDS = [
     ];
 const CENTER_TRAIL_LONGITUDE = -96.82124972833499;
 const CENTER_TRAIL_LATITUDE  = 32.897175135881554;
-const DEFAULT_TRAIL_ZOOM         = 12.7;
-const NO_MOW_MARKER_MIN_ZOOM     = 14;
+const DEFAULT_TRAIL_ZOOM     = 12.7;
 let fit_to_bounds_zoom = DEFAULT_TRAIL_ZOOM;
 let fit_to_bounds_lng;
 let fit_to_bounds_lat;
@@ -274,13 +273,6 @@ function initMap(container) {
     wireNoMowToggle(map);
     wireSatelliteToggle(map);
 
-    // Hide/show no-mow emoji markers based on zoom level
-    map.on('zoomend', () => {
-      if (typeof syncNoMowMarkerVisibility === 'function') {
-        syncNoMowMarkerVisibility(map);
-      }
-    });
-
     // Legend always last so it sits below all toggle items
     buildNoMowLegend();
 
@@ -358,10 +350,12 @@ function wireNoMowToggle(map) {
       map.setLayoutProperty("no-mow-zones-layer", "visibility", visibility);
     }
 
-    // Emoji markers — zoom threshold also applies
-    if (typeof syncNoMowMarkerVisibility === 'function') {
-      syncNoMowMarkerVisibility(map);
-    }
+    // Emoji markers
+    Object.values(noMowZoneMarkers || {}).forEach(obj => {
+      if (obj?.element) {
+        obj.element.style.display = show ? "inline-flex" : "none";
+      }
+    });
 
     // Show/hide the map legend control to match
     syncLegendCtrl(show);

@@ -361,16 +361,6 @@ const noMowZoneMarkers = {};
 let selectedZoneCode = null;
 let lastNoMowHash = null;
 
-// Show emoji markers only when zoomed in past NO_MOW_MARKER_MIN_ZOOM AND checkbox is on.
-// Single source of truth — called on zoomend and whenever the checkbox changes.
-function syncNoMowMarkerVisibility(map) {
-  const cb = document.getElementById("showNoMow");
-  const show = (cb?.checked ?? true) && map.getZoom() >= NO_MOW_MARKER_MIN_ZOOM;
-  Object.values(noMowZoneMarkers).forEach(obj => {
-    obj.element.style.display = show ? "inline-flex" : "none";
-  });
-}
-
 // Cheap structural hash — avoids full JSON.stringify on every poll
 function quickGeoHash_(geojson) {
   const features = geojson.features || [];
@@ -542,7 +532,9 @@ function updateNoMowLayers(map, geojson, force = false) {
     );
   }
 
-  syncNoMowMarkerVisibility(map);
+  Object.values(noMowZoneMarkers).forEach(obj => {
+    obj.element.style.display = showNoMow ? "inline-flex" : "none";
+  });
 
   UI.tableBtn.style.display = Object.keys(noMowZoneMarkers).length > 0 ? "block" : "none";
 }

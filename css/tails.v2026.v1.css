@@ -289,8 +289,6 @@ body {
   justify-content: center;
   cursor: pointer;
   z-index: 2;
-  border-radius: 50%;
-  background: white;
   transition: transform 120ms ease;
   /* Minimum 44×44px touch target (WCAG 2.1 AA) */
   min-width: 44px;
