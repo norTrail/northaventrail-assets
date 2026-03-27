@@ -1,9 +1,9 @@
 {
-  "state": "history",
-  "image": "https://images.squarespace-cdn.com/content/v1/569054585a566828b95c2a0f/c85fefca-d81a-46af-acd0-223c8d678645/GoatsGoodbye.png?format=2500w",
+  "state": "active",
+  "image": "",
   "startDate": "2025-10-15T15:00:00.000Z",
   "grazingStartHour": 7,
-  "grazingEndHour": 19,
+  "grazingEndHour": 22,
   "adminSheet": [
     {
       "herdCode": "H01",
