@@ -3,6 +3,21 @@
    ============================================================ */
 
 /* ----------------------------
+   Global dependencies
+   The following are initialized by tails-init.v2026.v1.js and
+   must be present before herd rendering functions are called:
+     herdMarkers        {Object}   herd code → Mapbox Marker
+     herdHistorySources {Object}   herd code → source ID string
+     closeAllPopups     {Function} closes all open map popups
+     logCaughtError     {Function} server-side error reporter
+     renderAllHerds     {Function} renders herd markers on the map
+     updateNoMowLayers  {Function} updates no-mow zone layers
+     updateOverlayState {Function} updates overlay UI state
+     showSheepUI        {Function} makes sheep UI visible
+     hideSheepUI        {Function} hides sheep UI
+   ---------------------------- */
+
+/* ----------------------------
    Configuration
    ---------------------------- */
 
@@ -297,7 +312,7 @@ function getLastFetchTimes() {
 function clearAllHerds() {
   if (!mapRef) return;
   // ---- Remove herd markers ----
-  Object.values(herdMarkers).forEach(marker => {
+  Object.values(herdMarkers || {}).forEach(marker => {
     try {
       marker.remove();
     } catch (e) {
@@ -308,22 +323,22 @@ function clearAllHerds() {
   herdMarkers = {};
 
   // ---- Remove herd history layers & sources ----
-  Object.keys(herdHistorySources).forEach(herdCode => {
+  Object.keys(herdHistorySources || {}).forEach(herdCode => {
     const sourceId = herdHistorySources[herdCode];
     const lineLayerId = `herd-${herdCode}-history-line`;
 
-    if (map.getLayer(lineLayerId)) {
-      map.removeLayer(lineLayerId);
+    if (mapRef.getLayer(lineLayerId)) {
+      mapRef.removeLayer(lineLayerId);
     }
 
-    if (map.getSource(sourceId)) {
-      map.removeSource(sourceId);
+    if (mapRef.getSource(sourceId)) {
+      mapRef.removeSource(sourceId);
     }
   });
   herdHistorySources = {};
 
   // ---- Close any open popups ----
-  closeAllPopups();
+  if (typeof closeAllPopups === "function") closeAllPopups();
 }
 
 /* ----------------------------

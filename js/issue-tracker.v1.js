@@ -52,7 +52,10 @@
                 div.innerHTML = svgText;
                 document.body.insertBefore(div, document.body.firstChild);
             })
-            .catch(err => console.warn("SVG sprite load failed:", err));
+            .catch(err => {
+                console.warn("SVG sprite load failed:", err);
+                window.logClientErrorToServer?.({ kind: "svg_load_failed", error: err?.message, stack: err?.stack });
+            });
     }
 
     // -------------------------
@@ -564,13 +567,27 @@
         uploadButton.addEventListener('click', () => fileInput.click());
         fileInput.addEventListener('change', async (e) => {
             const selected = Array.from(e.target.files);
-            if (imageList.length + selected.length > 3) {
+
+            // Filter to image files only (MIME type + extension fallback for HEIC/HEIF)
+            const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/heic', 'image/heif'];
+            const ALLOWED_EXTS = /\.(jpe?g|png|gif|webp|heic|heif)$/i;
+            const valid = selected.filter(f => ALLOWED_TYPES.includes(f.type) || ALLOWED_EXTS.test(f.name));
+            if (valid.length < selected.length) {
+                errorMessage.textContent = "Only image files (JPEG, PNG, GIF, WebP, HEIC) are allowed.";
                 errorMessage.classList.remove('hidden');
+                if (valid.length === 0) { fileInput.value = ""; return; }
+            } else {
+                errorMessage.classList.add('hidden');
+            }
+
+            if (imageList.length + valid.length > 3) {
+                errorMessage.textContent = "Maximum of 3 images allowed.";
+                errorMessage.classList.remove('hidden');
+                fileInput.value = "";
                 return;
             }
-            errorMessage.classList.add('hidden');
 
-            for (const file of selected) {
+            for (const file of valid) {
                 const reader = new FileReader();
                 reader.onload = async (event) => {
                     const uniqueFileName = buildUniqueFilename(file.name);

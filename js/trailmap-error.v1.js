@@ -1,6 +1,8 @@
 const TRAILMAP_ERROR_ENDPOINT = "https://script.google.com/macros/s/AKfycbx9IspdJ2im9U03qhE0IPfcL-2gVKBlm6kgam_WL1GXVPT2nqOZCzHYBc427dFH_Zvc/exec"
 window.TRAILMAP_ERROR_ENDPOINT = window.TRAILMAP_ERROR_ENDPOINT || TRAILMAP_ERROR_ENDPOINT;
 
+const BREADCRUMB_LIMIT = 30;
+
 /* ============================================================
    Error logging (drop-in)
    - Captures Mapbox 'error'
@@ -163,7 +165,7 @@ function attachErrorLogging(map, opts = {}) {
     send = null
   } = opts;
 
-  const crumbs = createBreadcrumbs(30);
+  const crumbs = createBreadcrumbs(BREADCRUMB_LIMIT);
   const allow = createRateLimiter({ maxPerMinute: 12 });
 
   // Make breadcrumbs easy to add elsewhere in your code

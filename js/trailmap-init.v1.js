@@ -8,9 +8,6 @@
 
 /* ---------- Core constants ---------- */
 
-/*const HOMEURL = 'https://northaventrail.org';
-const SHOW = 'Show';
-const HIDE = 'Hide';*/
 const VISIBLE = 'visible';
 
 const GOOGLE_POI_API =
@@ -34,9 +31,7 @@ const GROUP_FILTER_PARAM = 'f';
 const SHOW_DIRECTIONS_PARM = 'd';
 const URL_FIXED_NUMBER = 5;
 
-/*const ANCHOR_MAP = 'bottom';*/
 const MARKER_HEIGHT = 25;
-/*const MARKER_WIDTH = 22;*/
 const MARKER_RADIUS = 10;
 const LINEAR_OFFSET = 5;
 
@@ -56,8 +51,6 @@ const POP_UP_MAX_WIDTH = '280px';
 const MAP_LIGHT_BOX_ID = 'lightbox-map';
 const MAP_LIGHT_BOX_CONTENT_ID = 'lightbox-content-map';
 
-/*const LOCATION_LIST_DIV_DEFAULT_BORDER_RADIUS = '5px';*/
-
 let suppressMapEvents = false;
 
 let mapInitialIdleCompleted = false;
@@ -71,49 +64,11 @@ const URL_EXISTING_TRAIL =
   'https://api.mapbox.com/datasets/v1/wdawso/cjok8y2it0b1x2vmhi8x52nfe/features?access_token=' +
   mapboxgl.accessToken;
 
-/*const URL_WILDFLOWERS =
-  'https://api.mapbox.com/datasets/v1/wdawso/cjokjm71800li2wmuhpp87ig6/features?access_token=' +
-  mapboxgl.accessToken;*/
-
-/*const URL_COMMUNITY_PATHS =
-  'https://api.mapbox.com/datasets/v1/wdawso/cjokkihzq08b52qln2dou44ic/features?access_token=' +
-  mapboxgl.accessToken;*/
-
 const URL_EXPANSION_TRAIL =
   'https://api.mapbox.com/datasets/v1/wdawso/cjokaqnst0d602vmhqyxb317i/features?access_token=' +
   mapboxgl.accessToken;
 
-/* ---------- Marker group constants (kept as-is) ---------- */
-
-/*const CLASS_NAME_MARKER_GENERIC = 'genericMarker';
-
-const DATA_POINTS_KIOSK = 'info';
-const CLASS_NAME_MARKER_KIOSK = 'information_stations';
-
-const DATA_POINTS_SPONSORS = 'sponsor';
-const CLASS_NAME_MARKER_SPONSRS = 'trail_sponsors';
-
-const DATA_POINTS_DONATIONS = 'donation';
-const CLASS_NAME_MARKER_DONATION = 'donation_locations';
-
-const DATA_POINTS_PARKING = 'parking';
-const CLASS_NAME_MARKER_PARKING = 'parking';
-
-const DATA_POINTS_DRINK = 'drink';
-const CLASS_NAME_MARKER_DRINK = 'water_fountains';
-
-const DATA_POINTS_BIKE = 'bike';
-const CLASS_NAME_MARKER_BIKE = 'bike_stations';
-
-const HIDE_MARKER_CLASS = 'hide_marker';
-const ACTIVE_MARKER_CLASS = 'activeMapMarker';
-const TRANISITION_MARKER = 'transitionToHide';*/
-
 /* ---------- Shared mutable state ---------- */
-
-/*let currentFocus = -1;
-let searchValues = [];
-let paramValues = [];*/
 
 let __rebuildInProgress = false;
 let __onReinitRunning = false;
@@ -146,10 +101,6 @@ let dataFilter = null;
 let backButton = false;
 let forcedClosePopup = false;
 let resetCoordinates = false;
-
-/* META description read once */
-/*const META_DESCRIPTION =
-  document.querySelector('meta[name="description"]')?.getAttribute('content') || '';*/
 
 /* ---------- Startup ---------- */
 
