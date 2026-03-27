@@ -303,6 +303,7 @@ body {
   align-items: center;
   justify-content: center;
   transition: transform 120ms ease;
+  filter: drop-shadow(0 0 3px white) drop-shadow(0 0 5px white);
 }
 
 .no-mow-marker.is-hover .marker-inner {
