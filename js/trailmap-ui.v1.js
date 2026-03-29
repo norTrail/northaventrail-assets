@@ -241,7 +241,17 @@ function wireCustomSearchUI_() {
   if (!input || !box || !wrap) return;
   if (input.dataset.searchWired === "1") return;
   input.dataset.searchWired = "1";
-  input.setAttribute("aria-label", "Search map POIs");
+
+  // Add a visually-hidden <label> for maximum screen reader compatibility.
+  // The sr-only class is defined in trailmap.v1.css.
+  if (!document.querySelector('label[for="locationListInput"]')) {
+    const label = document.createElement("label");
+    label.htmlFor = "locationListInput";
+    label.className = "sr-only";
+    label.textContent = "Search the Trail";
+    input.parentNode.insertBefore(label, input);
+  }
+  input.setAttribute("aria-label", "Search the Trail");
 
   let open = false;
   let activeIndex = -1;

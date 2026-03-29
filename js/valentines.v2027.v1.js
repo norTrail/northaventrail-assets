@@ -1179,6 +1179,10 @@ function loadWindow() {
   });
 
   map.on('load', async function() {
+    // Improve the default Mapbox attribution toggle button label for screen readers.
+    const attrBtn = document.querySelector('.mapboxgl-ctrl-attrib-button');
+    if (attrBtn) attrBtn.setAttribute('aria-label', 'Toggle map attribution info');
+
     // Trail line
     map.addSource('existing_trail_source', { type: 'geojson', data: urlExistingTrail });
     map.addLayer({
