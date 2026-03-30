@@ -1,1 +1,5 @@
 /private/
+
+# macOS metadata — never commit
+.DS_Store
+**/.DS_Store
