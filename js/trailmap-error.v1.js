@@ -1,4 +1,4 @@
-const TRAILMAP_ERROR_ENDPOINT = "https://script.google.com/macros/s/AKfycbx9IspdJ2im9U03qhE0IPfcL-2gVKBlm6kgam_WL1GXVPT2nqOZCzHYBc427dFH_Zvc/exec"
+const TRAILMAP_ERROR_ENDPOINT = "https://northaventrail-gas-proxy.will-5e4.workers.dev/log"
 window.TRAILMAP_ERROR_ENDPOINT = window.TRAILMAP_ERROR_ENDPOINT || TRAILMAP_ERROR_ENDPOINT;
 
 const BREADCRUMB_LIMIT = 30;
@@ -218,7 +218,6 @@ function attachErrorLogging(map, opts = {}) {
       }
       await fetch(endpoint, {
         method: "POST",
-        mode: "no-cors",
         cache: "no-store",
         keepalive: true,
         body: json,
@@ -432,12 +431,11 @@ function logClientErrorToServer(payloadObj, endpointOverride) {
 
   return fetch(endpoint, {
     method: "POST",
-    mode: "no-cors",
     cache: "no-store",
     keepalive: true,
     body: json,
     headers: { "Content-Type": "text/plain" }
-  }).catch(() => {});
+  }).catch(() => { });
 }
 
 /* ============================================================

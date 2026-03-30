@@ -16,6 +16,17 @@ export default {
     }
 
     try {
+      const { pathname } = new URL(request.url);
+      let targetUrl;
+
+      if (pathname === '/submit') {
+        targetUrl = env.GAS_ISSUE_URL;
+      } else if (pathname === '/log') {
+        targetUrl = env.GAS_LOG_URL;
+      } else {
+        return jsonError('Not Found', 404, origin);
+      }
+
       if (request.method !== 'POST') {
         return jsonError('Method not allowed', 405, origin);
       }
@@ -40,20 +51,22 @@ export default {
         });
       }
 
-      // 4. Turnstile validation (only for form submissions, not image ops)
-      const page = body.page || body.p || '';
-      const requiresTurnstile = (page === 'saveData');
-      if (requiresTurnstile) {
-        const token = body._turnstile;
-        if (!token) return jsonError('Missing challenge token', 403, origin);
+      // 4. Turnstile validation (only for /submit and only for form submissions, not image ops)
+      if (pathname === '/submit') {
+        const page = body.page || body.p || '';
+        const requiresTurnstile = (page === 'saveData');
+        if (requiresTurnstile) {
+          const token = body._turnstile;
+          if (!token) return jsonError('Missing challenge token', 403, origin);
 
-        const tsResult = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ secret: env.TURNSTILE_SECRET, response: token }),
-        });
-        const tsData = await tsResult.json();
-        if (!tsData.success) return jsonError('Challenge failed', 403, origin);
+          const tsResult = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ secret: env.TURNSTILE_SECRET, response: token }),
+          });
+          const tsData = await tsResult.json();
+          if (!tsData.success) return jsonError('Challenge failed', 403, origin);
+        }
       }
 
       // 5. Strip internal fields, inject GAS secret
@@ -61,7 +74,7 @@ export default {
       gasBody._secret = env.GAS_SECRET;
 
       // 6. Forward to GAS
-      const gasResponse = await fetch(env.GAS_URL, {
+      const gasResponse = await fetch(targetUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(gasBody),
