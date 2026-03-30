@@ -91,6 +91,14 @@ export default {
 
       const responseText = await gasResponse.text();
 
+      // GAS sometimes returns an empty body on success (after redirect)
+      if (!responseText || !responseText.trim()) {
+        return new Response(JSON.stringify({ result: 'success' }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) },
+        });
+      }
+
       // Guard: ensure GAS returned valid JSON (it sometimes returns HTML on error)
       try {
         JSON.parse(responseText);
