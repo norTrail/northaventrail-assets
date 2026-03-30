@@ -140,9 +140,6 @@
             let tsToken = '';
             if (params.page === 'saveData') {
                 tsToken = turnstileToken || '';
-                if (!tsToken) {
-                    throw new Error('Security check not yet complete. Please wait a moment and try again.');
-                }
             }
 
             const fetchOptions = {

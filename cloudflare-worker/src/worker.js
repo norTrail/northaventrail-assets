@@ -51,21 +51,23 @@ export default {
         });
       }
 
-      // 4. Turnstile validation (only for /submit and only for form submissions, not image ops)
+      // 4. Turnstile validation (only for /submit form submissions, not image ops)
+      //    Optional: validates token if present; allows through if widget failed to render (e.g. ad blockers)
       if (pathname === '/submit') {
         const page = body.page || body.p || '';
         const requiresTurnstile = (page === 'saveData');
         if (requiresTurnstile) {
           const token = body._turnstile;
-          if (!token) return jsonError('Missing challenge token', 403, origin);
-
-          const tsResult = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ secret: env.TURNSTILE_SECRET, response: token }),
-          });
-          const tsData = await tsResult.json();
-          if (!tsData.success) return jsonError('Challenge failed', 403, origin);
+          if (token) {
+            const tsResult = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ secret: env.TURNSTILE_SECRET, response: token }),
+            });
+            const tsData = await tsResult.json();
+            if (!tsData.success) return jsonError('Challenge failed', 403, origin);
+          }
+          // No token: allow through (widget may have failed to load)
         }
       }
 
