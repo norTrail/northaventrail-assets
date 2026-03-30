@@ -158,7 +158,13 @@
                 const text = await response.text();
                 throw new Error(`Server error (${response.status}): ${text}`);
             }
-            const data = await response.json();
+            const rawText = await response.text();
+            let data;
+            try {
+                data = JSON.parse(rawText);
+            } catch (_) {
+                throw new Error(`Server returned non-JSON response: ${rawText.slice(0, 200)}`);
+            }
 
             // Reset Turnstile after a successful form submission so it can be re-used
             if (params.page === 'saveData' && typeof turnstile !== 'undefined' && turnstileWidgetId !== null) {

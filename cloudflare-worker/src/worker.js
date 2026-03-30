@@ -90,6 +90,16 @@ export default {
       }
 
       const responseText = await gasResponse.text();
+
+      // Guard: ensure GAS returned valid JSON (it sometimes returns HTML on error)
+      try {
+        JSON.parse(responseText);
+      } catch (_) {
+        const preview = responseText.slice(0, 200);
+        console.error(`GAS non-JSON response: ${preview}`);
+        return jsonError(`Backend returned unexpected content: ${preview}`, 502, origin);
+      }
+
       return new Response(responseText, {
         status: 200,
         headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) },
