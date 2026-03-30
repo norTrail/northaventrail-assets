@@ -782,18 +782,20 @@ function showTableView(zones) {
 
   const targetCode = resolveInitialTableTarget(zones);
 
+  // Double-rAF ensures layout is fully settled after display:none → display:block.
+  // scrollIntoView uses scroll-margin-top: 120px (CSS) to clear sticky headers.
   requestAnimationFrame(() => {
-    if (!targetCode) return;
+    requestAnimationFrame(() => {
+      if (!targetCode) return;
 
-    const container = document.getElementById("tableWrapper");
-    if (!container) return;
-    const row = container.querySelector(`tr[data-code="${targetCode}"]`);
-    if (!row) return;
+      const container = document.getElementById("tableWrapper");
+      if (!container) return;
+      const row = container.querySelector(`tr[data-code="${targetCode}"]`);
+      if (!row) return;
 
-    // Offset scroll to account for sticky thead height
-    const header = container.querySelector("thead");
-    const headerH = header ? header.getBoundingClientRect().height : 0;
-    container.scrollTop = row.offsetTop - headerH - 4;
+      row.scrollIntoView({ block: "start", behavior: "instant" });
+      row.classList.add("active");
+    });
   });
 }
 
