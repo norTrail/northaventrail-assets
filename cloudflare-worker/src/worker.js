@@ -1,4 +1,8 @@
-const ALLOWED_ORIGINS = ['https://northaventrail.org', 'https://www.northaventrail.org'];
+const ALLOWED_ORIGINS = [
+  'https://northaventrail.org',
+  'https://www.northaventrail.org',
+  'https://dorothy-buechel.squarespace.com',
+];
 
 export default {
   async fetch(request, env) {
