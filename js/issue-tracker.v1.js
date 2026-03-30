@@ -514,7 +514,13 @@
     // -------------------------
     // Initialization
     // -------------------------
-    document.addEventListener('DOMContentLoaded', () => {
+    let isInitialized = false;
+    function init() {
+        if (isInitialized) return;
+        const testForm = document.getElementById('report-form');
+        if (!testForm) return; // Wait until form exists
+        isInitialized = true;
+
         loadSvgSpriteOnce(); // loads icons.svg sprite so fullscreen btn icons render
 
         // Cache Elements
@@ -554,22 +560,30 @@
         hpField.setAttribute('aria-hidden', 'true');
         form.appendChild(hpField);
 
+        function initTurnstile() {
+            if (typeof turnstile !== 'undefined' && !turnstileWidgetId) {
+                turnstile.ready(() => {
+                    setTimeout(() => {
+                        // Double check container existence
+                        const container = document.getElementById('nt-turnstile-container');
+                        if (!container) return;
+
+                        turnstileWidgetId = turnstile.render(container, {
+                            sitekey: TURNSTILE_SITE_KEY,
+                            callback: (token) => { turnstileToken = token; },
+                            'expired-callback': () => { turnstileToken = null; },
+                            'error-callback': () => { turnstileToken = null; },
+                        });
+                    }, 500);
+                });
+            }
+        }
+
         // Turnstile widget container — rendered before the submit button
         const tsContainer = document.createElement('div');
         tsContainer.id = 'nt-turnstile-container';
         submitButton.parentNode.insertBefore(tsContainer, submitButton);
-        if (typeof turnstile !== 'undefined') {
-            turnstile.ready(() => {
-                setTimeout(() => {
-                    turnstileWidgetId = turnstile.render('#nt-turnstile-container', {
-                        sitekey: TURNSTILE_SITE_KEY,
-                        callback: (token) => { turnstileToken = token; },
-                        'expired-callback': () => { turnstileToken = null; },
-                        'error-callback': () => { turnstileToken = null; },
-                    });
-                }, 100);
-            });
-        }
+        initTurnstile();
 
         // Load saved info
         loadSavedContactInfo();
@@ -963,7 +977,13 @@
             resetForm();
         };
 
-    });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
 
     window.addEventListener('pagehide', () => {
         if (!formSubmitted && imageList.length > 0) {
