@@ -216,13 +216,16 @@ function attachErrorLogging(map, opts = {}) {
         navigator.sendBeacon(endpoint, new Blob([json], { type: "text/plain" }));
         return;
       }
-      await fetch(endpoint, {
+      const resp = await fetch(endpoint, {
         method: "POST",
         cache: "no-store",
         keepalive: true,
         body: json,
         headers: { "Content-Type": "text/plain" }
       });
+      if (!resp.ok) {
+        console.warn(`log send failed (${resp.status})`);
+      }
     } catch (e) {
       // last resort: don't throw
       console.warn("log send failed", e);
@@ -435,6 +438,9 @@ function logClientErrorToServer(payloadObj, endpointOverride) {
     keepalive: true,
     body: json,
     headers: { "Content-Type": "text/plain" }
+  }).then(r => {
+    if (!r.ok) console.warn(`logClientError send failed (${r.status})`);
+    return r;
   }).catch(() => { });
 }
 
