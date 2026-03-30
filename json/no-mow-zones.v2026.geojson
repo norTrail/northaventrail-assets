@@ -249,10 +249,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, October 3</span>.<br>Please check back as plans may have changed.<br><br>#zone04a",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Sunday, October 4</span>.<br>Please check back as plans may have changed.<br><br>#zone04a",
         "status": "Coming",
-        "estimatedDateShort": "Oct 3",
-        "estimatedDateLong": "Saturday, October 3",
+        "estimatedDateShort": "Oct 4",
+        "estimatedDateLong": "Sunday, October 4",
         "center": [
           -96.77856553488714,
           32.896715831469024
@@ -297,10 +297,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, October 3</span>.<br>Please check back as plans may have changed.<br><br>#zone05",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Sunday, October 4</span>.<br>Please check back as plans may have changed.<br><br>#zone05",
         "status": "Coming",
-        "estimatedDateShort": "Oct 3",
-        "estimatedDateLong": "Saturday, October 3",
+        "estimatedDateShort": "Oct 4",
+        "estimatedDateLong": "Sunday, October 4",
         "center": [
           -96.77998167630939,
           32.89635291951829
@@ -349,10 +349,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Sunday, October 4</span>.<br>Please check back as plans may have changed.<br><br>#zone04b",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Monday, October 5</span>.<br>Please check back as plans may have changed.<br><br>#zone04b",
         "status": "Coming",
-        "estimatedDateShort": "Oct 4",
-        "estimatedDateLong": "Sunday, October 4",
+        "estimatedDateShort": "Oct 5",
+        "estimatedDateLong": "Monday, October 5",
         "center": [
           -96.77856553488714,
           32.896715831469024
@@ -401,10 +401,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Monday, October 5</span>.<br>Please check back as plans may have changed.<br><br>#zone06",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Tuesday, October 6</span>.<br>Please check back as plans may have changed.<br><br>#zone06",
         "status": "Coming",
-        "estimatedDateShort": "Oct 5",
-        "estimatedDateLong": "Monday, October 5",
+        "estimatedDateShort": "Oct 6",
+        "estimatedDateLong": "Tuesday, October 6",
         "center": [
           -96.78187050413922,
           32.89647034569721
@@ -593,10 +593,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Wednesday, October 7</span>.<br>Please check back as plans may have changed.<br><br>#zone10",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Thursday, October 8</span>.<br>Please check back as plans may have changed.<br><br>#zone10",
         "status": "Coming",
-        "estimatedDateShort": "Oct 7",
-        "estimatedDateLong": "Wednesday, October 7",
+        "estimatedDateShort": "Oct 8",
+        "estimatedDateLong": "Thursday, October 8",
         "center": [
           -96.80267847900996,
           32.900841763897965
@@ -737,10 +737,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Thursday, October 8</span>.<br>Please check back as plans may have changed.<br><br>#zone13",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Friday, October 9</span>.<br>Please check back as plans may have changed.<br><br>#zone13",
         "status": "Coming",
-        "estimatedDateShort": "Oct 8",
-        "estimatedDateLong": "Thursday, October 8",
+        "estimatedDateShort": "Oct 9",
+        "estimatedDateLong": "Friday, October 9",
         "center": [
           -96.80832150286496,
           32.90083371921986
@@ -873,10 +873,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Friday, October 9</span>.<br>Please check back as plans may have changed.<br><br>#zone16",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, October 10</span>.<br>Please check back as plans may have changed.<br><br>#zone16",
         "status": "Coming",
-        "estimatedDateShort": "Oct 9",
-        "estimatedDateLong": "Friday, October 9",
+        "estimatedDateShort": "Oct 10",
+        "estimatedDateLong": "Saturday, October 10",
         "center": [
           -96.82040112296293,
           32.903071430249064
@@ -1009,10 +1009,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, October 10</span>.<br>Please check back as plans may have changed.<br><br>#zone19",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Sunday, October 11</span>.<br>Please check back as plans may have changed.<br><br>#zone19",
         "status": "Coming",
-        "estimatedDateShort": "Oct 10",
-        "estimatedDateLong": "Saturday, October 10",
+        "estimatedDateShort": "Oct 11",
+        "estimatedDateLong": "Sunday, October 11",
         "center": [
           -96.82545414005877,
           32.903245661091724
@@ -1065,10 +1065,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Sunday, October 11</span>.<br>Please check back as plans may have changed.<br><br>#zone20",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Monday, October 12</span>.<br>Please check back as plans may have changed.<br><br>#zone20",
         "status": "Coming",
-        "estimatedDateShort": "Oct 11",
-        "estimatedDateLong": "Sunday, October 11",
+        "estimatedDateShort": "Oct 12",
+        "estimatedDateLong": "Monday, October 12",
         "center": [
           -96.82613758940981,
           32.90303749435861
@@ -1109,10 +1109,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Sunday, October 11</span>.<br>Please check back as plans may have changed.<br><br>#zone21",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Monday, October 12</span>.<br>Please check back as plans may have changed.<br><br>#zone21",
         "status": "Coming",
-        "estimatedDateShort": "Oct 11",
-        "estimatedDateLong": "Sunday, October 11",
+        "estimatedDateShort": "Oct 12",
+        "estimatedDateLong": "Monday, October 12",
         "center": [
           -96.82625062063647,
           32.90309848536366
@@ -1153,10 +1153,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Sunday, October 11</span>.<br>Please check back as plans may have changed.<br><br>#zone22",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Monday, October 12</span>.<br>Please check back as plans may have changed.<br><br>#zone22",
         "status": "Coming",
-        "estimatedDateShort": "Oct 11",
-        "estimatedDateLong": "Sunday, October 11",
+        "estimatedDateShort": "Oct 12",
+        "estimatedDateLong": "Monday, October 12",
         "center": [
           -96.8271241195315,
           32.90306566564784
@@ -1289,10 +1289,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Monday, October 12</span>.<br>Please check back as plans may have changed.<br><br>#zone25",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Tuesday, October 13</span>.<br>Please check back as plans may have changed.<br><br>#zone25",
         "status": "Coming",
-        "estimatedDateShort": "Oct 12",
-        "estimatedDateLong": "Monday, October 12",
+        "estimatedDateShort": "Oct 13",
+        "estimatedDateLong": "Tuesday, October 13",
         "center": [
           -96.82895311010667,
           32.90289083808131
@@ -1333,10 +1333,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Monday, October 12</span>.<br>Please check back as plans may have changed.<br><br>#zone26",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Tuesday, October 13</span>.<br>Please check back as plans may have changed.<br><br>#zone26",
         "status": "Coming",
-        "estimatedDateShort": "Oct 12",
-        "estimatedDateLong": "Monday, October 12",
+        "estimatedDateShort": "Oct 13",
+        "estimatedDateLong": "Tuesday, October 13",
         "center": [
           -96.83150742950293,
           32.90291027626997
@@ -1477,10 +1477,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Tuesday, October 13</span>.<br>Please check back as plans may have changed.<br><br>#zone29",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Wednesday, October 14</span>.<br>Please check back as plans may have changed.<br><br>#zone29",
         "status": "Coming",
-        "estimatedDateShort": "Oct 13",
-        "estimatedDateLong": "Tuesday, October 13",
+        "estimatedDateShort": "Oct 14",
+        "estimatedDateLong": "Wednesday, October 14",
         "center": [
           -96.83889426663147,
           32.89991593630322
@@ -1625,10 +1625,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Thursday, October 15</span>.<br>Please check back as plans may have changed.<br><br>#zone32",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Friday, October 16</span>.<br>Please check back as plans may have changed.<br><br>#zone32",
         "status": "Coming",
-        "estimatedDateShort": "Oct 15",
-        "estimatedDateLong": "Thursday, October 15",
+        "estimatedDateShort": "Oct 16",
+        "estimatedDateLong": "Friday, October 16",
         "center": [
           -96.84434059681105,
           32.899809036565394
@@ -1677,10 +1677,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Friday, October 16</span>.<br>Please check back as plans may have changed.<br><br>#zone33",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, October 17</span>.<br>Please check back as plans may have changed.<br><br>#zone33",
         "status": "Coming",
-        "estimatedDateShort": "Oct 16",
-        "estimatedDateLong": "Friday, October 16",
+        "estimatedDateShort": "Oct 17",
+        "estimatedDateLong": "Saturday, October 17",
         "center": [
           -96.8466576547074,
           32.89982006400325
@@ -1777,10 +1777,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, October 17</span>.<br>Please check back as plans may have changed.<br><br>#zone35",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Sunday, October 18</span>.<br>Please check back as plans may have changed.<br><br>#zone35",
         "status": "Coming",
-        "estimatedDateShort": "Oct 17",
-        "estimatedDateLong": "Saturday, October 17",
+        "estimatedDateShort": "Oct 18",
+        "estimatedDateLong": "Sunday, October 18",
         "center": [
           -96.85216234856533,
           32.89973995188275
@@ -1821,10 +1821,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, October 17</span>.<br>Please check back as plans may have changed.<br><br>#zone36",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Sunday, October 18</span>.<br>Please check back as plans may have changed.<br><br>#zone36",
         "status": "Coming",
-        "estimatedDateShort": "Oct 17",
-        "estimatedDateLong": "Saturday, October 17",
+        "estimatedDateShort": "Oct 18",
+        "estimatedDateLong": "Sunday, October 18",
         "center": [
           -96.85648481335379,
           32.89983707029181
@@ -1917,10 +1917,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Sunday, October 18</span>.<br>Please check back as plans may have changed.<br><br>#zone38",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Monday, October 19</span>.<br>Please check back as plans may have changed.<br><br>#zone38",
         "status": "Coming",
-        "estimatedDateShort": "Oct 18",
-        "estimatedDateLong": "Sunday, October 18",
+        "estimatedDateShort": "Oct 19",
+        "estimatedDateLong": "Monday, October 19",
         "center": [
           -96.8582069260721,
           32.899840407888725
@@ -2017,10 +2017,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Monday, October 19</span>.<br>Please check back as plans may have changed.<br><br>#zone40",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Tuesday, October 20</span>.<br>Please check back as plans may have changed.<br><br>#zone40",
         "status": "Coming",
-        "estimatedDateShort": "Oct 19",
-        "estimatedDateLong": "Monday, October 19",
+        "estimatedDateShort": "Oct 20",
+        "estimatedDateLong": "Tuesday, October 20",
         "center": [
           -96.86018976533448,
           32.899861270857954
@@ -2121,10 +2121,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Tuesday, October 20</span>.<br>Please check back as plans may have changed.<br><br>#zone42",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Wednesday, October 21</span>.<br>Please check back as plans may have changed.<br><br>#zone42",
         "status": "Coming",
-        "estimatedDateShort": "Oct 20",
-        "estimatedDateLong": "Tuesday, October 20",
+        "estimatedDateShort": "Oct 21",
+        "estimatedDateLong": "Wednesday, October 21",
         "center": [
           -96.86314188276845,
           32.893533762640864
@@ -2217,10 +2217,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Wednesday, October 21</span>.<br>Please check back as plans may have changed.<br><br>#zone44",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Thursday, October 22</span>.<br>Please check back as plans may have changed.<br><br>#zone44",
         "status": "Coming",
-        "estimatedDateShort": "Oct 21",
-        "estimatedDateLong": "Wednesday, October 21",
+        "estimatedDateShort": "Oct 22",
+        "estimatedDateLong": "Thursday, October 22",
         "center": [
           -96.86312642835642,
           32.89116463663941
@@ -2377,10 +2377,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Friday, October 23</span>.<br>Please check back as plans may have changed.<br><br>#zone47",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, October 24</span>.<br>Please check back as plans may have changed.<br><br>#zone47",
         "status": "Coming",
-        "estimatedDateShort": "Oct 23",
-        "estimatedDateLong": "Friday, October 23",
+        "estimatedDateShort": "Oct 24",
+        "estimatedDateLong": "Saturday, October 24",
         "center": [
           -96.86315303019093,
           32.888544332113845
