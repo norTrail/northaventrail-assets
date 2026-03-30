@@ -147,8 +147,8 @@
         "popupClass": "custom-popup-blue",
         "description": "The herd is currently cleaning up this no-mow zone.",
         "status": "Now Grazing",
-        "estimatedDateShort": "Oct 17",
-        "estimatedDateLong": "Friday, October 17",
+        "estimatedDateShort": "Oct 2",
+        "estimatedDateLong": "Friday, October 2",
         "center": [
           -96.7761617359237,
           32.89765057524599
@@ -197,10 +197,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Friday, October 17</span>.<br>Please check back as plans may have changed.<br><br>#zone03b",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, October 3</span>.<br>Please check back as plans may have changed.<br><br>#zone03b",
         "status": "Coming",
-        "estimatedDateShort": "Oct 17",
-        "estimatedDateLong": "Friday, October 17",
+        "estimatedDateShort": "Oct 3",
+        "estimatedDateLong": "Saturday, October 3",
         "center": [
           -96.77714113210558,
           32.89729337920312
@@ -249,62 +249,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Sunday, October 19</span>.<br>Please check back as plans may have changed.<br><br>#zone04a",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, October 3</span>.<br>Please check back as plans may have changed.<br><br>#zone04a",
         "status": "Coming",
-        "estimatedDateShort": "Oct 19",
-        "estimatedDateLong": "Sunday, October 19",
-        "center": [
-          -96.77856553488714,
-          32.896715831469024
-        ],
-        "centerLng": -96.77856553488714,
-        "centerLat": 32.896715831469024
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "zone04b",
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              -96.7781626,
-              32.8967168
-            ],
-            [
-              -96.7783224,
-              32.8969908
-            ],
-            [
-              -96.7787016,
-              32.896854
-            ],
-            [
-              -96.7790463,
-              32.8965469
-            ],
-            [
-              -96.7789082,
-              32.896468
-            ],
-            [
-              -96.7781626,
-              32.8967168
-            ]
-          ]
-        ]
-      },
-      "properties": {
-        "zoneCode": "zone04b",
-        "zoneName": "Grazing Area<br>Just East of St. Michaels",
-        "icon": "🌼",
-        "color": "#66bb66",
-        "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Sunday, October 19</span>.<br>Please check back as plans may have changed.<br><br>#zone04b",
-        "status": "Coming",
-        "estimatedDateShort": "Oct 19",
-        "estimatedDateLong": "Sunday, October 19",
+        "estimatedDateShort": "Oct 3",
+        "estimatedDateLong": "Saturday, October 3",
         "center": [
           -96.77856553488714,
           32.896715831469024
@@ -349,16 +297,68 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Monday, October 20</span>.<br>Please check back as plans may have changed.<br><br>#zone05",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, October 3</span>.<br>Please check back as plans may have changed.<br><br>#zone05",
         "status": "Coming",
-        "estimatedDateShort": "Oct 20",
-        "estimatedDateLong": "Monday, October 20",
+        "estimatedDateShort": "Oct 3",
+        "estimatedDateLong": "Saturday, October 3",
         "center": [
           -96.77998167630939,
           32.89635291951829
         ],
         "centerLng": -96.77998167630939,
         "centerLat": 32.89635291951829
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "zone04b",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -96.7781626,
+              32.8967168
+            ],
+            [
+              -96.7783224,
+              32.8969908
+            ],
+            [
+              -96.7787016,
+              32.896854
+            ],
+            [
+              -96.7790463,
+              32.8965469
+            ],
+            [
+              -96.7789082,
+              32.896468
+            ],
+            [
+              -96.7781626,
+              32.8967168
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zoneCode": "zone04b",
+        "zoneName": "Grazing Area<br>Just East of St. Michaels",
+        "icon": "🌼",
+        "color": "#66bb66",
+        "popupClass": "custom-popup-green",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Sunday, October 4</span>.<br>Please check back as plans may have changed.<br><br>#zone04b",
+        "status": "Coming",
+        "estimatedDateShort": "Oct 4",
+        "estimatedDateLong": "Sunday, October 4",
+        "center": [
+          -96.77856553488714,
+          32.896715831469024
+        ],
+        "centerLng": -96.77856553488714,
+        "centerLat": 32.896715831469024
       }
     },
     {
@@ -401,16 +401,396 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Monday, October 20</span>.<br>Please check back as plans may have changed.<br><br>#zone06",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Monday, October 5</span>.<br>Please check back as plans may have changed.<br><br>#zone06",
         "status": "Coming",
-        "estimatedDateShort": "Oct 20",
-        "estimatedDateLong": "Monday, October 20",
+        "estimatedDateShort": "Oct 5",
+        "estimatedDateLong": "Monday, October 5",
         "center": [
           -96.78187050413922,
           32.89647034569721
         ],
         "centerLng": -96.78187050413922,
         "centerLat": 32.89647034569721
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "zone07",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -96.79698326223568,
+              32.90020661881669
+            ],
+            [
+              -96.79687986243239,
+              32.90027247661345
+            ],
+            [
+              -96.79735104856182,
+              32.90073384243257
+            ],
+            [
+              -96.79743056232743,
+              32.90069286498969
+            ],
+            [
+              -96.79698326223568,
+              32.90020661881669
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zoneCode": "zone07",
+        "zoneName": "Grazing Area<br>Just West of Ricks Circle",
+        "icon": "🌼",
+        "color": "#66bb66",
+        "popupClass": "custom-popup-green",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Tuesday, October 6</span>.<br>Please check back as plans may have changed.<br><br>#zone07",
+        "status": "Coming",
+        "estimatedDateShort": "Oct 6",
+        "estimatedDateLong": "Tuesday, October 6",
+        "center": [
+          -96.7972558398527,
+          32.900499646722594
+        ],
+        "centerLng": -96.7972558398527,
+        "centerLat": 32.900499646722594
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "zone08",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -96.79881835432778,
+              32.90078042955418
+            ],
+            [
+              -96.79901170946815,
+              32.90086645704831
+            ],
+            [
+              -96.79946278861692,
+              32.90085652189876
+            ],
+            [
+              -96.79960398003509,
+              32.9007753795545
+            ],
+            [
+              -96.79881835432778,
+              32.90078042955418
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zoneCode": "zone08",
+        "zoneName": "Grazing Area<br>Just East of Royalshire",
+        "icon": "🌼",
+        "color": "#66bb66",
+        "popupClass": "custom-popup-green",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Tuesday, October 6</span>.<br>Please check back as plans may have changed.<br><br>#zone08",
+        "status": "Coming",
+        "estimatedDateShort": "Oct 6",
+        "estimatedDateLong": "Tuesday, October 6",
+        "center": [
+          -96.79939115073874,
+          32.900875028607246
+        ],
+        "centerLng": -96.79939115073874,
+        "centerLat": 32.900875028607246
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "zone09",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -96.80121326963132,
+              32.90090053866113
+            ],
+            [
+              -96.80096817268402,
+              32.90100671122234
+            ],
+            [
+              -96.8027963397563,
+              32.90103525445971
+            ],
+            [
+              -96.80232838534774,
+              32.90089958508166
+            ],
+            [
+              -96.80121326963132,
+              32.90090053866113
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zoneCode": "zone09",
+        "zoneName": "Grazing Area<br>Just West of Royalshire",
+        "icon": "🌼",
+        "color": "#66bb66",
+        "popupClass": "custom-popup-green",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Wednesday, October 7</span>.<br>Please check back as plans may have changed.<br><br>#zone09",
+        "status": "Coming",
+        "estimatedDateShort": "Oct 7",
+        "estimatedDateLong": "Wednesday, October 7",
+        "center": [
+          -96.8018582710883,
+          32.900966846323094
+        ],
+        "centerLng": -96.8018582710883,
+        "centerLat": 32.900966846323094
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "zone10",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -96.80278793646214,
+              32.90077008299492
+            ],
+            [
+              -96.80287362400148,
+              32.90092834300738
+            ],
+            [
+              -96.80234551988504,
+              32.90082503165784
+            ],
+            [
+              -96.80243431202697,
+              32.9007504752124
+            ],
+            [
+              -96.80278793646214,
+              32.90077008299492
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zoneCode": "zone10",
+        "zoneName": "Grazing Area<br>Just East of Preston",
+        "icon": "🌼",
+        "color": "#66bb66",
+        "popupClass": "custom-popup-green",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Wednesday, October 7</span>.<br>Please check back as plans may have changed.<br><br>#zone10",
+        "status": "Coming",
+        "estimatedDateShort": "Oct 7",
+        "estimatedDateLong": "Wednesday, October 7",
+        "center": [
+          -96.80267847900996,
+          32.900841763897965
+        ],
+        "centerLng": -96.80267847900996,
+        "centerLat": 32.900841763897965
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "zone11",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -96.80624997750964,
+              32.90077212054685
+            ],
+            [
+              -96.8066839908898,
+              32.90094716783956
+            ],
+            [
+              -96.80711798715028,
+              32.90081516453406
+            ],
+            [
+              -96.80624997750964,
+              32.90077212054685
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zoneCode": "zone11",
+        "zoneName": "Grazing Area<br>Just West of Preston",
+        "icon": "🌼",
+        "color": "#66bb66",
+        "popupClass": "custom-popup-green",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Thursday, October 8</span>.<br>Please check back as plans may have changed.<br><br>#zone11",
+        "status": "Coming",
+        "estimatedDateShort": "Oct 8",
+        "estimatedDateLong": "Thursday, October 8",
+        "center": [
+          -96.80670542835504,
+          32.90085210646695
+        ],
+        "centerLng": -96.80670542835504,
+        "centerLat": 32.90085210646695
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "zone12",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -96.80697385825309,
+              32.90100280220638
+            ],
+            [
+              -96.80739516003283,
+              32.90101062437864
+            ],
+            [
+              -96.8074074222957,
+              32.9009028426243
+            ],
+            [
+              -96.80721434146545,
+              32.90089446897715
+            ],
+            [
+              -96.80697385825309,
+              32.90100280220638
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zoneCode": "zone12",
+        "zoneName": "Grazing Area<br>Just East of Jamestown",
+        "icon": "🌼",
+        "color": "#66bb66",
+        "popupClass": "custom-popup-green",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Thursday, October 8</span>.<br>Please check back as plans may have changed.<br><br>#zone12",
+        "status": "Coming",
+        "estimatedDateShort": "Oct 8",
+        "estimatedDateLong": "Thursday, October 8",
+        "center": [
+          -96.80701018324825,
+          32.900881481354006
+        ],
+        "centerLng": -96.80701018324825,
+        "centerLat": 32.900881481354006
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "zone13",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -96.80773627512411,
+              32.90077744683717
+            ],
+            [
+              -96.80772507839548,
+              32.90083761258908
+            ],
+            [
+              -96.80843034663286,
+              32.90095587630328
+            ],
+            [
+              -96.80891020210564,
+              32.90082425618737
+            ],
+            [
+              -96.80889875754558,
+              32.90076645957542
+            ],
+            [
+              -96.80773627512411,
+              32.90077744683717
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zoneCode": "zone13",
+        "zoneName": "Grazing Area<br>Just West of Jamestown",
+        "icon": "🌼",
+        "color": "#66bb66",
+        "popupClass": "custom-popup-green",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Thursday, October 8</span>.<br>Please check back as plans may have changed.<br><br>#zone13",
+        "status": "Coming",
+        "estimatedDateShort": "Oct 8",
+        "estimatedDateLong": "Thursday, October 8",
+        "center": [
+          -96.80832150286496,
+          32.90083371921986
+        ],
+        "centerLng": -96.80832150286496,
+        "centerLat": 32.90083371921986
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "zone14",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -96.80875451512944,
+              32.90099023354392
+            ],
+            [
+              -96.80935648907621,
+              32.90101757651045
+            ],
+            [
+              -96.80935009481883,
+              32.90082957884585
+            ],
+            [
+              -96.80875451512944,
+              32.90099023354392
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zoneCode": "zone14",
+        "zoneName": "Grazing Area Just East of Quincy",
+        "icon": "🌼",
+        "color": "#66bb66",
+        "popupClass": "custom-popup-green",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Friday, October 9</span>.<br>Please check back as plans may have changed.<br><br>#zone14",
+        "status": "Coming",
+        "estimatedDateShort": "Oct 9",
+        "estimatedDateLong": "Friday, October 9",
+        "center": [
+          -96.8090655029575,
+          32.90091582290824
+        ],
+        "centerLng": -96.8090655029575,
+        "centerLat": 32.90091582290824
       }
     },
     {
@@ -445,10 +825,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Tuesday, October 21</span>.<br>Please check back as plans may have changed.<br><br>#zone15",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Friday, October 9</span>.<br>Please check back as plans may have changed.<br><br>#zone15",
         "status": "Coming",
-        "estimatedDateShort": "Oct 21",
-        "estimatedDateLong": "Tuesday, October 21",
+        "estimatedDateShort": "Oct 9",
+        "estimatedDateLong": "Friday, October 9",
         "center": [
           -96.81988623564745,
           32.90302393332488
@@ -493,10 +873,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Tuesday, October 21</span>.<br>Please check back as plans may have changed.<br><br>#zone16",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Friday, October 9</span>.<br>Please check back as plans may have changed.<br><br>#zone16",
         "status": "Coming",
-        "estimatedDateShort": "Oct 21",
-        "estimatedDateLong": "Tuesday, October 21",
+        "estimatedDateShort": "Oct 9",
+        "estimatedDateLong": "Friday, October 9",
         "center": [
           -96.82040112296293,
           32.903071430249064
@@ -537,10 +917,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Wednesday, October 22</span>.<br>Please check back as plans may have changed.<br><br>#zone17",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, October 10</span>.<br>Please check back as plans may have changed.<br><br>#zone17",
         "status": "Coming",
-        "estimatedDateShort": "Oct 22",
-        "estimatedDateLong": "Wednesday, October 22",
+        "estimatedDateShort": "Oct 10",
+        "estimatedDateLong": "Saturday, October 10",
         "center": [
           -96.8216332896089,
           32.90308422981082
@@ -585,10 +965,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Thursday, October 23</span>.<br>Please check back as plans may have changed.<br><br>#zone18",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, October 10</span>.<br>Please check back as plans may have changed.<br><br>#zone18",
         "status": "Coming",
-        "estimatedDateShort": "Oct 23",
-        "estimatedDateLong": "Thursday, October 23",
+        "estimatedDateShort": "Oct 10",
+        "estimatedDateLong": "Saturday, October 10",
         "center": [
           -96.82282992471782,
           32.90307587571233
@@ -629,10 +1009,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Friday, October 24</span>.<br>Please check back as plans may have changed.<br><br>#zone19",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, October 10</span>.<br>Please check back as plans may have changed.<br><br>#zone19",
         "status": "Coming",
-        "estimatedDateShort": "Oct 24",
-        "estimatedDateLong": "Friday, October 24",
+        "estimatedDateShort": "Oct 10",
+        "estimatedDateLong": "Saturday, October 10",
         "center": [
           -96.82545414005877,
           32.903245661091724
@@ -685,10 +1065,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Friday, October 24</span>.<br>Please check back as plans may have changed.<br><br>#zone20",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Sunday, October 11</span>.<br>Please check back as plans may have changed.<br><br>#zone20",
         "status": "Coming",
-        "estimatedDateShort": "Oct 24",
-        "estimatedDateLong": "Friday, October 24",
+        "estimatedDateShort": "Oct 11",
+        "estimatedDateLong": "Sunday, October 11",
         "center": [
           -96.82613758940981,
           32.90303749435861
@@ -729,10 +1109,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Friday, October 24</span>.<br>Please check back as plans may have changed.<br><br>#zone21",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Sunday, October 11</span>.<br>Please check back as plans may have changed.<br><br>#zone21",
         "status": "Coming",
-        "estimatedDateShort": "Oct 24",
-        "estimatedDateLong": "Friday, October 24",
+        "estimatedDateShort": "Oct 11",
+        "estimatedDateLong": "Sunday, October 11",
         "center": [
           -96.82625062063647,
           32.90309848536366
@@ -773,10 +1153,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, October 25</span>.<br>Please check back as plans may have changed.<br><br>#zone22",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Sunday, October 11</span>.<br>Please check back as plans may have changed.<br><br>#zone22",
         "status": "Coming",
-        "estimatedDateShort": "Oct 25",
-        "estimatedDateLong": "Saturday, October 25",
+        "estimatedDateShort": "Oct 11",
+        "estimatedDateLong": "Sunday, October 11",
         "center": [
           -96.8271241195315,
           32.90306566564784
@@ -817,10 +1197,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, October 25</span>.<br>Please check back as plans may have changed.<br><br>#zone23",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Monday, October 12</span>.<br>Please check back as plans may have changed.<br><br>#zone23",
         "status": "Coming",
-        "estimatedDateShort": "Oct 25",
-        "estimatedDateLong": "Saturday, October 25",
+        "estimatedDateShort": "Oct 12",
+        "estimatedDateLong": "Monday, October 12",
         "center": [
           -96.82762680506988,
           32.902892477612205
@@ -865,10 +1245,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, October 25</span>.<br>Please check back as plans may have changed.<br><br>#zone24",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Monday, October 12</span>.<br>Please check back as plans may have changed.<br><br>#zone24",
         "status": "Coming",
-        "estimatedDateShort": "Oct 25",
-        "estimatedDateLong": "Saturday, October 25",
+        "estimatedDateShort": "Oct 12",
+        "estimatedDateLong": "Monday, October 12",
         "center": [
           -96.82843078079816,
           32.90304143597912
@@ -909,10 +1289,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, October 25</span>.<br>Please check back as plans may have changed.<br><br>#zone25",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Monday, October 12</span>.<br>Please check back as plans may have changed.<br><br>#zone25",
         "status": "Coming",
-        "estimatedDateShort": "Oct 25",
-        "estimatedDateLong": "Saturday, October 25",
+        "estimatedDateShort": "Oct 12",
+        "estimatedDateLong": "Monday, October 12",
         "center": [
           -96.82895311010667,
           32.90289083808131
@@ -953,10 +1333,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Sunday, October 26</span>.<br>Please check back as plans may have changed.<br><br>#zone26",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Monday, October 12</span>.<br>Please check back as plans may have changed.<br><br>#zone26",
         "status": "Coming",
-        "estimatedDateShort": "Oct 26",
-        "estimatedDateLong": "Sunday, October 26",
+        "estimatedDateShort": "Oct 12",
+        "estimatedDateLong": "Monday, October 12",
         "center": [
           -96.83150742950293,
           32.90291027626997
@@ -1001,10 +1381,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Sunday, October 26</span>.<br>Please check back as plans may have changed.<br><br>#zone27",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Tuesday, October 13</span>.<br>Please check back as plans may have changed.<br><br>#zone27",
         "status": "Coming",
-        "estimatedDateShort": "Oct 26",
-        "estimatedDateLong": "Sunday, October 26",
+        "estimatedDateShort": "Oct 13",
+        "estimatedDateLong": "Tuesday, October 13",
         "center": [
           -96.83201163255772,
           32.903067494303784
@@ -1049,16 +1429,652 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Sunday, October 26</span>.<br>Please check back as plans may have changed.<br><br>#zone28",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Tuesday, October 13</span>.<br>Please check back as plans may have changed.<br><br>#zone28",
         "status": "Coming",
-        "estimatedDateShort": "Oct 26",
-        "estimatedDateLong": "Sunday, October 26",
+        "estimatedDateShort": "Oct 13",
+        "estimatedDateLong": "Tuesday, October 13",
         "center": [
           -96.83277368989773,
           32.90303724961193
         ],
         "centerLng": -96.83277368989773,
         "centerLat": 32.90303724961193
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "zone29",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -96.8384566018154,
+              32.89992649011192
+            ],
+            [
+              -96.83891084340901,
+              32.89992507812519
+            ],
+            [
+              -96.83889987868278,
+              32.89975790430474
+            ],
+            [
+              -96.83845944979893,
+              32.89976587684026
+            ],
+            [
+              -96.8384566018154,
+              32.89992649011192
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zoneCode": "zone29",
+        "zoneName": "Grazing Area<br>Just West of Midway",
+        "icon": "🌼",
+        "color": "#66bb66",
+        "popupClass": "custom-popup-green",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Tuesday, October 13</span>.<br>Please check back as plans may have changed.<br><br>#zone29",
+        "status": "Coming",
+        "estimatedDateShort": "Oct 13",
+        "estimatedDateLong": "Tuesday, October 13",
+        "center": [
+          -96.83889426663147,
+          32.89991593630322
+        ],
+        "centerLng": -96.83889426663147,
+        "centerLat": 32.89991593630322
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "zone30",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -96.84029961707154,
+              32.89989579440639
+            ],
+            [
+              -96.84089202577717,
+              32.89992490141908
+            ],
+            [
+              -96.84094340574869,
+              32.89976574490387
+            ],
+            [
+              -96.84030537561111,
+              32.89970926990079
+            ],
+            [
+              -96.84029961707154,
+              32.89989579440639
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zoneCode": "zone30",
+        "zoneName": "Grazing Area<br>Just East of Pinocchio",
+        "icon": "🌼",
+        "color": "#66bb66",
+        "popupClass": "custom-popup-green",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Wednesday, October 14</span>.<br>Please check back as plans may have changed.<br><br>#zone30",
+        "status": "Coming",
+        "estimatedDateShort": "Oct 14",
+        "estimatedDateLong": "Wednesday, October 14",
+        "center": [
+          -96.84061757919685,
+          32.899827157522374
+        ],
+        "centerLng": -96.84061757919685,
+        "centerLat": 32.899827157522374
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "zone31",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -96.84166096042341,
+              32.89969957332288
+            ],
+            [
+              -96.84166098282091,
+              32.89991681712763
+            ],
+            [
+              -96.84293136039675,
+              32.89991870017791
+            ],
+            [
+              -96.84290543188766,
+              32.89984885424428
+            ],
+            [
+              -96.8424334664731,
+              32.89970500320921
+            ],
+            [
+              -96.84166096042341,
+              32.89969957332288
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zoneCode": "zone31",
+        "zoneName": "Grazing Area<br>Just East of Snow White",
+        "icon": "🌼",
+        "color": "#66bb66",
+        "popupClass": "custom-popup-green",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Thursday, October 15</span>.<br>Please check back as plans may have changed.<br><br>#zone31",
+        "status": "Coming",
+        "estimatedDateShort": "Oct 15",
+        "estimatedDateLong": "Thursday, October 15",
+        "center": [
+          -96.84224755387866,
+          32.89982996651391
+        ],
+        "centerLng": -96.84224755387866,
+        "centerLat": 32.89982996651391
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "zone32",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -96.8445791292072,
+              32.89990469376762
+            ],
+            [
+              -96.84466196019547,
+              32.89975102924925
+            ],
+            [
+              -96.84416538120351,
+              32.89970172078402
+            ],
+            [
+              -96.8440679939135,
+              32.89990478406337
+            ],
+            [
+              -96.8445791292072,
+              32.89990469376762
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zoneCode": "zone32",
+        "zoneName": "Grazing Area<br>Just East of Wonderland Trail",
+        "icon": "🌼",
+        "color": "#66bb66",
+        "popupClass": "custom-popup-green",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Thursday, October 15</span>.<br>Please check back as plans may have changed.<br><br>#zone32",
+        "status": "Coming",
+        "estimatedDateShort": "Oct 15",
+        "estimatedDateLong": "Thursday, October 15",
+        "center": [
+          -96.84434059681105,
+          32.899809036565394
+        ],
+        "centerLng": -96.84434059681105,
+        "centerLat": 32.899809036565394
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "zone33",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -96.84602326653672,
+              32.89975167265546
+            ],
+            [
+              -96.8460032859453,
+              32.89989788053764
+            ],
+            [
+              -96.8473706618543,
+              32.89990792350696
+            ],
+            [
+              -96.8473233864573,
+              32.89977602202836
+            ],
+            [
+              -96.84716198528221,
+              32.89974909965871
+            ],
+            [
+              -96.84602326653672,
+              32.89975167265546
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zoneCode": "zone33",
+        "zoneName": "Grazing Area<br>Just East of Rosser",
+        "icon": "🌼",
+        "color": "#66bb66",
+        "popupClass": "custom-popup-green",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Friday, October 16</span>.<br>Please check back as plans may have changed.<br><br>#zone33",
+        "status": "Coming",
+        "estimatedDateShort": "Oct 16",
+        "estimatedDateLong": "Friday, October 16",
+        "center": [
+          -96.8466576547074,
+          32.89982006400325
+        ],
+        "centerLng": -96.8466576547074,
+        "centerLat": 32.89982006400325
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "zone34",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -96.85008027833408,
+              32.89981880367014
+            ],
+            [
+              -96.85008550613956,
+              32.89992257291178
+            ],
+            [
+              -96.85128766087664,
+              32.89993152386715
+            ],
+            [
+              -96.85120214387605,
+              32.89981206127167
+            ],
+            [
+              -96.85093017246868,
+              32.89973783025019
+            ],
+            [
+              -96.85008027833408,
+              32.89981880367014
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zoneCode": "zone34",
+        "zoneName": "Grazing Area<br>Just East of Cox",
+        "icon": "🌼",
+        "color": "#66bb66",
+        "popupClass": "custom-popup-green",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, October 17</span>.<br>Please check back as plans may have changed.<br><br>#zone34",
+        "status": "Coming",
+        "estimatedDateShort": "Oct 17",
+        "estimatedDateLong": "Saturday, October 17",
+        "center": [
+          -96.85069737574028,
+          32.8998531757752
+        ],
+        "centerLng": -96.85069737574028,
+        "centerLat": 32.8998531757752
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "zone35",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -96.85163173339176,
+              32.89965425586269
+            ],
+            [
+              -96.85162087643397,
+              32.89975294365919
+            ],
+            [
+              -96.8522287234561,
+              32.89976121167109
+            ],
+            [
+              -96.85268392003447,
+              32.89966216545692
+            ],
+            [
+              -96.85163173339176,
+              32.89965425586269
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zoneCode": "zone35",
+        "zoneName": "Grazing Area<br>Just West of Cox",
+        "icon": "🌼",
+        "color": "#66bb66",
+        "popupClass": "custom-popup-green",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, October 17</span>.<br>Please check back as plans may have changed.<br><br>#zone35",
+        "status": "Coming",
+        "estimatedDateShort": "Oct 17",
+        "estimatedDateLong": "Saturday, October 17",
+        "center": [
+          -96.85216234856533,
+          32.89973995188275
+        ],
+        "centerLng": -96.85216234856533,
+        "centerLat": 32.89973995188275
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "zone36",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -96.85678086910585,
+              32.89989547392469
+            ],
+            [
+              -96.856399018639,
+              32.89988580728052
+            ],
+            [
+              -96.85686290566659,
+              32.89992978113896
+            ],
+            [
+              -96.85678086910585,
+              32.89989547392469
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zoneCode": "zone36",
+        "zoneName": "Grazing Area<br>Just West of Marsh",
+        "icon": "🌼",
+        "color": "#66bb66",
+        "popupClass": "custom-popup-green",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, October 17</span>.<br>Please check back as plans may have changed.<br><br>#zone36",
+        "status": "Coming",
+        "estimatedDateShort": "Oct 17",
+        "estimatedDateLong": "Saturday, October 17",
+        "center": [
+          -96.85648481335379,
+          32.89983707029181
+        ],
+        "centerLng": -96.85648481335379,
+        "centerLat": 32.89983707029181
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "zone37",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -96.8567213431947,
+              32.89971733112318
+            ],
+            [
+              -96.85716180989195,
+              32.89988547239908
+            ],
+            [
+              -96.8575710488989,
+              32.89988046043638
+            ],
+            [
+              -96.85797539737285,
+              32.89967628352098
+            ],
+            [
+              -96.8567213431947,
+              32.89971733112318
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zoneCode": "zone37",
+        "zoneName": "Grazing Area<br>Just West of Marsh",
+        "icon": "🌼",
+        "color": "#66bb66",
+        "popupClass": "custom-popup-green",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Sunday, October 18</span>.<br>Please check back as plans may have changed.<br><br>#zone37",
+        "status": "Coming",
+        "estimatedDateShort": "Oct 18",
+        "estimatedDateLong": "Sunday, October 18",
+        "center": [
+          -96.85733413257675,
+          32.89976499738702
+        ],
+        "centerLng": -96.85733413257675,
+        "centerLat": 32.89976499738702
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "zone38",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -96.85877436950341,
+              32.89992901176926
+            ],
+            [
+              -96.85837747309351,
+              32.8997632108789
+            ],
+            [
+              -96.85811900086614,
+              32.89977123050078
+            ],
+            [
+              -96.8577751709341,
+              32.89992126401744
+            ],
+            [
+              -96.85877436950341,
+              32.89992901176926
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zoneCode": "zone38",
+        "zoneName": "Grazing Area<br>Just West of Marsh",
+        "icon": "🌼",
+        "color": "#66bb66",
+        "popupClass": "custom-popup-green",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Sunday, October 18</span>.<br>Please check back as plans may have changed.<br><br>#zone38",
+        "status": "Coming",
+        "estimatedDateShort": "Oct 18",
+        "estimatedDateLong": "Sunday, October 18",
+        "center": [
+          -96.8582069260721,
+          32.899840407888725
+        ],
+        "centerLng": -96.8582069260721,
+        "centerLat": 32.899840407888725
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "zone39",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -96.85864428376962,
+              32.89973216053173
+            ],
+            [
+              -96.85895117973472,
+              32.89985392103417
+            ],
+            [
+              -96.85940894140927,
+              32.89985894149115
+            ],
+            [
+              -96.85980038014468,
+              32.89971442645025
+            ],
+            [
+              -96.85864428376962,
+              32.89973216053173
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zoneCode": "zone39",
+        "zoneName": "Grazing Area<br>Just West of Marsh",
+        "icon": "🌼",
+        "color": "#66bb66",
+        "popupClass": "custom-popup-green",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Monday, October 19</span>.<br>Please check back as plans may have changed.<br><br>#zone39",
+        "status": "Coming",
+        "estimatedDateShort": "Oct 19",
+        "estimatedDateLong": "Monday, October 19",
+        "center": [
+          -96.85923684261302,
+          32.89978838051634
+        ],
+        "centerLng": -96.85923684261302,
+        "centerLat": 32.89978838051634
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "zone40",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -96.86037183241248,
+              32.89979309852959
+            ],
+            [
+              -96.86015975110624,
+              32.89975045757993
+            ],
+            [
+              -96.85973658344541,
+              32.89991594148454
+            ],
+            [
+              -96.86048163962487,
+              32.89993329663721
+            ],
+            [
+              -96.86051467465667,
+              32.89984407871167
+            ],
+            [
+              -96.86037183241248,
+              32.89979309852959
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zoneCode": "zone40",
+        "zoneName": "Grazing Area<br>Just East of Cormwell",
+        "icon": "🌼",
+        "color": "#66bb66",
+        "popupClass": "custom-popup-green",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Monday, October 19</span>.<br>Please check back as plans may have changed.<br><br>#zone40",
+        "status": "Coming",
+        "estimatedDateShort": "Oct 19",
+        "estimatedDateLong": "Monday, October 19",
+        "center": [
+          -96.86018976533448,
+          32.899861270857954
+        ],
+        "centerLng": -96.86018976533448,
+        "centerLat": 32.899861270857954
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "zone41",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -96.86082842393316,
+              32.89971512092399
+            ],
+            [
+              -96.86071387310203,
+              32.8997446487103
+            ],
+            [
+              -96.86117867136761,
+              32.89990801001669
+            ],
+            [
+              -96.86193851809182,
+              32.89969777644877
+            ],
+            [
+              -96.86082842393316,
+              32.89971512092399
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zoneCode": "zone41",
+        "zoneName": "Grazing Area<br>Just East of Cormwell",
+        "icon": "🌼",
+        "color": "#66bb66",
+        "popupClass": "custom-popup-green",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Tuesday, October 20</span>.<br>Please check back as plans may have changed.<br><br>#zone41",
+        "status": "Coming",
+        "estimatedDateShort": "Oct 20",
+        "estimatedDateLong": "Tuesday, October 20",
+        "center": [
+          -96.86125397584055,
+          32.899772648345945
+        ],
+        "centerLng": -96.86125397584055,
+        "centerLat": 32.899772648345945
       }
     },
     {
@@ -1105,16 +2121,64 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Sunday, October 26</span>.<br>Please check back as plans may have changed.<br><br>#zone42",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Tuesday, October 20</span>.<br>Please check back as plans may have changed.<br><br>#zone42",
         "status": "Coming",
-        "estimatedDateShort": "Oct 26",
-        "estimatedDateLong": "Sunday, October 26",
+        "estimatedDateShort": "Oct 20",
+        "estimatedDateLong": "Tuesday, October 20",
         "center": [
           -96.86314188276845,
           32.893533762640864
         ],
         "centerLng": -96.86314188276845,
         "centerLat": 32.893533762640864
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "zone43",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -96.86324701533516,
+              32.89166125853265
+            ],
+            [
+              -96.8631046281238,
+              32.89169263088355
+            ],
+            [
+              -96.86311892463264,
+              32.89206632168235
+            ],
+            [
+              -96.8632436600762,
+              32.89209090318952
+            ],
+            [
+              -96.86324701533516,
+              32.89166125853265
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zoneCode": "zone43",
+        "zoneName": "Grazing Area<br>Just South of Princess Lane",
+        "icon": "🌼",
+        "color": "#66bb66",
+        "popupClass": "custom-popup-green",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Wednesday, October 21</span>.<br>Please check back as plans may have changed.<br><br>#zone43",
+        "status": "Coming",
+        "estimatedDateShort": "Oct 21",
+        "estimatedDateLong": "Wednesday, October 21",
+        "center": [
+          -96.86316694912263,
+          32.89186868335805
+        ],
+        "centerLng": -96.86316694912263,
+        "centerLat": 32.89186868335805
       }
     },
     {
@@ -1153,10 +2217,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Monday, October 27</span>.<br>Please check back as plans may have changed.<br><br>#zone44",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Wednesday, October 21</span>.<br>Please check back as plans may have changed.<br><br>#zone44",
         "status": "Coming",
-        "estimatedDateShort": "Oct 27",
-        "estimatedDateLong": "Monday, October 27",
+        "estimatedDateShort": "Oct 21",
+        "estimatedDateLong": "Wednesday, October 21",
         "center": [
           -96.86312642835642,
           32.89116463663941
@@ -1205,10 +2269,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Monday, October 27</span>.<br>Please check back as plans may have changed.<br><br>#zone45",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Thursday, October 22</span>.<br>Please check back as plans may have changed.<br><br>#zone45",
         "status": "Coming",
-        "estimatedDateShort": "Oct 27",
-        "estimatedDateLong": "Monday, October 27",
+        "estimatedDateShort": "Oct 22",
+        "estimatedDateLong": "Thursday, October 22",
         "center": [
           -96.86317853295009,
           32.89033936073798
@@ -1253,10 +2317,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Tuesday, October 28</span>.<br>Please check back as plans may have changed.<br><br>#zone46",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Thursday, October 22</span>.<br>Please check back as plans may have changed.<br><br>#zone46",
         "status": "Coming",
-        "estimatedDateShort": "Oct 28",
-        "estimatedDateLong": "Tuesday, October 28",
+        "estimatedDateShort": "Oct 22",
+        "estimatedDateLong": "Thursday, October 22",
         "center": [
           -96.86335910479687,
           32.88953473424245
@@ -1313,10 +2377,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Wednesday, October 29</span>.<br>Please check back as plans may have changed.<br><br>#zone47",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Friday, October 23</span>.<br>Please check back as plans may have changed.<br><br>#zone47",
         "status": "Coming",
-        "estimatedDateShort": "Oct 29",
-        "estimatedDateLong": "Wednesday, October 29",
+        "estimatedDateShort": "Oct 23",
+        "estimatedDateLong": "Friday, October 23",
         "center": [
           -96.86315303019093,
           32.888544332113845
@@ -1369,10 +2433,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Wednesday, October 29</span>.<br>Please check back as plans may have changed.<br><br>#zone48",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, October 24</span>.<br>Please check back as plans may have changed.<br><br>#zone48",
         "status": "Coming",
-        "estimatedDateShort": "Oct 29",
-        "estimatedDateLong": "Wednesday, October 29",
+        "estimatedDateShort": "Oct 24",
+        "estimatedDateLong": "Saturday, October 24",
         "center": [
           -96.86312031387274,
           32.88705357928983
@@ -1417,10 +2481,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Wednesday, October 29</span>.<br>Please check back as plans may have changed.<br><br>#zone49",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, October 24</span>.<br>Please check back as plans may have changed.<br><br>#zone49",
         "status": "Coming",
-        "estimatedDateShort": "Oct 29",
-        "estimatedDateLong": "Wednesday, October 29",
+        "estimatedDateShort": "Oct 24",
+        "estimatedDateLong": "Saturday, October 24",
         "center": [
           -96.86323047304487,
           32.88630965288973
@@ -1461,10 +2525,10 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Thursday, October 30</span>.<br>Please check back as plans may have changed.<br><br>#zone50",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, October 24</span>.<br>Please check back as plans may have changed.<br><br>#zone50",
         "status": "Coming",
-        "estimatedDateShort": "Oct 30",
-        "estimatedDateLong": "Thursday, October 30",
+        "estimatedDateShort": "Oct 24",
+        "estimatedDateLong": "Saturday, October 24",
         "center": [
           -96.86408955036057,
           32.88588773227698
@@ -1521,1080 +2585,16 @@
         "icon": "🌼",
         "color": "#66bb66",
         "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Thursday, October 30</span>.<br>Please check back as plans may have changed.<br><br>#zone51",
+        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Sunday, October 25</span>.<br>Please check back as plans may have changed.<br><br>#zone51",
         "status": "Coming",
-        "estimatedDateShort": "Oct 30",
-        "estimatedDateLong": "Thursday, October 30",
+        "estimatedDateShort": "Oct 25",
+        "estimatedDateLong": "Sunday, October 25",
         "center": [
           -96.86362241785869,
           32.88570215809123
         ],
         "centerLng": -96.86362241785869,
         "centerLat": 32.88570215809123
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "zone07",
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              -96.79698326223568,
-              32.90020661881669
-            ],
-            [
-              -96.79687986243239,
-              32.90027247661345
-            ],
-            [
-              -96.79735104856182,
-              32.90073384243257
-            ],
-            [
-              -96.79743056232743,
-              32.90069286498969
-            ],
-            [
-              -96.79698326223568,
-              32.90020661881669
-            ]
-          ]
-        ]
-      },
-      "properties": {
-        "zoneCode": "zone07",
-        "zoneName": "Grazing Area<br>Just West of Ricks Circle",
-        "icon": "🌼",
-        "color": "#66bb66",
-        "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, December 30</span>.<br>Please check back as plans may have changed.<br><br>#zone07",
-        "status": "Coming",
-        "estimatedDateShort": "",
-        "estimatedDateLong": "",
-        "center": [
-          -96.7972558398527,
-          32.900499646722594
-        ],
-        "centerLng": -96.7972558398527,
-        "centerLat": 32.900499646722594
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "zone08",
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              -96.79881835432778,
-              32.90078042955418
-            ],
-            [
-              -96.79901170946815,
-              32.90086645704831
-            ],
-            [
-              -96.79946278861692,
-              32.90085652189876
-            ],
-            [
-              -96.79960398003509,
-              32.9007753795545
-            ],
-            [
-              -96.79881835432778,
-              32.90078042955418
-            ]
-          ]
-        ]
-      },
-      "properties": {
-        "zoneCode": "zone08",
-        "zoneName": "Grazing Area<br>Just East of Royalshire",
-        "icon": "🌼",
-        "color": "#66bb66",
-        "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, December 30</span>.<br>Please check back as plans may have changed.<br><br>#zone08",
-        "status": "Coming",
-        "estimatedDateShort": "",
-        "estimatedDateLong": "",
-        "center": [
-          -96.79939115073874,
-          32.900875028607246
-        ],
-        "centerLng": -96.79939115073874,
-        "centerLat": 32.900875028607246
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "zone09",
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              -96.80121326963132,
-              32.90090053866113
-            ],
-            [
-              -96.80096817268402,
-              32.90100671122234
-            ],
-            [
-              -96.8027963397563,
-              32.90103525445971
-            ],
-            [
-              -96.80232838534774,
-              32.90089958508166
-            ],
-            [
-              -96.80121326963132,
-              32.90090053866113
-            ]
-          ]
-        ]
-      },
-      "properties": {
-        "zoneCode": "zone09",
-        "zoneName": "Grazing Area<br>Just West of Royalshire",
-        "icon": "🌼",
-        "color": "#66bb66",
-        "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, December 30</span>.<br>Please check back as plans may have changed.<br><br>#zone09",
-        "status": "Coming",
-        "estimatedDateShort": "",
-        "estimatedDateLong": "",
-        "center": [
-          -96.8018582710883,
-          32.900966846323094
-        ],
-        "centerLng": -96.8018582710883,
-        "centerLat": 32.900966846323094
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "zone10",
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              -96.80278793646214,
-              32.90077008299492
-            ],
-            [
-              -96.80287362400148,
-              32.90092834300738
-            ],
-            [
-              -96.80234551988504,
-              32.90082503165784
-            ],
-            [
-              -96.80243431202697,
-              32.9007504752124
-            ],
-            [
-              -96.80278793646214,
-              32.90077008299492
-            ]
-          ]
-        ]
-      },
-      "properties": {
-        "zoneCode": "zone10",
-        "zoneName": "Grazing Area<br>Just East of Preston",
-        "icon": "🌼",
-        "color": "#66bb66",
-        "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, December 30</span>.<br>Please check back as plans may have changed.<br><br>#zone10",
-        "status": "Coming",
-        "estimatedDateShort": "",
-        "estimatedDateLong": "",
-        "center": [
-          -96.80267847900996,
-          32.900841763897965
-        ],
-        "centerLng": -96.80267847900996,
-        "centerLat": 32.900841763897965
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "zone11",
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              -96.80624997750964,
-              32.90077212054685
-            ],
-            [
-              -96.8066839908898,
-              32.90094716783956
-            ],
-            [
-              -96.80711798715028,
-              32.90081516453406
-            ],
-            [
-              -96.80624997750964,
-              32.90077212054685
-            ]
-          ]
-        ]
-      },
-      "properties": {
-        "zoneCode": "zone11",
-        "zoneName": "Grazing Area<br>Just West of Preston",
-        "icon": "🌼",
-        "color": "#66bb66",
-        "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, December 30</span>.<br>Please check back as plans may have changed.<br><br>#zone11",
-        "status": "Coming",
-        "estimatedDateShort": "",
-        "estimatedDateLong": "",
-        "center": [
-          -96.80670542835504,
-          32.90085210646695
-        ],
-        "centerLng": -96.80670542835504,
-        "centerLat": 32.90085210646695
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "zone12",
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              -96.80697385825309,
-              32.90100280220638
-            ],
-            [
-              -96.80739516003283,
-              32.90101062437864
-            ],
-            [
-              -96.8074074222957,
-              32.9009028426243
-            ],
-            [
-              -96.80721434146545,
-              32.90089446897715
-            ],
-            [
-              -96.80697385825309,
-              32.90100280220638
-            ]
-          ]
-        ]
-      },
-      "properties": {
-        "zoneCode": "zone12",
-        "zoneName": "Grazing Area<br>Just East of Jamestown",
-        "icon": "🌼",
-        "color": "#66bb66",
-        "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, December 30</span>.<br>Please check back as plans may have changed.<br><br>#zone12",
-        "status": "Coming",
-        "estimatedDateShort": "",
-        "estimatedDateLong": "",
-        "center": [
-          -96.80701018324825,
-          32.900881481354006
-        ],
-        "centerLng": -96.80701018324825,
-        "centerLat": 32.900881481354006
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "zone13",
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              -96.80773627512411,
-              32.90077744683717
-            ],
-            [
-              -96.80772507839548,
-              32.90083761258908
-            ],
-            [
-              -96.80843034663286,
-              32.90095587630328
-            ],
-            [
-              -96.80891020210564,
-              32.90082425618737
-            ],
-            [
-              -96.80889875754558,
-              32.90076645957542
-            ],
-            [
-              -96.80773627512411,
-              32.90077744683717
-            ]
-          ]
-        ]
-      },
-      "properties": {
-        "zoneCode": "zone13",
-        "zoneName": "Grazing Area<br>Just West of Jamestown",
-        "icon": "🌼",
-        "color": "#66bb66",
-        "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, December 30</span>.<br>Please check back as plans may have changed.<br><br>#zone13",
-        "status": "Coming",
-        "estimatedDateShort": "",
-        "estimatedDateLong": "",
-        "center": [
-          -96.80832150286496,
-          32.90083371921986
-        ],
-        "centerLng": -96.80832150286496,
-        "centerLat": 32.90083371921986
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "zone14",
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              -96.80875451512944,
-              32.90099023354392
-            ],
-            [
-              -96.80935648907621,
-              32.90101757651045
-            ],
-            [
-              -96.80935009481883,
-              32.90082957884585
-            ],
-            [
-              -96.80875451512944,
-              32.90099023354392
-            ]
-          ]
-        ]
-      },
-      "properties": {
-        "zoneCode": "zone14",
-        "zoneName": "Grazing Area Just East of Quincy",
-        "icon": "🌼",
-        "color": "#66bb66",
-        "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, December 30</span>.<br>Please check back as plans may have changed.<br><br>#zone14",
-        "status": "Coming",
-        "estimatedDateShort": "",
-        "estimatedDateLong": "",
-        "center": [
-          -96.8090655029575,
-          32.90091582290824
-        ],
-        "centerLng": -96.8090655029575,
-        "centerLat": 32.90091582290824
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "zone29",
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              -96.8384566018154,
-              32.89992649011192
-            ],
-            [
-              -96.83891084340901,
-              32.89992507812519
-            ],
-            [
-              -96.83889987868278,
-              32.89975790430474
-            ],
-            [
-              -96.83845944979893,
-              32.89976587684026
-            ],
-            [
-              -96.8384566018154,
-              32.89992649011192
-            ]
-          ]
-        ]
-      },
-      "properties": {
-        "zoneCode": "zone29",
-        "zoneName": "Grazing Area<br>Just West of Midway",
-        "icon": "🌼",
-        "color": "#66bb66",
-        "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, December 30</span>.<br>Please check back as plans may have changed.<br><br>#zone29",
-        "status": "Coming",
-        "estimatedDateShort": "",
-        "estimatedDateLong": "",
-        "center": [
-          -96.83889426663147,
-          32.89991593630322
-        ],
-        "centerLng": -96.83889426663147,
-        "centerLat": 32.89991593630322
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "zone30",
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              -96.84029961707154,
-              32.89989579440639
-            ],
-            [
-              -96.84089202577717,
-              32.89992490141908
-            ],
-            [
-              -96.84094340574869,
-              32.89976574490387
-            ],
-            [
-              -96.84030537561111,
-              32.89970926990079
-            ],
-            [
-              -96.84029961707154,
-              32.89989579440639
-            ]
-          ]
-        ]
-      },
-      "properties": {
-        "zoneCode": "zone30",
-        "zoneName": "Grazing Area<br>Just East of Pinocchio",
-        "icon": "🌼",
-        "color": "#66bb66",
-        "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, December 30</span>.<br>Please check back as plans may have changed.<br><br>#zone30",
-        "status": "Coming",
-        "estimatedDateShort": "",
-        "estimatedDateLong": "",
-        "center": [
-          -96.84061757919685,
-          32.899827157522374
-        ],
-        "centerLng": -96.84061757919685,
-        "centerLat": 32.899827157522374
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "zone31",
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              -96.84166096042341,
-              32.89969957332288
-            ],
-            [
-              -96.84166098282091,
-              32.89991681712763
-            ],
-            [
-              -96.84293136039675,
-              32.89991870017791
-            ],
-            [
-              -96.84290543188766,
-              32.89984885424428
-            ],
-            [
-              -96.8424334664731,
-              32.89970500320921
-            ],
-            [
-              -96.84166096042341,
-              32.89969957332288
-            ]
-          ]
-        ]
-      },
-      "properties": {
-        "zoneCode": "zone31",
-        "zoneName": "Grazing Area<br>Just East of Snow White",
-        "icon": "🌼",
-        "color": "#66bb66",
-        "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, December 30</span>.<br>Please check back as plans may have changed.<br><br>#zone31",
-        "status": "Coming",
-        "estimatedDateShort": "",
-        "estimatedDateLong": "",
-        "center": [
-          -96.84224755387866,
-          32.89982996651391
-        ],
-        "centerLng": -96.84224755387866,
-        "centerLat": 32.89982996651391
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "zone32",
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              -96.8445791292072,
-              32.89990469376762
-            ],
-            [
-              -96.84466196019547,
-              32.89975102924925
-            ],
-            [
-              -96.84416538120351,
-              32.89970172078402
-            ],
-            [
-              -96.8440679939135,
-              32.89990478406337
-            ],
-            [
-              -96.8445791292072,
-              32.89990469376762
-            ]
-          ]
-        ]
-      },
-      "properties": {
-        "zoneCode": "zone32",
-        "zoneName": "Grazing Area<br>Just East of Wonderland Trail",
-        "icon": "🌼",
-        "color": "#66bb66",
-        "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, December 30</span>.<br>Please check back as plans may have changed.<br><br>#zone32",
-        "status": "Coming",
-        "estimatedDateShort": "",
-        "estimatedDateLong": "",
-        "center": [
-          -96.84434059681105,
-          32.899809036565394
-        ],
-        "centerLng": -96.84434059681105,
-        "centerLat": 32.899809036565394
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "zone33",
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              -96.84602326653672,
-              32.89975167265546
-            ],
-            [
-              -96.8460032859453,
-              32.89989788053764
-            ],
-            [
-              -96.8473706618543,
-              32.89990792350696
-            ],
-            [
-              -96.8473233864573,
-              32.89977602202836
-            ],
-            [
-              -96.84716198528221,
-              32.89974909965871
-            ],
-            [
-              -96.84602326653672,
-              32.89975167265546
-            ]
-          ]
-        ]
-      },
-      "properties": {
-        "zoneCode": "zone33",
-        "zoneName": "Grazing Area<br>Just East of Rosser",
-        "icon": "🌼",
-        "color": "#66bb66",
-        "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, December 30</span>.<br>Please check back as plans may have changed.<br><br>#zone33",
-        "status": "Coming",
-        "estimatedDateShort": "",
-        "estimatedDateLong": "",
-        "center": [
-          -96.8466576547074,
-          32.89982006400325
-        ],
-        "centerLng": -96.8466576547074,
-        "centerLat": 32.89982006400325
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "zone34",
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              -96.85008027833408,
-              32.89981880367014
-            ],
-            [
-              -96.85008550613956,
-              32.89992257291178
-            ],
-            [
-              -96.85128766087664,
-              32.89993152386715
-            ],
-            [
-              -96.85120214387605,
-              32.89981206127167
-            ],
-            [
-              -96.85093017246868,
-              32.89973783025019
-            ],
-            [
-              -96.85008027833408,
-              32.89981880367014
-            ]
-          ]
-        ]
-      },
-      "properties": {
-        "zoneCode": "zone34",
-        "zoneName": "Grazing Area<br>Just East of Cox",
-        "icon": "🌼",
-        "color": "#66bb66",
-        "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, December 30</span>.<br>Please check back as plans may have changed.<br><br>#zone34",
-        "status": "Coming",
-        "estimatedDateShort": "",
-        "estimatedDateLong": "",
-        "center": [
-          -96.85069737574028,
-          32.8998531757752
-        ],
-        "centerLng": -96.85069737574028,
-        "centerLat": 32.8998531757752
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "zone35",
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              -96.85163173339176,
-              32.89965425586269
-            ],
-            [
-              -96.85162087643397,
-              32.89975294365919
-            ],
-            [
-              -96.8522287234561,
-              32.89976121167109
-            ],
-            [
-              -96.85268392003447,
-              32.89966216545692
-            ],
-            [
-              -96.85163173339176,
-              32.89965425586269
-            ]
-          ]
-        ]
-      },
-      "properties": {
-        "zoneCode": "zone35",
-        "zoneName": "Grazing Area<br>Just West of Cox",
-        "icon": "🌼",
-        "color": "#66bb66",
-        "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, December 30</span>.<br>Please check back as plans may have changed.<br><br>#zone35",
-        "status": "Coming",
-        "estimatedDateShort": "",
-        "estimatedDateLong": "",
-        "center": [
-          -96.85216234856533,
-          32.89973995188275
-        ],
-        "centerLng": -96.85216234856533,
-        "centerLat": 32.89973995188275
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "zone36",
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              -96.85678086910585,
-              32.89989547392469
-            ],
-            [
-              -96.856399018639,
-              32.89988580728052
-            ],
-            [
-              -96.85686290566659,
-              32.89992978113896
-            ],
-            [
-              -96.85678086910585,
-              32.89989547392469
-            ]
-          ]
-        ]
-      },
-      "properties": {
-        "zoneCode": "zone36",
-        "zoneName": "Grazing Area<br>Just West of Marsh",
-        "icon": "🌼",
-        "color": "#66bb66",
-        "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, December 30</span>.<br>Please check back as plans may have changed.<br><br>#zone36",
-        "status": "Coming",
-        "estimatedDateShort": "",
-        "estimatedDateLong": "",
-        "center": [
-          -96.85648481335379,
-          32.89983707029181
-        ],
-        "centerLng": -96.85648481335379,
-        "centerLat": 32.89983707029181
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "zone37",
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              -96.8567213431947,
-              32.89971733112318
-            ],
-            [
-              -96.85716180989195,
-              32.89988547239908
-            ],
-            [
-              -96.8575710488989,
-              32.89988046043638
-            ],
-            [
-              -96.85797539737285,
-              32.89967628352098
-            ],
-            [
-              -96.8567213431947,
-              32.89971733112318
-            ]
-          ]
-        ]
-      },
-      "properties": {
-        "zoneCode": "zone37",
-        "zoneName": "Grazing Area<br>Just West of Marsh",
-        "icon": "🌼",
-        "color": "#66bb66",
-        "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, December 30</span>.<br>Please check back as plans may have changed.<br><br>#zone37",
-        "status": "Coming",
-        "estimatedDateShort": "",
-        "estimatedDateLong": "",
-        "center": [
-          -96.85733413257675,
-          32.89976499738702
-        ],
-        "centerLng": -96.85733413257675,
-        "centerLat": 32.89976499738702
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "zone38",
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              -96.85877436950341,
-              32.89992901176926
-            ],
-            [
-              -96.85837747309351,
-              32.8997632108789
-            ],
-            [
-              -96.85811900086614,
-              32.89977123050078
-            ],
-            [
-              -96.8577751709341,
-              32.89992126401744
-            ],
-            [
-              -96.85877436950341,
-              32.89992901176926
-            ]
-          ]
-        ]
-      },
-      "properties": {
-        "zoneCode": "zone38",
-        "zoneName": "Grazing Area<br>Just West of Marsh",
-        "icon": "🌼",
-        "color": "#66bb66",
-        "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, December 30</span>.<br>Please check back as plans may have changed.<br><br>#zone38",
-        "status": "Coming",
-        "estimatedDateShort": "",
-        "estimatedDateLong": "",
-        "center": [
-          -96.8582069260721,
-          32.899840407888725
-        ],
-        "centerLng": -96.8582069260721,
-        "centerLat": 32.899840407888725
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "zone39",
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              -96.85864428376962,
-              32.89973216053173
-            ],
-            [
-              -96.85895117973472,
-              32.89985392103417
-            ],
-            [
-              -96.85940894140927,
-              32.89985894149115
-            ],
-            [
-              -96.85980038014468,
-              32.89971442645025
-            ],
-            [
-              -96.85864428376962,
-              32.89973216053173
-            ]
-          ]
-        ]
-      },
-      "properties": {
-        "zoneCode": "zone39",
-        "zoneName": "Grazing Area<br>Just West of Marsh",
-        "icon": "🌼",
-        "color": "#66bb66",
-        "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, December 30</span>.<br>Please check back as plans may have changed.<br><br>#zone39",
-        "status": "Coming",
-        "estimatedDateShort": "",
-        "estimatedDateLong": "",
-        "center": [
-          -96.85923684261302,
-          32.89978838051634
-        ],
-        "centerLng": -96.85923684261302,
-        "centerLat": 32.89978838051634
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "zone40",
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              -96.86037183241248,
-              32.89979309852959
-            ],
-            [
-              -96.86015975110624,
-              32.89975045757993
-            ],
-            [
-              -96.85973658344541,
-              32.89991594148454
-            ],
-            [
-              -96.86048163962487,
-              32.89993329663721
-            ],
-            [
-              -96.86051467465667,
-              32.89984407871167
-            ],
-            [
-              -96.86037183241248,
-              32.89979309852959
-            ]
-          ]
-        ]
-      },
-      "properties": {
-        "zoneCode": "zone40",
-        "zoneName": "Grazing Area<br>Just East of Cormwell",
-        "icon": "🌼",
-        "color": "#66bb66",
-        "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, December 30</span>.<br>Please check back as plans may have changed.<br><br>#zone40",
-        "status": "Coming",
-        "estimatedDateShort": "",
-        "estimatedDateLong": "",
-        "center": [
-          -96.86018976533448,
-          32.899861270857954
-        ],
-        "centerLng": -96.86018976533448,
-        "centerLat": 32.899861270857954
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "zone41",
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              -96.86082842393316,
-              32.89971512092399
-            ],
-            [
-              -96.86071387310203,
-              32.8997446487103
-            ],
-            [
-              -96.86117867136761,
-              32.89990801001669
-            ],
-            [
-              -96.86193851809182,
-              32.89969777644877
-            ],
-            [
-              -96.86082842393316,
-              32.89971512092399
-            ]
-          ]
-        ]
-      },
-      "properties": {
-        "zoneCode": "zone41",
-        "zoneName": "Grazing Area<br>Just East of Cormwell",
-        "icon": "🌼",
-        "color": "#66bb66",
-        "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, December 30</span>.<br>Please check back as plans may have changed.<br><br>#zone41",
-        "status": "Coming",
-        "estimatedDateShort": "",
-        "estimatedDateLong": "",
-        "center": [
-          -96.86125397584055,
-          32.899772648345945
-        ],
-        "centerLng": -96.86125397584055,
-        "centerLat": 32.899772648345945
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "zone43",
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              -96.86324701533516,
-              32.89166125853265
-            ],
-            [
-              -96.8631046281238,
-              32.89169263088355
-            ],
-            [
-              -96.86311892463264,
-              32.89206632168235
-            ],
-            [
-              -96.8632436600762,
-              32.89209090318952
-            ],
-            [
-              -96.86324701533516,
-              32.89166125853265
-            ]
-          ]
-        ]
-      },
-      "properties": {
-        "zoneCode": "zone43",
-        "zoneName": "Grazing Area<br>Just South of Princess Lane",
-        "icon": "🌼",
-        "color": "#66bb66",
-        "popupClass": "custom-popup-green",
-        "description": "The herd will be grazing here on approximately <span style='font-weight: 800;'>Saturday, December 30</span>.<br>Please check back as plans may have changed.<br><br>#zone43",
-        "status": "Coming",
-        "estimatedDateShort": "",
-        "estimatedDateLong": "",
-        "center": [
-          -96.86316694912263,
-          32.89186868335805
-        ],
-        "centerLng": -96.86316694912263,
-        "centerLat": 32.89186868335805
       }
     }
   ]
