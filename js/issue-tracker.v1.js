@@ -514,12 +514,14 @@
     // -------------------------
     // Initialization
     // -------------------------
-    let isInitialized = false;
     function init() {
-        if (isInitialized) return;
         const testForm = document.getElementById('report-form');
-        if (!testForm) return; // Wait until form exists
-        isInitialized = true;
+        if (!testForm || testForm.dataset.ntInitialized) return;
+
+        // Found a new form instance — reset state for this DOM
+        testForm.dataset.ntInitialized = "true";
+        turnstileWidgetId = null;
+        turnstileToken = null;
 
         loadSvgSpriteOnce(); // loads icons.svg sprite so fullscreen btn icons render
 
@@ -984,6 +986,10 @@
     } else {
         init();
     }
+
+    // Handle AJAX-based navigation (specifically for Squarespace)
+    window.addEventListener('popstate', init);
+    window.addEventListener('mercury:load', init); // Squarespace AJAX event
 
     window.addEventListener('pagehide', () => {
         if (!formSubmitted && imageList.length > 0) {
