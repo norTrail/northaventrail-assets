@@ -39,8 +39,8 @@
         "popupClass": "custom-popup-brown",
         "description": "The herd has already cleaned up this no-mow zone.<br><br>#zone01",
         "status": "Finished",
-        "estimatedDateShort": "Oct 15",
-        "estimatedDateLong": "Wednesday, October 15",
+        "estimatedDateShort": "Oct 1",
+        "estimatedDateLong": "Thursday, October 1",
         "center": [
           -96.77331466143518,
           32.898417433219244
@@ -95,8 +95,8 @@
         "popupClass": "custom-popup-brown",
         "description": "The herd has already cleaned up this no-mow zone.<br><br>#zone02",
         "status": "Finished",
-        "estimatedDateShort": "Oct 16",
-        "estimatedDateLong": "Thursday, October 16",
+        "estimatedDateShort": "Oct 2",
+        "estimatedDateLong": "Friday, October 2",
         "center": [
           -96.77515771131058,
           32.897848289180814
