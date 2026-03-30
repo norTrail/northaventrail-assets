@@ -581,7 +581,7 @@ function buildGrazingTable() {
  *                                still invisible) so the DOM can be populated
  *                                before the enter animation begins.
  */
-function flipToView(exitEl, enterEl, direction, onReady) {
+function flipToView(exitEl, enterEl, direction, onReady, onComplete) {
   // Respect user's motion preference (WCAG 2.1 AA — no animation if reduced-motion)
   const prefersNoMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const exitClass  = direction === "forward" ? "view-flip-exit-fwd"  : "view-flip-exit-back";
@@ -613,6 +613,7 @@ function flipToView(exitEl, enterEl, direction, onReady) {
         "button:not(:disabled), a[href], [tabindex='0']"
       );
       if (firstFocusable) firstFocusable.focus();
+      if (onComplete) onComplete();
     }, HALF_MS);
 
   }, HALF_MS);
@@ -628,7 +629,7 @@ UI.tableBtn?.addEventListener("click", () => {
   const tableView = document.getElementById("tableView");
   if (!mapView || !tableView) return;
   pendingZoneScrollCode = selectedZoneCode; // capture before animation/popup-close
-  flipToView(mapView, tableView, "forward", buildGrazingTable);
+  flipToView(mapView, tableView, "forward", buildGrazingTable, applyPendingTableScroll);
 });
 
 UI.backToMapBtn?.addEventListener("click", () => {
@@ -800,22 +801,16 @@ function showTableView(zones) {
 }
 
 function resolveInitialTableTarget(zones) {
-  // 0) Zone captured at click time wins (survives popup close during animation)
-  if (pendingZoneScrollCode) {
-    const code = pendingZoneScrollCode;
-    pendingZoneScrollCode = null;
-    return code;
-  }
+  // If an explicit zone scroll is pending, skip the default scroll to avoid a
+  // visible flash. applyPendingTableScroll() will handle it post-animation.
+  if (pendingZoneScrollCode) return null;
 
-  // 1) Marker selection still open (popup not yet closed)
-  if (selectedZoneCode) return selectedZoneCode;
-
-  // 2) Restore only if the user actually scrolled before
+  // Restore only if the user actually scrolled before
   if (userHasScrolledTable && lastVisibleZoneCode) {
     return lastVisibleZoneCode;
   }
 
-  // 3) First-time default behavior
+  // First-time default behavior
   const now = zones.find(z => z.status === "Now Grazing");
   if (now) return now.code;
 
@@ -823,6 +818,23 @@ function resolveInitialTableTarget(zones) {
   if (coming) return coming.code;
 
   return null;
+}
+
+// Called by flipToView's onComplete (after the enter animation finishes) so that
+// scrollIntoView works correctly on a fully-visible, non-transforming element.
+function applyPendingTableScroll() {
+  const code = pendingZoneScrollCode;
+  if (!code) return;
+  pendingZoneScrollCode = null;
+
+  const container = document.getElementById("tableWrapper");
+  if (!container) return;
+  const row = container.querySelector(`tr[data-code="${code}"]`);
+  if (!row) return;
+
+  container.querySelectorAll("tr.active").forEach(r => r.classList.remove("active"));
+  row.classList.add("active");
+  row.scrollIntoView({ block: "start", behavior: "instant" });
 }
 
 let tableScrollListenerAttached = false;
