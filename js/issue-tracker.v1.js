@@ -554,11 +554,15 @@
         tsContainer.id = 'nt-turnstile-container';
         submitButton.parentNode.insertBefore(tsContainer, submitButton);
         if (typeof turnstile !== 'undefined') {
-            turnstileWidgetId = turnstile.render(tsContainer, {
-                sitekey: TURNSTILE_SITE_KEY,
-                callback: (token) => { turnstileToken = token; },
-                'expired-callback': () => { turnstileToken = null; },
-                'error-callback': () => { turnstileToken = null; },
+            turnstile.ready(() => {
+                setTimeout(() => {
+                    turnstileWidgetId = turnstile.render('#nt-turnstile-container', {
+                        sitekey: TURNSTILE_SITE_KEY,
+                        callback: (token) => { turnstileToken = token; },
+                        'expired-callback': () => { turnstileToken = null; },
+                        'error-callback': () => { turnstileToken = null; },
+                    });
+                }, 100);
             });
         }
 
