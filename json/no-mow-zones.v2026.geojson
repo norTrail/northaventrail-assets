@@ -95,8 +95,8 @@
         "popupClass": "custom-popup-brown",
         "description": "The herd has already cleaned up this no-mow zone.<br><br>#zone02",
         "status": "Finished",
-        "estimatedDateShort": "Oct 2",
-        "estimatedDateLong": "Friday, October 2",
+        "estimatedDateShort": "Oct 1",
+        "estimatedDateLong": "Thursday, October 1",
         "center": [
           -96.77515771131058,
           32.897848289180814
