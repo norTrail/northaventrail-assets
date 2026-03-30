@@ -451,7 +451,7 @@ function updateNoMowLayers(map, geojson, force = false) {
     el.innerHTML = `<span class="marker-inner">${props.icon || "🌼"}</span>`;
     el.title = props.zoneCode || "";
 
-    const name = props.zoneName || "No-Mow Zone";
+    const name = (props.zoneName || "No-Mow Zone").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
     const desc = props.description || "";
 
     el.setAttribute("aria-label", `${name}: open details`);
@@ -509,6 +509,7 @@ function updateNoMowLayers(map, geojson, force = false) {
     const marker = new mapboxgl.Marker(el, { anchor: "center" })
       .setLngLat(center)
       .addTo(map);
+    el.removeAttribute("role"); // MapboxGL may inject role="img"; remove it — <button> has implicit role
 
     noMowZoneMarkers[code] = { marker, element: el, feature };
   });

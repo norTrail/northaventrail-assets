@@ -164,9 +164,9 @@ function onMapClick_(event) {
   const listing = document.getElementById(`listing-${clickedId}`);
   if (listing) listing.classList.add("activeOption");
 
-  // Sync with listing table if present
-  if (window.TrailmapListing && window.TrailmapListing.highlightAndScrollTo) {
-    window.TrailmapListing.highlightAndScrollTo(clickedId);
+  // Sync with listing table if present (highlight only, no scroll — popup stays in view)
+  if (window.TrailmapListing && window.TrailmapListing.highlightFeature) {
+    window.TrailmapListing.highlightFeature(clickedId);
   }
 }
 
@@ -252,6 +252,9 @@ function wireCustomSearchUI_() {
     input.parentNode.insertBefore(label, input);
   }
   input.setAttribute("aria-label", "Search the Trail");
+  input.setAttribute("role", "combobox");
+  input.setAttribute("aria-haspopup", "listbox");
+  box.setAttribute("role", "listbox");
 
   let open = false;
   let activeIndex = -1;
@@ -1198,6 +1201,9 @@ window.initTrailmapSearch = function initTrailmapSearch(map) {
   input.setAttribute("aria-controls", "locationListbox");
   input.setAttribute("aria-autocomplete", "list");
   input.setAttribute("aria-expanded", "false");
+  input.setAttribute("role", "combobox");
+  input.setAttribute("aria-haspopup", "listbox");
+  listbox.setAttribute("role", "listbox");
 
   // Install the map control button (magnifier) if not already present
   if (!document.getElementById("searchButton")) {

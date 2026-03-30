@@ -174,6 +174,57 @@ let resetCoordinates = false;
   }
 })();
 
+// Patch Squarespace landmark issues for ADA compliance
+(function patchLandmarks() {
+  function applyPatches() {
+    // Issue 2: give each <nav> a unique accessible label so screen readers
+    // can distinguish between them.
+    const mainNav = document.querySelector('#mainNavigation');
+    if (mainNav && !mainNav.getAttribute('aria-label')) {
+      mainNav.setAttribute('aria-label', 'Main navigation');
+    }
+    const iconNav = document.querySelector('nav.sqs-svg-icon--list');
+    if (iconNav && !iconNav.getAttribute('aria-label')) {
+      iconNav.setAttribute('aria-label', 'Social links');
+    }
+
+    // Issue 3a: Squarespace's own skip link (.skip-main) lives outside any
+    // landmark.  Wrap it in a <header> so it is contained by a landmark region.
+    const skipMain = document.querySelector('.skip-main');
+    if (skipMain && skipMain.parentElement?.tagName !== 'HEADER') {
+      const wrapper = document.createElement('header');
+      wrapper.setAttribute('aria-label', 'Skip navigation');
+      skipMain.parentNode.insertBefore(wrapper, skipMain);
+      wrapper.appendChild(skipMain);
+    }
+
+    // Issue 3b: Squarespace button-block containers (yui_ IDs) are inside
+    // #content but that element has no landmark role.  If no native <main>
+    // exists, promote #content to role="main" so all child content is within
+    // a landmark.
+    if (!document.querySelector('main, [role="main"]')) {
+      const content = document.getElementById('content');
+      if (content) content.setAttribute('role', 'main');
+    }
+  }
+
+  function start() {
+    if (!document.body) return setTimeout(start, 20);
+    applyPatches();
+    // Re-run once if Squarespace finishes rendering after initial load
+    const observer = new MutationObserver(() => {
+      applyPatches();
+    });
+    observer.observe(document.body, { childList: true, subtree: false });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start);
+  } else {
+    start();
+  }
+})();
+
 function bootWhenReady() {
   if (!window.TrailmapError) return setTimeout(bootWhenReady, 10);
   loadWindow();

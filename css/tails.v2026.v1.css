@@ -622,7 +622,7 @@ body {
 
 .map-bottom-button {
   box-sizing: border-box;
-  background: #3BA3C8;
+  background: #1B6F8A;
   min-width: 168px;
   color: #fff;
   padding: 5px 22px;
@@ -635,7 +635,7 @@ body {
   text-align: center;
 }
 .map-bottom-button:hover {
-  background: #2D8EAE;
+  background: #175F78;
 }
 
 .map-bottom-button:active {
