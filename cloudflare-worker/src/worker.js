@@ -8,70 +8,81 @@ export default {
   async fetch(request, env) {
     const origin = request.headers.get('Origin') || '';
 
-    // CORS preflight
+    // 1. CORS preflight
     if (request.method === 'OPTIONS') {
       return new Response(null, {
         headers: corsHeaders(origin),
       });
     }
 
-    if (request.method !== 'POST') {
-      return jsonError('Method not allowed', 405, origin);
-    }
-
-    // 1. Origin check
-    if (!ALLOWED_ORIGINS.includes(origin)) {
-      return jsonError('Forbidden', 403, origin);
-    }
-
-    let body;
     try {
-      body = await request.json();
-    } catch {
-      return jsonError('Bad request', 400, origin);
-    }
+      if (request.method !== 'POST') {
+        return jsonError('Method not allowed', 405, origin);
+      }
 
-    // 2. Honeypot check (field must be empty)
-    if (body._hp && body._hp !== '') {
-      // Silently accept (don't reveal to bots that they were caught)
-      return new Response(JSON.stringify({ result: 'success' }), {
-        headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) },
-      });
-    }
+      // 2. Origin check
+      if (!ALLOWED_ORIGINS.includes(origin)) {
+        return jsonError('Forbidden', 403, origin);
+      }
 
-    // 3. Turnstile validation (only for form submissions, not image ops)
-    const page = body.page || body.p || '';
-    const requiresTurnstile = (page === 'saveData');
-    if (requiresTurnstile) {
-      const token = body._turnstile;
-      if (!token) return jsonError('Missing challenge token', 403, origin);
+      let body;
+      try {
+        body = await request.json();
+      } catch (err) {
+        return jsonError('Bad request - invalid JSON', 400, origin);
+      }
 
-      const tsResult = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      // 3. Honeypot check (field must be empty)
+      if (body._hp && body._hp !== '') {
+        // Silently accept (don't reveal to bots that they were caught)
+        return new Response(JSON.stringify({ result: 'success' }), {
+          headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) },
+        });
+      }
+
+      // 4. Turnstile validation (only for form submissions, not image ops)
+      const page = body.page || body.p || '';
+      const requiresTurnstile = (page === 'saveData');
+      if (requiresTurnstile) {
+        const token = body._turnstile;
+        if (!token) return jsonError('Missing challenge token', 403, origin);
+
+        const tsResult = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ secret: env.TURNSTILE_SECRET, response: token }),
+        });
+        const tsData = await tsResult.json();
+        if (!tsData.success) return jsonError('Challenge failed', 403, origin);
+      }
+
+      // 5. Strip internal fields, inject GAS secret
+      const { _turnstile, _hp, ...gasBody } = body;
+      gasBody._secret = env.GAS_SECRET;
+
+      // 6. Forward to GAS
+      const gasResponse = await fetch(env.GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ secret: env.TURNSTILE_SECRET, response: token }),
+        body: JSON.stringify(gasBody),
+        redirect: 'follow',
       });
-      const tsData = await tsResult.json();
-      if (!tsData.success) return jsonError('Challenge failed', 403, origin);
+
+      if (!gasResponse.ok) {
+        const errorText = await gasResponse.text();
+        console.error(`GAS Error (${gasResponse.status}): ${errorText}`);
+        return jsonError(`Backend Error (${gasResponse.status}): ${errorText}`, gasResponse.status, origin);
+      }
+
+      const responseText = await gasResponse.text();
+      return new Response(responseText, {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) },
+      });
+    } catch (err) {
+      console.error(`Worker Exception: ${err.message}`);
+      return jsonError(`Worker Exception: ${err.message}`, 500, origin);
     }
-
-    // 4. Strip internal fields, inject GAS secret
-    const { _turnstile, _hp, ...gasBody } = body;
-    gasBody._secret = env.GAS_SECRET;
-
-    // 5. Forward to GAS
-    const gasResponse = await fetch(env.GAS_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(gasBody),
-      redirect: 'follow',
-    });
-
-    const responseText = await gasResponse.text();
-    return new Response(responseText, {
-      status: 200,
-      headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) },
-    });
   },
 };
 

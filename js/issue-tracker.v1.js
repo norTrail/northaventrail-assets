@@ -197,11 +197,16 @@
                 _hp: '',
             };
 
-            await fetch(WORKER_URL, {
+            const response = await fetch(WORKER_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
             });
+
+            if (!response.ok) {
+                const text = await response.text();
+                throw new Error(`Upload failed (${response.status}): ${text}`);
+            }
 
             return { status: 'submitted' };
         } catch (e) {
