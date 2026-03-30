@@ -16,6 +16,7 @@
     const DEFAULT_TRAIL_ZOOM = 12; // used by resetMapMarker()
 
     let turnstileWidgetId = null;
+    let turnstileToken = null;
 
     let uploadsInProgress = 0;
     let uploadedImageNames = [];
@@ -138,9 +139,7 @@
         try {
             let tsToken = '';
             if (params.page === 'saveData') {
-                if (typeof turnstile !== 'undefined' && turnstileWidgetId !== null) {
-                    tsToken = turnstile.getResponse(turnstileWidgetId) || '';
-                }
+                tsToken = turnstileToken || '';
                 if (!tsToken) {
                     throw new Error('Security check not yet complete. Please wait a moment and try again.');
                 }
@@ -167,6 +166,7 @@
             // Reset Turnstile after a successful form submission so it can be re-used
             if (params.page === 'saveData' && typeof turnstile !== 'undefined' && turnstileWidgetId !== null) {
                 turnstile.reset(turnstileWidgetId);
+                turnstileToken = null;
             }
 
             return { result: 'success', ...data };
@@ -554,7 +554,12 @@
         tsContainer.id = 'nt-turnstile-container';
         submitButton.parentNode.insertBefore(tsContainer, submitButton);
         if (typeof turnstile !== 'undefined') {
-            turnstileWidgetId = turnstile.render(tsContainer, { sitekey: TURNSTILE_SITE_KEY });
+            turnstileWidgetId = turnstile.render(tsContainer, {
+                sitekey: TURNSTILE_SITE_KEY,
+                callback: (token) => { turnstileToken = token; },
+                'expired-callback': () => { turnstileToken = null; },
+                'error-callback': () => { turnstileToken = null; },
+            });
         }
 
         // Load saved info
