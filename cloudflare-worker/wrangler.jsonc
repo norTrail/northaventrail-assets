@@ -4,6 +4,9 @@
   "workers_dev": true,
   "preview_urls": false,
   "compatibility_date": "2026-03-30",
+  "vars": {
+    "GAS_URL": "https://script.google.com/macros/s/AKfycbygx5-v6xF0qyd9riNo3Rf0IPSzf5PmUmS3OBH-fCITcI2qqFcaVY4CFWl-rHMUUgEQTQ/exec"
+  },
   "observability": {
     "enabled": true,
     "head_sampling_rate": 1,
