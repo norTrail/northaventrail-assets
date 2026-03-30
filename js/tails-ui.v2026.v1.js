@@ -359,6 +359,7 @@ function renderAllHerds(data, map) {
 
 const noMowZoneMarkers = {};
 let selectedZoneCode = null;
+let pendingZoneScrollCode = null;
 let lastNoMowHash = null;
 
 // Cheap structural hash — avoids full JSON.stringify on every poll
@@ -626,6 +627,7 @@ UI.tableBtn?.addEventListener("click", () => {
   const mapView = document.getElementById("mapView");
   const tableView = document.getElementById("tableView");
   if (!mapView || !tableView) return;
+  pendingZoneScrollCode = selectedZoneCode; // capture before animation/popup-close
   flipToView(mapView, tableView, "forward", buildGrazingTable);
 });
 
@@ -796,7 +798,14 @@ function showTableView(zones) {
 }
 
 function resolveInitialTableTarget(zones) {
-  // 1) Marker selection always wins
+  // 0) Zone captured at click time wins (survives popup close during animation)
+  if (pendingZoneScrollCode) {
+    const code = pendingZoneScrollCode;
+    pendingZoneScrollCode = null;
+    return code;
+  }
+
+  // 1) Marker selection still open (popup not yet closed)
   if (selectedZoneCode) return selectedZoneCode;
 
   // 2) Restore only if the user actually scrolled before

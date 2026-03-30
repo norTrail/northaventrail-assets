@@ -905,7 +905,7 @@ function installMapControls_() {
       this.iconSpan = document.createElement('span');
       this.iconSpan.className = 'mapboxgl-ctrl-icon';
       this.iconSpan.setAttribute('aria-hidden', 'true');
-      this.iconSpan.style.backgroundImage = 'url("https://assets.northaventrail.org/img/SatelliteOn.avif")';
+      this.iconSpan.style.backgroundImage = 'url("https://assets.northaventrail.org/img/SatelliteOn.svg")';
       this.iconSpan.style.backgroundSize = 'contain';
       this.iconSpan.style.backgroundPosition = 'center';
       this.iconSpan.style.backgroundRepeat = 'no-repeat';
@@ -919,12 +919,12 @@ function installMapControls_() {
 
         if (visibility === VISIBLE) {
           this.map.setLayoutProperty('mapbox-satellite', 'visibility', 'none');
-          this.iconSpan.style.backgroundImage = 'url("https://assets.northaventrail.org/img/SatelliteOn.avif")';
+          this.iconSpan.style.backgroundImage = 'url("https://assets.northaventrail.org/img/SatelliteOn.svg")';
           this.button.title = 'Turn on satellite imagery';
           this.button.setAttribute('aria-label', 'Turn on satellite imagery');
         } else {
           this.map.setLayoutProperty('mapbox-satellite', 'visibility', VISIBLE);
-          this.iconSpan.style.backgroundImage = 'url("https://assets.northaventrail.org/img/SatelliteOff.avif")';
+          this.iconSpan.style.backgroundImage = 'url("https://assets.northaventrail.org/img/SatelliteOff.svg")';
           this.button.title = 'Turn off satellite imagery';
           this.button.setAttribute('aria-label', 'Turn off satellite imagery');
         }
