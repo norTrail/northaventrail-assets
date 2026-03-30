@@ -5,7 +5,7 @@
     // -------------------------
     // Globals & Constants
     // -------------------------
-    const GAS_WEB_APP_URL = "https://northaventrail-gas-proxy.will-5e4.workers.dev/submit";
+    const WORKER_URL = "https://northaventrail-gas-proxy.will-5e4.workers.dev/submit";
     const POI_API_URL = "https://assets.northaventrail.org/json/trail-poi.json";
     const TURNSTILE_SITE_KEY = "0x4AAAAAACyDAaZelhZKmNJT";
 
@@ -156,7 +156,7 @@
             };
             if (isExit) fetchOptions.keepalive = true;
 
-            const response = await fetch(GAS_WEB_APP_URL, fetchOptions);
+            const response = await fetch(WORKER_URL, fetchOptions);
             if (!response.ok) {
                 const text = await response.text();
                 throw new Error(`Server error (${response.status}): ${text}`);
@@ -197,7 +197,7 @@
                 _hp: '',
             };
 
-            await fetch(GAS_WEB_APP_URL, {
+            await fetch(WORKER_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),

@@ -6,28 +6,29 @@ const ALLOWED_ORIGINS = [
 
 export default {
   async fetch(request, env) {
+    const origin = request.headers.get('Origin') || '';
+
     // CORS preflight
     if (request.method === 'OPTIONS') {
       return new Response(null, {
-        headers: corsHeaders(request.headers.get('Origin')),
+        headers: corsHeaders(origin),
       });
     }
 
     if (request.method !== 'POST') {
-      return new Response('Method not allowed', { status: 405 });
+      return jsonError('Method not allowed', 405, origin);
     }
 
     // 1. Origin check
-    const origin = request.headers.get('Origin') || '';
     if (!ALLOWED_ORIGINS.includes(origin)) {
-      return new Response('Forbidden', { status: 403 });
+      return jsonError('Forbidden', 403, origin);
     }
 
     let body;
     try {
       body = await request.json();
     } catch {
-      return new Response('Bad request', { status: 400 });
+      return jsonError('Bad request', 400, origin);
     }
 
     // 2. Honeypot check (field must be empty)
@@ -43,7 +44,7 @@ export default {
     const requiresTurnstile = (page === 'saveData');
     if (requiresTurnstile) {
       const token = body._turnstile;
-      if (!token) return new Response('Missing challenge token', { status: 403 });
+      if (!token) return jsonError('Missing challenge token', 403, origin);
 
       const tsResult = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
         method: 'POST',
@@ -51,7 +52,7 @@ export default {
         body: JSON.stringify({ secret: env.TURNSTILE_SECRET, response: token }),
       });
       const tsData = await tsResult.json();
-      if (!tsData.success) return new Response('Challenge failed', { status: 403 });
+      if (!tsData.success) return jsonError('Challenge failed', 403, origin);
     }
 
     // 4. Strip internal fields, inject GAS secret
@@ -73,6 +74,13 @@ export default {
     });
   },
 };
+
+function jsonError(message, status, origin) {
+  return new Response(JSON.stringify({ error: message, status: status }), {
+    status: status,
+    headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) },
+  });
+}
 
 function corsHeaders(origin) {
   return {
