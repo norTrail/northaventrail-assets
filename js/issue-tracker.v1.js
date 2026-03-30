@@ -5,15 +5,17 @@
     // -------------------------
     // Globals & Constants
     // -------------------------
-    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbygx5-v6xF0qyd9riNo3Rf0IPSzf5PmUmS3OBH-fCITcI2qqFcaVY4CFWl-rHMUUgEQTQ/exec";
+    const GAS_WEB_APP_URL = "https://northaventrail-gas-proxy.will-5e4.workers.dev/submit";
     const POI_API_URL = "https://assets.northaventrail.org/json/trail-poi.json";
-    const GAS_API_KEY = "NATA_ISSUE_TRACKER_SECURE_TOKEN_2026";
+    const TURNSTILE_SITE_KEY = "0x4AAAAAACyDAaZelhZKmNJT";
 
     const searchValues = [];
     let map, marker;
     const DEFAULT_MARKER_LONGITUDE = -96.82099635665163;
     const DEFAULT_MARKER_LATITUDE = 32.89603152402648;
     const DEFAULT_TRAIL_ZOOM = 12; // used by resetMapMarker()
+
+    let turnstileWidgetId = null;
 
     let uploadsInProgress = 0;
     let uploadedImageNames = [];
@@ -134,19 +136,40 @@
     // -------------------------
     async function callGAS(params, isExit = false) {
         try {
+            let tsToken = '';
+            if (params.page === 'saveData') {
+                if (typeof turnstile !== 'undefined' && turnstileWidgetId !== null) {
+                    tsToken = turnstile.getResponse(turnstileWidgetId) || '';
+                }
+                if (!tsToken) {
+                    throw new Error('Security check not yet complete. Please wait a moment and try again.');
+                }
+            }
+
             const fetchOptions = {
                 method: 'POST',
-                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     ...params,
-                    apiKey: GAS_API_KEY,
-                    origin: window.location.origin
-                })
+                    _turnstile: tsToken,
+                    _hp: document.querySelector('.nt-honeypot')?.value || '',
+                }),
             };
             if (isExit) fetchOptions.keepalive = true;
 
             const response = await fetch(GAS_WEB_APP_URL, fetchOptions);
-            return { result: 'success', status: 'submitted' };
+            if (!response.ok) {
+                const text = await response.text();
+                throw new Error(`Server error (${response.status}): ${text}`);
+            }
+            const data = await response.json();
+
+            // Reset Turnstile after a successful form submission so it can be re-used
+            if (params.page === 'saveData' && typeof turnstile !== 'undefined' && turnstileWidgetId !== null) {
+                turnstile.reset(turnstileWidgetId);
+            }
+
+            return { result: 'success', ...data };
         } catch (e) {
             if (!isExit) {
                 console.error("GAS Call Failed:", e);
@@ -170,17 +193,14 @@
             const payload = {
                 p: 'uploadFile',
                 data: base64Data,
-                fileName: fileName
+                fileName: fileName,
+                _hp: '',
             };
 
             await fetch(GAS_WEB_APP_URL, {
                 method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify({
-                    ...payload,
-                    apiKey: GAS_API_KEY,
-                    origin: window.location.origin
-                })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
             });
 
             return { status: 'submitted' };
@@ -518,6 +538,24 @@
         firstNameInput = document.getElementById('first-name');
         lastNameInput = document.getElementById('last-name');
         rememberContactCheckbox = document.getElementById('rememberContact');
+
+        // Honeypot field — hidden from real users, filled by bots
+        const hpField = document.createElement('input');
+        hpField.type = 'text';
+        hpField.name = 'website';
+        hpField.className = 'nt-honeypot';
+        hpField.autocomplete = 'off';
+        hpField.tabIndex = -1;
+        hpField.setAttribute('aria-hidden', 'true');
+        form.appendChild(hpField);
+
+        // Turnstile widget container — rendered before the submit button
+        const tsContainer = document.createElement('div');
+        tsContainer.id = 'nt-turnstile-container';
+        submitButton.parentNode.insertBefore(tsContainer, submitButton);
+        if (typeof turnstile !== 'undefined') {
+            turnstileWidgetId = turnstile.render(tsContainer, { sitekey: TURNSTILE_SITE_KEY });
+        }
 
         // Load saved info
         loadSavedContactInfo();
