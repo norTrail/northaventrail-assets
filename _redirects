@@ -1,1 +1,9 @@
 /cloudflare-worker/* /404 404
+/qa/* /404 404
+/private/* /404 404
+/node_modules/* /404 404
+/package.json /404 404
+/package-lock.json /404 404
+/README.md /404 404
+/AGENTS.md /404 404
+/CLAUDE.md /404 404
