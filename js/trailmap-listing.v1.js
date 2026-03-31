@@ -564,7 +564,7 @@ if ('scrollRestoration' in history) {
             const titleLink = `<a href="${escHtml(urlmapping)}" class="poi-name__link">${escHtml(poi.title)}</a>`;
 
             const gUrl = coords ? `https://www.google.com/maps/search/?api=1&query=${coords.lat},${coords.lng}` : "";
-            const aUrl = coords ? `https://maps.apple.com/?ll=${coords.lat},${coords.lng}` : "";
+            const aUrl = coords ? `https://maps.apple.com/?z=20&q=${coords.lat},${coords.lng}` : "";
             const mapsLinks = [
               gUrl ? `<a href="${escHtml(gUrl)}" target="_blank" rel="noopener noreferrer">Google</a>` : "",
               aUrl ? `<a href="${escHtml(aUrl)}" target="_blank" rel="noopener noreferrer">Apple</a>` : ""
@@ -694,7 +694,7 @@ if ('scrollRestoration' in history) {
     const titleLink = `<a href="${escHtml(urlmapping)}" class="poi-name__link">${escHtml(poi.title)}</a>`;
 
     const gUrl = coords ? `https://www.google.com/maps/search/?api=1&query=${coords.lat},${coords.lng}` : "";
-    const aUrl = coords ? `https://maps.apple.com/?ll=${coords.lat},${coords.lng}` : "";
+    const aUrl = coords ? `https://maps.apple.com/?z=20&q=${coords.lat},${coords.lng}` : "";
     const mapsLinks = [
       urlmapping ? `<a href="${escHtml(urlmapping)}" class="poi-name__link">Trail</a>` : "",
       gUrl ? `<a href="${escHtml(gUrl)}" target="_blank" rel="noopener noreferrer">Google</a>` : "",
