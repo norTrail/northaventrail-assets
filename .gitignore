@@ -1,4 +1,5 @@
 /private/
+/node_modules/
 
 # macOS metadata — never commit
 .DS_Store
