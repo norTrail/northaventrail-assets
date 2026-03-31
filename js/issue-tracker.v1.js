@@ -881,6 +881,16 @@
             syncActivePOIOption_();
         }
 
+        function getFilteredPOIFeatures_() {
+            const q = locationListInput.value.toLowerCase().trim();
+            if (!q) return _poiFeatures;
+            return _poiFeatures.filter(f => {
+                const p = f.properties || {};
+                const name = (p.l || p.n || '').toLowerCase();
+                return name.includes(q);
+            });
+        }
+
         function syncDropdownWidth_() {
             locationList.style.width = locationListInput.offsetWidth + 'px';
         }
@@ -904,11 +914,7 @@
             locationListInput.oninput = () => {
                 const q = locationListInput.value.toLowerCase().trim();
                 clearSearch.classList.toggle('hidden', q.length === 0);
-                const filtered = _poiFeatures.filter(f => {
-                    const p = f.properties || {};
-                    const name = (p.l || p.n || '').toLowerCase();
-                    return name.includes(q);
-                });
+                const filtered = getFilteredPOIFeatures_();
                 renderPOIResult_(filtered);
                 syncDropdownWidth_();
                 showDropdown_();
@@ -933,7 +939,7 @@
             locationListInput.addEventListener('keydown', (e) => {
                 const isOpen = !locationList.classList.contains('hidden');
                 if (!isOpen && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
-                    renderPOIResult_(locationListInput.value.trim() ? searchResults : _poiFeatures);
+                    renderPOIResult_(getFilteredPOIFeatures_());
                     syncDropdownWidth_();
                     showDropdown_();
                 }
