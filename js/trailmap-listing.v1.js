@@ -461,7 +461,7 @@ if ('scrollRestoration' in history) {
 
     const url = String(dataUrl || "").trim() || DEFAULTS.dataUrl;
 
-    return fetch(url, { cache: "no-store" })
+    return fetch(url)
       .then((r) => {
         if (!r.ok) throw new Error(`Network ${r.status}`);
         return r.json();

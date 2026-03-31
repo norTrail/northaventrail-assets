@@ -334,7 +334,7 @@ function setTextSafe(el, text) {
 }
 
 async function fetchJson(url) {
-  const res = await fetch(url, { method: 'GET', credentials: 'omit', cache: 'no-store', redirect: 'follow' });
+  const res = await fetch(url, { method: 'GET', credentials: 'omit', redirect: 'follow' });
   if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
   return await res.json();
 }
