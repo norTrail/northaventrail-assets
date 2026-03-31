@@ -84,6 +84,32 @@
         }
     }
 
+    function exifRationalToNumber(value) {
+        if (typeof value === 'number') return value;
+        if (value && typeof value.numerator === 'number' && typeof value.denominator === 'number' && value.denominator !== 0) {
+            return value.numerator / value.denominator;
+        }
+        const num = Number(value);
+        return Number.isFinite(num) ? num : NaN;
+    }
+
+    function parseExifCoordinate(parts, ref) {
+        if (!Array.isArray(parts) || parts.length < 3) return null;
+        const deg = exifRationalToNumber(parts[0]);
+        const min = exifRationalToNumber(parts[1]);
+        const sec = exifRationalToNumber(parts[2]);
+        if (![deg, min, sec].every(Number.isFinite)) return null;
+        let decimal = deg + (min / 60) + (sec / 3600);
+        if (/^[SW]$/i.test(String(ref || ''))) decimal *= -1;
+        return Number.isFinite(decimal) ? decimal : null;
+    }
+
+    function warnExifGpsFailure() {
+        errorMessage.textContent = "We couldn't read usable GPS coordinates from that photo.";
+        errorMessage.classList.remove('hidden');
+        announce(document.getElementById('sr-updates'), "We couldn't read usable GPS coordinates from that photo.");
+    }
+
     function isValidEmail(email) {
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).trim());
     }
@@ -673,20 +699,27 @@
                         EXIF.getData(file, function () {
                             const lat = EXIF.getTag(this, "GPSLatitude");
                             const lng = EXIF.getTag(this, "GPSLongitude");
+                            const latRef = EXIF.getTag(this, "GPSLatitudeRef");
+                            const lngRef = EXIF.getTag(this, "GPSLongitudeRef");
                             if (lat && lng) {
-                                const decLat = lat[0] + lat[1] / 60 + lat[2] / 3600;
-                                const decLng = lng[0] + lng[1] / 60 + lng[2] / 3600;
+                                const decLat = parseExifCoordinate(lat, latRef);
+                                const decLng = parseExifCoordinate(lng, lngRef);
+
+                                if (!Number.isFinite(decLat) || !Number.isFinite(decLng)) {
+                                    warnExifGpsFailure();
+                                    return;
+                                }
 
                                 imgData.hasGPS = true;
                                 imgData.lat = decLat;
-                                imgData.lng = -decLng;
+                                imgData.lng = decLng;
 
                                 syncGPSTab();
                                 activateTab(tabs[3], 3);
 
                                 // Prioritize the first available GPS info
                                 if (!hasAutoLocated) {
-                                    moveMarker(decLat, -decLng, "the location from your photo");
+                                    moveMarker(decLat, decLng, "the location from your photo");
                                     hasAutoLocated = true;
                                 }
                             }

@@ -601,7 +601,7 @@ html, body {
   animation: searchOpen 0.5s forwards;
 }
 
-.locationListDiv.visible > .clearSearch { display: block; }
+.locationListDiv.visible > .clearSearch:not([hidden]) { display: inline-flex; }
 
 .inputDropdown {
   padding-left: 5px;
@@ -634,6 +634,11 @@ html, body {
   z-index: 81;
   cursor: pointer;
   display: none;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  padding: 0;
+  background: transparent;
 }
 
 .closeIcon{
@@ -648,6 +653,12 @@ html, body {
 }
 
 .clearSearch:hover .closeIcon { stroke: #006f09; }
+
+.clearSearch:focus-visible {
+  outline: 2px solid #108452;
+  outline-offset: 2px;
+  border-radius: 999px;
+}
 
 .searchDropdown{
   position: relative;

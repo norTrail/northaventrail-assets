@@ -173,8 +173,11 @@ function updateMarker(herdCode, herdObj, map) {
 
   const props = feature.properties;
   const color = herdObj.color || "#66BB66";
-  const longText = props.trailSectionLong || "The herd is grazing on the trail."
-  const shortText = feature.properties.trailSectionShort || "The herd is grazing on the trail."
+  const herdName = String(props.herdName || "The herd");
+  const sheepInfo = String(props.sheepInfo || "");
+  const trailSectionShort = String(props.trailSectionShort || "");
+  const longText = String(props.trailSectionLong || "The herd is grazing on the trail.");
+  const shortText = String(feature.properties.trailSectionShort || "The herd is grazing on the trail.");
 
   // Update existing marker
   if (herdMarkers[herdCode]) {
@@ -197,10 +200,11 @@ function updateMarker(herdCode, herdObj, map) {
  `;
   el.style.color = color;
   el.dataset.outline = color;
-  el.title = `${props.herdName}`
-  el.setAttribute('aria-label', `${props.herdName}: open details`);
+  el.title = herdName;
+  el.setAttribute("aria-label", `${herdName}: open details`);
   el.setAttribute("role", "button");
   el.setAttribute("aria-pressed", "false");
+  el.setAttribute("aria-expanded", "false");
 
   el.addEventListener("mouseenter", () => el.classList.add("is-hover"));
   el.addEventListener("mouseleave", () => el.classList.remove("is-hover"));
@@ -212,14 +216,15 @@ function updateMarker(herdCode, herdObj, map) {
 
     closeAllPopups();
     el.setAttribute("aria-pressed", "true");
+    el.setAttribute("aria-expanded", "true");
 
-    const shareText = props.trailSectionShort
-      ? `${props.herdName} is currently grazing at ${props.trailSectionShort}`
-      : `${props.herdName} is out grazing on the Northaven Trail`;
+    const shareText = trailSectionShort
+      ? `${herdName} is currently grazing at ${trailSectionShort}`
+      : `${herdName} is out grazing on the Northaven Trail`;
 
     const popupHTML = `
-    <h3>${props.herdName}</h3>
-    <p>${props.sheepInfo}</p>
+    <h3>${escapeHtml(herdName)}</h3>
+    <p>${escapeHtml(sheepInfo)}</p>
     ${buildPopupNavIcons(lat, lng, shareText)}
   `;
     const popup = new mapboxgl.Popup({ offset: [0, -76] })
@@ -236,6 +241,7 @@ function updateMarker(herdCode, herdObj, map) {
     openPopups.push(popup);
     popup.on("close", () => {
       el.setAttribute("aria-pressed", "false"); // reset toggle state when popup closes
+      el.setAttribute("aria-expanded", "false");
       el.focus();                                // return focus to the marker button
       const i = openPopups.indexOf(popup);
       if (i !== -1) openPopups.splice(i, 1);
@@ -448,13 +454,17 @@ function updateNoMowLayers(map, geojson, force = false) {
     el.type = "button";
     el.tabIndex = 0;
     el.className = "no-mow-marker";
-    el.innerHTML = `<span class="marker-inner">${props.icon || "🌼"}</span>`;
+    const markerInner = document.createElement("span");
+    markerInner.className = "marker-inner";
+    markerInner.textContent = String(props.icon || "🌼");
+    el.appendChild(markerInner);
     el.title = props.zoneCode || "";
 
     const name = (props.zoneName || "No-Mow Zone").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
     const desc = props.description || "";
 
     el.setAttribute("aria-label", `${name}: open details`);
+    el.setAttribute("aria-expanded", "false");
 
     el.addEventListener("keydown", ev => {
       if (ev.key === "Enter" || ev.key === " ") {
@@ -480,8 +490,8 @@ function updateNoMowLayers(map, geojson, force = false) {
 
       const popupHTML = `
         <div class="popup-container">
-          <h3>${name}</h3>
-          <p>${desc}</p>
+          <h3>${escapeHtml(name)}</h3>
+          <p>${escapeHtml(desc)}</p>
           ${buildPopupNavIcons(lat, lng, noMowShareText)}
         </div>
       `;
@@ -495,9 +505,11 @@ function updateNoMowLayers(map, geojson, force = false) {
         .setLngLat(center)
         .setHTML(popupHTML)
         .addTo(map);
+      el.setAttribute("aria-expanded", "true");
       wirePopupShare(popup);
       popup.on("close", () => {
         selectedZoneCode = null;
+        el.setAttribute("aria-expanded", "false");
         const i = openPopups.indexOf(popup);
         if (i !== -1) openPopups.splice(i, 1);
       });
@@ -701,7 +713,7 @@ function showTableView(zones) {
       headerTr.className = "date-header-row";
       headerTr.innerHTML = `
         <td colspan="3" class="date-header-cell">
-          ${hasComing ? `${currentDate} – Estimated Date` : currentDate}
+          ${escapeHtml(hasComing ? `${currentDate} - Estimated Date` : currentDate)}
         </td>
       `;
       table.appendChild(headerTr);
@@ -750,12 +762,12 @@ function showTableView(zones) {
     });
 
     tr.innerHTML = `
-      <td>${zone.name}</td>
-      <td class="status-cell">${zone.status}</td>
+      <td>${escapeHtml(zone.name)}</td>
+      <td class="status-cell">${escapeHtml(zone.status)}</td>
       <td class="map-icons">
-        <span class="status-emoji" aria-hidden="true">${zone.statusIcon}</span>
+        <span class="status-emoji" aria-hidden="true">${escapeHtml(zone.statusIcon)}</span>
         <span class="gmaps-emoji" role="button" tabindex="-1"
-              aria-label="Open ${zone.name} in Google Maps">
+              aria-label="Open ${escapeHtmlAttr(zone.name)} in Google Maps">
           <svg class="gmap-icon" width="22" height="22" aria-hidden="true">
             <use href="#google-logo-color"></use>
           </svg>
@@ -973,8 +985,8 @@ function showMapButtonAndLocation(lat, lng, shortText, longText) {
   UI.openMapBtn.style.display = "inline-flex";
   updateBottomUiState();
 
-  UI.adaInfoLong.innerHTML = longText || "";
-  UI.adaInfoShort.innerHTML = shortText || "";
+  UI.adaInfoLong.textContent = longText || "";
+  UI.adaInfoShort.textContent = shortText || "";
 }
 
 function hideMapButtonAndLocation() {
@@ -985,10 +997,10 @@ function hideMapButtonAndLocation() {
   }
 
   if (UI.adaInfoLong) {
-    UI.adaInfoLong.innerHTML = "";
+    UI.adaInfoLong.textContent = "";
   }
   if (UI.adaInfoShort) {
-    UI.adaInfoShort.innerHTML = "";
+    UI.adaInfoShort.textContent = "";
   }
 }
 
@@ -1036,8 +1048,8 @@ function buildPopupNavIcons(lat, lng, shareText) {
     <button class="popupIconLink shareButton" type="button"
             title="Share" aria-label="Share location"
             data-share-title="Northaven TAILS"
-            data-share-text="${shareText.replace(/"/g, "&quot;")}"
-            data-share-url="${location.href}">
+            data-share-text="${escapeHtmlAttr(shareText)}"
+            data-share-url="${escapeHtmlAttr(location.href)}">
       <svg class="popupIcon" aria-hidden="true"><use href="#share-icon"/></svg>
     </button>` : "";
 
@@ -1081,6 +1093,20 @@ function formatLongDate(dateStr) {
   } catch {
     return "";
   }
+}
+
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, ch => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  }[ch]));
+}
+
+function escapeHtmlAttr(value) {
+  return escapeHtml(value);
 }
 
 function to12Hour(h) {

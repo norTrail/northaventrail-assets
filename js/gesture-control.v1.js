@@ -16,6 +16,9 @@ function initGestureControl(mapboxMap) {
   }
 
   // Prevent double init
+  if (typeof mapboxMap.__gestureControlDestroy === "function") {
+    mapboxMap.__gestureControlDestroy();
+  }
   if (mapboxMap.__gestureControlInitialized) return;
   mapboxMap.__gestureControlInitialized = true;
 
@@ -29,6 +32,11 @@ function initGestureControl(mapboxMap) {
 
   let lastTipAt = 0;
   let lastTipMsg = "";
+
+  if (gestureTip) {
+    gestureTip.setAttribute("role", "status");
+    gestureTip.setAttribute("aria-live", "polite");
+  }
 
   function showTip(message = "Use two fingers to move the map") {
     if (!gestureTip) return;
@@ -78,7 +86,7 @@ function initGestureControl(mapboxMap) {
   lockEmbeddedMode_();
 
   // Setup keyboard events (Ctrl/⌘ unlock)
-  wireCtrlDragUnlock_(mapboxMap, () => isFullscreen, (unlocked) => {
+  const removeCtrlDragUnlock = wireCtrlDragUnlock_(mapboxMap, () => isFullscreen, (unlocked) => {
     ctrlUnlocked = unlocked;
     if (unlocked) hideTip();
   });
@@ -86,74 +94,62 @@ function initGestureControl(mapboxMap) {
   // ------------------------------------------------------------
   // Adjustment #3: Blur cleanup (prevents timers / states lingering)
   // ------------------------------------------------------------
-  window.addEventListener(
-    "blur",
-    () => {
-      clearTimeout(wheelLockTimer);
-      hideTip();
+  const onWindowBlur = () => {
+    clearTimeout(wheelLockTimer);
+    hideTip();
 
-      if (isFullscreen) return;
+    if (isFullscreen) return;
 
-      // If you tab away mid-gesture, re-lock for embedded mode
-      if (!ctrlUnlocked) {
-        mapboxMap.dragPan.disable();
-        mapboxMap.scrollZoom.disable();
-      }
-    },
-    { passive: true }
-  );
+    // If you tab away mid-gesture, re-lock for embedded mode
+    if (!ctrlUnlocked) {
+      mapboxMap.dragPan.disable();
+      mapboxMap.scrollZoom.disable();
+    }
+  };
+  window.addEventListener("blur", onWindowBlur, { passive: true });
 
   // ------------------------------------------------------------
   // Drag intent (mouse) — show tip if user tries to drag locked map
   // ------------------------------------------------------------
   let dragIntent = false;
 
-  canvas.addEventListener(
-    "mousedown",
-    (e) => {
-      if (isFullscreen || isTouchDevice) return;
+  const onMouseDown = (e) => {
+    if (isFullscreen || isTouchDevice) return;
 
-      dragIntent = true;
+    dragIntent = true;
 
-      // Adjustment #2: if Ctrl/⌘ already held, unlock immediately (no tip)
-      if (e.ctrlKey || e.metaKey) {
-        hideTip();
-        mapboxMap.dragPan.enable();
-        return;
-      }
+    // Adjustment #2: if Ctrl/⌘ already held, unlock immediately (no tip)
+    if (e.ctrlKey || e.metaKey) {
+      hideTip();
+      mapboxMap.dragPan.enable();
+      return;
+    }
 
-      showTip("Hold Ctrl (or ⌘) and drag to move the map");
-    },
-    { passive: true }
-  );
+    showTip("Hold Ctrl (or ⌘) and drag to move the map");
+  };
+  canvas.addEventListener("mousedown", onMouseDown, { passive: true });
 
-  canvas.addEventListener(
-    "mousemove",
-    (e) => {
-      if (!dragIntent || isFullscreen || isTouchDevice) return;
+  const onMouseMove = (e) => {
+    if (!dragIntent || isFullscreen || isTouchDevice) return;
 
-      // If user starts holding Ctrl mid-drag, unlock
-      if (e.ctrlKey || e.metaKey) {
-        hideTip();
-        mapboxMap.dragPan.enable();
-      }
-    },
-    { passive: true }
-  );
+    // If user starts holding Ctrl mid-drag, unlock
+    if (e.ctrlKey || e.metaKey) {
+      hideTip();
+      mapboxMap.dragPan.enable();
+    }
+  };
+  canvas.addEventListener("mousemove", onMouseMove, { passive: true });
 
 
-  canvas.addEventListener(
-    "touchmove",
-    (e) => {
-      // Only interfere with two-finger gestures on the map
-      if (!isFullscreen && e.touches && e.touches.length >= 2) {
-        e.preventDefault(); // blocks page scroll / pinch-zoom
-      }
-    },
-    { passive: false }
-  );
+  const onTouchMove = (e) => {
+    // Only interfere with two-finger gestures on the map
+    if (!isFullscreen && e.touches && e.touches.length >= 2) {
+      e.preventDefault(); // blocks page scroll / pinch-zoom
+    }
+  };
+  canvas.addEventListener("touchmove", onTouchMove, { passive: false });
 
-  window.addEventListener("mouseup", (e) => {
+  const onMouseUp = (e) => {
     if (isTouchDevice) return;
 
     dragIntent = false;
@@ -167,7 +163,8 @@ function initGestureControl(mapboxMap) {
       // Adjustment #1: re-lock scrollZoom for consistent embedded behavior
       mapboxMap.scrollZoom.disable();
     }
-  });
+  };
+  window.addEventListener("mouseup", onMouseUp);
 
   // ------------------------------------------------------------
   // Desktop wheel handling (Ctrl/⌘ or pinch-to-zoom)
@@ -175,81 +172,69 @@ function initGestureControl(mapboxMap) {
 
   // Non-passive listener: prevents the page from scrolling (or the browser
   // from zooming) at the same time the map is being intentionally zoomed.
-  canvas.addEventListener(
-    "wheel",
-    (e) => {
-      if (!isFullscreen && (e.ctrlKey || e.metaKey || ctrlUnlocked)) {
-        e.preventDefault();
-      }
-    },
-    { passive: false }
-  );
+  const onWheelPreventDefault = (e) => {
+    if (!isFullscreen && (e.ctrlKey || e.metaKey || ctrlUnlocked)) {
+      e.preventDefault();
+    }
+  };
+  canvas.addEventListener("wheel", onWheelPreventDefault, { passive: false });
 
   // Logic listener (passive — no preventDefault needed here)
-  canvas.addEventListener(
-    "wheel",
-    (e) => {
-      if (isFullscreen || isTouchDevice) return;
+  const onWheel = (e) => {
+    if (isFullscreen || isTouchDevice) return;
 
-      const intentional = e.ctrlKey || e.metaKey || ctrlUnlocked;
+    const intentional = e.ctrlKey || e.metaKey || ctrlUnlocked;
 
-      if (intentional) {
-        mapboxMap.scrollZoom.enable();
-        mapboxMap.dragPan.enable();
-        hideTip();
+    if (intentional) {
+      mapboxMap.scrollZoom.enable();
+      mapboxMap.dragPan.enable();
+      hideTip();
 
-        clearTimeout(wheelLockTimer);
-        wheelLockTimer = setTimeout(() => {
-          if (!isFullscreen && !ctrlUnlocked) {
-            mapboxMap.scrollZoom.disable();
-            mapboxMap.dragPan.disable();
-          }
-        }, 1500);
-      } else {
-        if (!ctrlUnlocked) {
+      clearTimeout(wheelLockTimer);
+      wheelLockTimer = setTimeout(() => {
+        if (!isFullscreen && !ctrlUnlocked) {
           mapboxMap.scrollZoom.disable();
           mapboxMap.dragPan.disable();
         }
-        showTip("Hold Ctrl (or ⌘) and scroll to zoom the map");
+      }, 1500);
+    } else {
+      if (!ctrlUnlocked) {
+        mapboxMap.scrollZoom.disable();
+        mapboxMap.dragPan.disable();
       }
-    },
-    { passive: true }
-  );
+      showTip("Hold Ctrl (or ⌘) and scroll to zoom the map");
+    }
+  };
+  canvas.addEventListener("wheel", onWheel, { passive: true });
 
   // ------------------------------------------------------------
   // Touch handling
   // ------------------------------------------------------------
-  canvas.addEventListener(
-    "touchstart",
-    (e) => {
-      if (isFullscreen) {
-        mapboxMap.dragPan.enable();
-        mapboxMap.touchZoomRotate.enable();
-        hideTip();
-        return;
-      }
+  const onTouchStart = (e) => {
+    if (isFullscreen) {
+      mapboxMap.dragPan.enable();
+      mapboxMap.touchZoomRotate.enable();
+      hideTip();
+      return;
+    }
 
-      if (e.touches.length === 1) {
-        mapboxMap.dragPan.disable();
-        showTip("Use two fingers to move the map");
-      } else if (e.touches.length === 2) {
-        mapboxMap.dragPan.enable();
-        mapboxMap.touchZoomRotate.enable();
-        hideTip();
-      }
-    },
-    { passive: true }
-  );
-
-  canvas.addEventListener(
-    "touchend",
-    () => {
-      if (isFullscreen) return;
+    if (e.touches.length === 1) {
       mapboxMap.dragPan.disable();
-      mapboxMap.touchZoomRotate.disable();
-    },
-    { passive: true }
-  );
+      showTip("Use two fingers to move the map");
+    } else if (e.touches.length === 2) {
+      mapboxMap.dragPan.enable();
+      mapboxMap.touchZoomRotate.enable();
+      hideTip();
+    }
+  };
+  canvas.addEventListener("touchstart", onTouchStart, { passive: true });
+
+  const onTouchEnd = () => {
+    if (isFullscreen) return;
+    mapboxMap.dragPan.disable();
+    mapboxMap.touchZoomRotate.disable();
+  };
+  canvas.addEventListener("touchend", onTouchEnd, { passive: true });
 
   // ------------------------------------------------------------
   // Fullscreen toggle hook
@@ -265,6 +250,27 @@ function initGestureControl(mapboxMap) {
       lockEmbeddedMode_();
     }
   };
+
+  function destroyGestureControl() {
+    clearTimeout(tipTimeout);
+    clearTimeout(wheelLockTimer);
+    hideTip();
+    removeCtrlDragUnlock?.();
+    window.removeEventListener("blur", onWindowBlur, { passive: true });
+    window.removeEventListener("mouseup", onMouseUp);
+    canvas.removeEventListener("mousedown", onMouseDown, { passive: true });
+    canvas.removeEventListener("mousemove", onMouseMove, { passive: true });
+    canvas.removeEventListener("touchmove", onTouchMove, { passive: false });
+    canvas.removeEventListener("wheel", onWheelPreventDefault, { passive: false });
+    canvas.removeEventListener("wheel", onWheel, { passive: true });
+    canvas.removeEventListener("touchstart", onTouchStart, { passive: true });
+    canvas.removeEventListener("touchend", onTouchEnd, { passive: true });
+    mapboxMap.__gestureControlInitialized = false;
+    mapboxMap.__gestureControlDestroy = null;
+  }
+
+  mapboxMap.__gestureControlDestroy = destroyGestureControl;
+  mapboxMap.once?.("remove", destroyGestureControl);
 
 }
 
@@ -291,12 +297,15 @@ function wireCtrlDragUnlock_(mapboxMap, isFullscreenRef, onStateChange) {
   window.addEventListener("keyup", updateFromKeys_, { passive: true });
 
   // Keep this as a second line of defense for key states
-  window.addEventListener(
-    "blur",
-    () => {
-      if (isFullscreenRef()) return;
-      setUnlocked_(false);
-    },
-    { passive: true }
-  );
+  const onBlur = () => {
+    if (isFullscreenRef()) return;
+    setUnlocked_(false);
+  };
+  window.addEventListener("blur", onBlur, { passive: true });
+
+  return function removeCtrlDragUnlock() {
+    window.removeEventListener("keydown", updateFromKeys_, { passive: true });
+    window.removeEventListener("keyup", updateFromKeys_, { passive: true });
+    window.removeEventListener("blur", onBlur, { passive: true });
+  };
 }

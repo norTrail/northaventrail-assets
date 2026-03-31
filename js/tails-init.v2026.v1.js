@@ -121,7 +121,6 @@ async function bootstrapTailsApp() {
   loadSvgSpriteOnce();  // load shared icon sprite from assets.northaventrail.org
   initMap(mapEl);
   wireUIControls();
-  wireVisibilityHandling();
   labelUntiledIframes();
 }
 
@@ -254,15 +253,21 @@ function initMap(container) {
     }
 
     map.once("idle", () => {
-      // Load the map data
+      const initTasks = [];
+
       if (typeof addExistingTrail === "function") {
-        addExistingTrail(map);
+        initTasks.push(Promise.resolve().then(() => addExistingTrail(map)));
       }
 
-      // Hand off to data + UI layers
       if (typeof initializeDataPipeline === "function") {
-        initializeDataPipeline(map);
+        initTasks.push(
+          Promise.resolve().then(() => initializeDataPipeline(map, { skipExistingTrail: true }))
+        );
       }
+
+      Promise.all(initTasks).catch(err => {
+        logClientError("tailsInit.mapIdle", err?.message || String(err), { stack: err?.stack || null });
+      });
     });
 
 

@@ -235,12 +235,13 @@ function buildSearchIndex_(data) {
 function wireCustomSearchUI_() {
   const input = document.getElementById("locationListInput");
   const box = document.getElementById("locationListbox");
-  const clear = document.getElementById("clearSearch");
   const wrap = document.getElementById("locationListDiv");
 
   if (!input || !box || !wrap) return;
   if (input.dataset.searchWired === "1") return;
   input.dataset.searchWired = "1";
+
+  let clear = ensureSearchClearButton_();
 
   // Add a visually-hidden <label> for maximum screen reader compatibility.
   // The sr-only class is defined in trailmap.v1.css.
@@ -261,8 +262,9 @@ function wireCustomSearchUI_() {
   let lastResults = [];
 
   function setClearVisible(show) {
+    clear = ensureSearchClearButton_() || clear;
     if (!clear) return;
-    clear.classList.toggle("visible", !!show);
+    clear.hidden = !show;
   }
 
   function openBox() {
@@ -453,6 +455,35 @@ function wireCustomSearchUI_() {
   document.addEventListener("mousedown", (e) => {
     if (!wrap.contains(e.target)) closeBox();
   });
+}
+
+function ensureSearchClearButton_() {
+  const existing = document.getElementById("clearSearch");
+  const wrap = document.getElementById("locationListDiv");
+  if (!existing || !wrap) return existing;
+
+  if (existing.tagName === "BUTTON") {
+    existing.type = "button";
+    existing.classList.add("clearSearch");
+    existing.setAttribute("aria-label", existing.getAttribute("aria-label") || "Clear search text");
+    existing.hidden = true;
+    return existing;
+  }
+
+  const button = document.createElement("button");
+  button.id = "clearSearch";
+  button.type = "button";
+  button.className = existing.className || "clearSearch";
+  button.setAttribute("aria-label", existing.getAttribute("aria-label") || "Clear search text");
+  button.title = existing.title || "Clear search text";
+  button.hidden = true;
+
+  while (existing.firstChild) {
+    button.appendChild(existing.firstChild);
+  }
+
+  existing.replaceWith(button);
+  return button;
 }
 
 function normalizeText_(s = "") {
@@ -687,7 +718,7 @@ function createPopUp(currentFeature) {
     <div class="map-popup-row">
       ${imageURL
       ? `<div class="map-popup-image">
-               <img src="${imageURL}" width="64" height="64"
+               <img src="${escapeHtmlAttr_(imageURL)}" width="64" height="64"
                     alt="${escapeHtml(labelName || "Marker")}" loading="lazy">
              </div>`
       : ""
@@ -695,11 +726,11 @@ function createPopUp(currentFeature) {
 
       <div class="map-popup-body">
         ${title
-      ? `<div class="map-popup-header">${title}</div>`
+      ? `<div class="map-popup-header">${escapeHtml_(title)}</div>`
       : ""
     }
         ${body
-      ? `<div class="map-popup-text">${body}</div>`
+      ? `<div class="map-popup-text">${escapeHtml_(body)}</div>`
       : ""
     }
       </div>

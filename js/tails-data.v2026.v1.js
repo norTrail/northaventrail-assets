@@ -25,7 +25,8 @@ const DATA_CONFIG = {
   sheepPollMs: 5 * 60 * 1000,
   overlayPollMs: 60 * 1000,
   fetchTimeoutMs: 15 * 1000,
-  errorBackoffMs: 30 * 1000
+  errorBackoffMs: 30 * 1000,
+  maxRetries: 5
 };
 
 const CDN_BASE = "https://assets.northaventrail.org/json";
@@ -39,7 +40,14 @@ let pageVisible = true;
 
 let timers = {
   sheep: null,
-  overlay: null
+  overlay: null,
+  sheepRetry: null,
+  overlayRetry: null
+};
+
+const retryCounts = {
+  sheep: 0,
+  overlay: 0
 };
 
 let lastOverlayState = null;
@@ -105,10 +113,19 @@ function addExistingTrail(map) {
    Public entrypoint
    ---------------------------- */
 
-function initializeDataPipeline(map) {
+let visibilityListenerBound = false;
+
+function initializeDataPipeline(map, { skipExistingTrail = false } = {}) {
   mapRef = map;
 
-  addExistingTrail(map);
+  if (!skipExistingTrail) {
+    addExistingTrail(map);
+  }
+
+  if (!visibilityListenerBound) {
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    visibilityListenerBound = true;
+  }
 
   fetchOverlayState(true);
   fetchNoMowZones();
@@ -182,6 +199,8 @@ async function fetchSheepData() {
   try {
     const data = await fetchJson(`${CDN_BASE}/sheep-locations.v2026.geojson`);
     lastSheepFetch = Date.now();
+    retryCounts.sheep = 0;
+    clearScheduledRetry("sheep");
 
     if (typeof renderAllHerds === "function") {
       renderAllHerds(data, mapRef);
@@ -219,6 +238,8 @@ async function fetchOverlayState(isInitial = false) {
   try {
     const overlay = await fetchJson(`${CDN_BASE}/overlay-state.v2026.json`);
     lastOverlayFetch = Date.now();
+    retryCounts.overlay = 0;
+    clearScheduledRetry("overlay");
 
     if (!overlay || !overlay.state) return;
 
@@ -259,15 +280,19 @@ function handleOverlayTransition(state) {
 
 function startPolling() {
   stopPolling();
+  clearScheduledRetry("sheep");
+  clearScheduledRetry("overlay");
 
   timers.sheep = setInterval(fetchSheepData, DATA_CONFIG.sheepPollMs);
   timers.overlay = setInterval(fetchOverlayState, DATA_CONFIG.overlayPollMs);
 }
 
 function stopPolling() {
-  Object.values(timers).forEach(t => t && clearInterval(t));
+  Object.values(timers).forEach(t => t && clearTimeout(t));
   timers.sheep = null;
   timers.overlay = null;
+  timers.sheepRetry = null;
+  timers.overlayRetry = null;
 }
 
 /* ----------------------------
@@ -277,9 +302,22 @@ function stopPolling() {
 function scheduleRetry(key, fn) {
   if (!pageVisible) return;
 
-  if (timers[key]) clearTimeout(timers[key]);
+  if (retryCounts[key] >= DATA_CONFIG.maxRetries) {
+    logCaughtError?.("scheduleRetry", new Error(`Max retries reached for ${key}`), { key, retries: retryCounts[key] });
+    return;
+  }
 
-  timers[key] = setTimeout(fn, DATA_CONFIG.errorBackoffMs);
+  clearScheduledRetry(key);
+  retryCounts[key] += 1;
+  timers[`${key}Retry`] = setTimeout(fn, DATA_CONFIG.errorBackoffMs);
+}
+
+function clearScheduledRetry(key) {
+  const timerKey = `${key}Retry`;
+  if (timers[timerKey]) {
+    clearTimeout(timers[timerKey]);
+    timers[timerKey] = null;
+  }
 }
 
 /* ----------------------------
@@ -290,12 +328,20 @@ function handlePageVisibility(isVisible) {
   pageVisible = isVisible;
 
   if (isVisible) {
+    retryCounts.sheep = 0;
+    retryCounts.overlay = 0;
     fetchOverlayState();
     if (grazingActive) fetchSheepData();
     startPolling();
   } else {
+    clearScheduledRetry("sheep");
+    clearScheduledRetry("overlay");
     stopPolling();
   }
+}
+
+function onVisibilityChange() {
+  handlePageVisibility(document.visibilityState === "visible");
 }
 
 /* ----------------------------

@@ -206,6 +206,10 @@ let resetCoordinates = false;
       const content = document.getElementById('content');
       if (content) content.setAttribute('role', 'main');
     }
+
+    document.querySelectorAll('.sr-only-map-image[aria-hidden="true"]').forEach((el) => {
+      el.removeAttribute('aria-hidden');
+    });
   }
 
   function start() {
@@ -263,6 +267,57 @@ function loadWindow() {
 
   // Create map
   let recovery = null;
+  let mapLoadWatchdog = null;
+
+  function clearMapFailureWatchdog_() {
+    if (mapLoadWatchdog) {
+      clearTimeout(mapLoadWatchdog);
+      mapLoadWatchdog = null;
+    }
+  }
+
+  function showMapFallback_(reason = "map_unavailable") {
+    clearMapFailureWatchdog_();
+
+    const mapEl = document.getElementById("map");
+    if (!mapEl) return;
+
+    mapEl.replaceChildren();
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "trailmap-fallback";
+    wrapper.setAttribute("role", "status");
+    wrapper.setAttribute("aria-live", "polite");
+    wrapper.style.cssText = [
+      "display:flex",
+      "flex-direction:column",
+      "justify-content:center",
+      "align-items:flex-start",
+      "gap:14px",
+      "min-height:320px",
+      "padding:24px",
+      "border-radius:18px",
+      "background:linear-gradient(135deg,#f5efe4 0%,#d8ead9 100%)",
+      "box-sizing:border-box"
+    ].join(";");
+
+    wrapper.innerHTML = `
+      <div style="max-width:30rem">
+        <h2 style="margin:0 0 8px;font-size:1.35rem;line-height:1.2">Map unavailable right now</h2>
+        <p style="margin:0 0 10px">The interactive map could not load, but trail information is still available below.</p>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px">
+        <a href="https://northaventrail.org/trailmap" style="display:inline-flex;align-items:center;justify-content:center;padding:10px 14px;border-radius:999px;background:#118452;color:#fff;text-decoration:none;font-weight:600">Reload trail map</a>
+        <a href="https://maps.google.com/maps?q=32.899,-96.822" style="display:inline-flex;align-items:center;justify-content:center;padding:10px 14px;border-radius:999px;border:1px solid #118452;color:#118452;background:#fff;text-decoration:none;font-weight:600">Open trail in Google Maps</a>
+      </div>
+    `;
+
+    mapEl.appendChild(wrapper);
+    window.TrailmapError?.logClientErrorToServer?.({
+      kind: "map_fallback_rendered",
+      reason
+    });
+  }
 
   function buildMap() {
     function isMobileViewport() {
@@ -284,13 +339,24 @@ function loadWindow() {
 
     const isMobile = isMobileViewport();
 
-    const m = new mapboxgl.Map({
-      container: el,
-      style: "mapbox://styles/wdawso/clp9xd8ba002901qj95smdg2f",
-      bounds: MAP_BOUNDS,
-      maxTileCacheSize: isMobile ? 50 : 200,
-      minTileCacheSize: isMobile ? 20 : 100
-    });
+    let m = null;
+    try {
+      m = new mapboxgl.Map({
+        container: el,
+        style: "mapbox://styles/wdawso/clp9xd8ba002901qj95smdg2f",
+        bounds: MAP_BOUNDS,
+        maxTileCacheSize: isMobile ? 50 : 200,
+        minTileCacheSize: isMobile ? 20 : 100
+      });
+    } catch (err) {
+      window.TrailmapError?.logClientErrorToServer?.({
+        kind: "buildMap_failed",
+        message: err?.message || String(err),
+        stack: err?.stack || null
+      });
+      showMapFallback_("build_map_failed");
+      return null;
+    }
 
     if (window.TrailmapError?.attachErrorLogging) {
       window.TrailmapError.attachErrorLogging(m, {
@@ -320,6 +386,20 @@ function loadWindow() {
   })();
 
   map = buildMap();
+  if (!map) return;
+
+  mapLoadWatchdog = setTimeout(() => {
+    showMapFallback_("map_load_timeout");
+  }, 15000);
+
+  map.once("load", clearMapFailureWatchdog_);
+  map.once("idle", clearMapFailureWatchdog_);
+  map.on("error", (e) => {
+    const msg = e?.error?.message || e?.message || "";
+    if (/style|sprite|source|network|webgl/i.test(msg)) {
+      showMapFallback_("map_error");
+    }
+  });
 
   function runWhenLoaded_(m, fn) {
     if (m?.loaded?.()) return fn();
@@ -1035,5 +1115,3 @@ function getAppNameFromUrl({ fallback = "trail-map" } = {}) {
     return fallback;
   }
 }
-
-
