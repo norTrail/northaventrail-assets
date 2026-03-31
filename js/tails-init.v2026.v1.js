@@ -112,10 +112,12 @@ async function bootstrapTailsApp() {
     skip.textContent = "Skip to map";
     appRoot.prepend(skip);
 
-    const h1 = document.createElement("h1");
-    h1.className = "sr-only";
-    h1.textContent = "Northaven TAILS — Herd Grazing Map";
-    appRoot.prepend(h1);
+    if (!document.querySelector('h1')) {
+      const h1 = document.createElement("h1");
+      h1.className = "sr-only";
+      h1.textContent = "Northaven TAILS — Herd Grazing Map";
+      appRoot.prepend(h1);
+    }
   }
 
   loadSvgSpriteOnce();  // load shared icon sprite from assets.northaventrail.org

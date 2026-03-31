@@ -250,21 +250,6 @@ function loadWindow() {
     return;
   }
 
-  // Legend toggle
-  const legend = document.getElementById('map-legend');
-  const legendHeader = document.getElementById('legendHeader');
-  if (legend && legendHeader) {
-    legendHeader.onclick = () => {
-      if (legend.classList.contains(VISIBLE)) {
-        legend.classList.remove(VISIBLE);
-        legendHeader.title = 'Click to open map legend';
-      } else {
-        legend.classList.add(VISIBLE);
-        legendHeader.title = 'Click to close map legend';
-      }
-    };
-  }
-
   // Create map
   let recovery = null;
   let mapLoadWatchdog = null;

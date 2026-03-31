@@ -96,8 +96,6 @@ function updateOverlayState(state) {
       UI.statusPill.style.display = "block";
 
       if (state.grazingStartHour) {
-        /*UI.countdown.innerHTML =
-          `The herd returns at ${to12Hour(state.grazingStartHour)}:00 ${amPm(state.grazingStartHour)}.`;*/
         const updateTextHour = `The herd returns at ${to12Hour(state.grazingStartHour)}:00 ${amPm(state.grazingStartHour)}.`;
         UI.adaInfoLong.innerHTML = updateTextHour;
         UI.adaInfoShort.innerHTML = updateTextHour;
@@ -116,8 +114,6 @@ function updateOverlayState(state) {
         "They came, they nibbled, they frolicked.";
       UI.adaInfoLong.innerHTML = "Mission complete! Prairie restoration is underway.";
       UI.adaInfoShort.innerHTML = "Mission complete! Prairie restoration is underway.";
-      /*UI.countdown.innerHTML =
-        "Mission complete! Prairie restoration is underway.";*/
 
 
       UI.overlayImage.src = state.image || "";
@@ -307,12 +303,10 @@ function updateHerdHistoryLine(herdCode, historyGeoJSON, color, map) {
 
   // Determine if the line should be visible
   const showHistory = document.getElementById('showHistory')?.checked ?? false;
-  /*const herdToggle = document.querySelector(`input[data-herd='${herdCode}']`);*/
-  /*const herdVisible = herdToggle && herdToggle.checked;*/
   // -------------------------------------------
   // 3. Visibility logic ONLY (no adding/removing)
   // -------------------------------------------
-  const visible = /*herdVisible &&*/ showHistory;
+  const visible = showHistory;
 
   map.setLayoutProperty(layerId, 'visibility', visible ? 'visible' : 'none');
 }
@@ -331,19 +325,6 @@ function renderAllHerds(data, map) {
       logCaughtError?.("renderAllHerds", new Error(`No data for herd ${herdCode}`), { herdCode });
       return;
     }
-
-    /*const checkbox = document.querySelector(
-      `input[data-herd='${herdCode}']`
-    );
-
-    // Hide if unchecked
-    if (checkbox && !checkbox.checked) {
-      if (herdMarkers[herdCode]) {
-        herdMarkers[herdCode].remove();
-        delete herdMarkers[herdCode];
-      }
-      return;
-    }*/
 
     // Marker
     updateMarker(herdCode, herdObj, map);
@@ -569,8 +550,8 @@ function buildGrazingTable() {
       name: f.properties.zoneName.replace(/^Grazing Area<br>\s*/i, ""),
       status: f.properties.status,
       statusIcon: f.properties.icon,
-      grazeDateLong: f.properties.estimatedDateLong,
-      grazeDateShort: f.properties.estimatedDateShort,
+      grazeDate: f.properties.estimatedDate || "",
+      grazeDateLong: formatDateISOLong(f.properties.estimatedDate) || f.properties.estimatedDateLong || "",
       code: f.properties.zoneCode,
       lng: f.properties.centerLng,
       lat: f.properties.centerLat,
@@ -690,9 +671,12 @@ function showTableView(zones) {
   if (!table) return;
   table.innerHTML = "";
 
-  // 1️⃣ Sort by date
+  // 1️⃣ Sort by date (ISO strings sort correctly without parsing)
   const sorted = [...zones].sort((a, b) => {
-    return new Date(a.grazeDateLong) - new Date(b.grazeDateLong);
+    if (!a.grazeDate && !b.grazeDate) return 0;
+    if (!a.grazeDate) return 1;
+    if (!b.grazeDate) return -1;
+    return a.grazeDate < b.grazeDate ? -1 : a.grazeDate > b.grazeDate ? 1 : 0;
   });
 
   // Pre-build Set of dates that have at least one "Coming" zone — O(n) vs O(n²)
@@ -726,8 +710,8 @@ function showTableView(zones) {
     tr.dataset.code = zone.code;
     tr.style.color = zone.color;
     tr.title = "Click to see this no-mow zone on the map.";
+    tr.setAttribute("aria-label", `${zone.name} — click to view on map`);
     // Roving tabindex: first row = 0 (Tab entry point); rest = -1 (arrow-key only)
-    tr.setAttribute("role", "button");
     tr.setAttribute("tabindex", firstDataRow ? "0" : "-1");
     firstDataRow = false;
 
@@ -1095,6 +1079,23 @@ function formatLongDate(dateStr) {
   }
 }
 
+// Format a "YYYY-MM-DD" ISO date string for display, avoiding UTC offset issues.
+function formatDateISO(iso, opts) {
+  if (!iso) return "";
+  try {
+    const [y, m, d] = iso.split("-").map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString("en-US", opts);
+  } catch {
+    return "";
+  }
+}
+function formatDateISOLong(iso) {
+  return formatDateISO(iso, { weekday: "long", month: "long", day: "numeric" });
+}
+function formatDateISOShort(iso) {
+  return formatDateISO(iso, { month: "short", day: "numeric" });
+}
+
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, ch => ({
     "&": "&amp;",
@@ -1118,8 +1119,6 @@ function amPm(h) {
   return h >= 12 ? "pm" : "am";
 }
 
-/* FullscreenIframeControl removed — replaced by TrailmapFullscreen.FullscreenMapControl
-   from trailmap-fullscreen.v1.js */
 
 function zoomToHerd(map) {
   if (!map) return;
@@ -1247,8 +1246,7 @@ function _doUpdateBottomUiState() {
   });
 }
 
-/* updateSafeViewport and viewport listeners removed —
-   owned by trailmap-fullscreen.v1.js via TrailmapFullscreen.attachSafeViewportListenersOnce() */
+
 
 /* ============================================================
    PUBLIC API

@@ -1765,6 +1765,8 @@ function ensureLegendExists(options = {}) {
   header.className = "legend-header";
   const headerBtn = document.createElement("button");
   headerBtn.textContent = "Legend";
+  headerBtn.setAttribute('aria-expanded', String(!startCollapsed));
+  headerBtn.setAttribute('aria-controls', bodyId);
   header.appendChild(headerBtn);
   legend.appendChild(header);
 
@@ -1852,6 +1854,7 @@ function initLegendUIFor_(legendEl, { startOpen = false } = {}) {
   const toggle = () => {
     const isOpen = legendEl.classList.toggle("visible");
     headerBtn.title = isOpen ? "Click to close map legend" : "Click to open map legend";
+    headerBtn.setAttribute('aria-expanded', String(isOpen));
   };
 
   header.addEventListener("click", toggle);
