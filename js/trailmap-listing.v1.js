@@ -456,26 +456,46 @@ if ('scrollRestoration' in history) {
     };
   }
 
-  function getPoiData_(dataUrl) {
-    // Prefer map-loaded payload (trailmap-init already fetched and applied it)
-    if (window.poiData && Array.isArray(window.poiData.features)) {
-      return Promise.resolve(window.poiData);
+  function getPoiCache_() {
+    const cache = window.__trailPoiCache;
+    if (!cache || !cache.data || !Array.isArray(cache.data.features) || !cache.sourceUrl) {
+      return null;
     }
+    return cache;
+  }
 
+  function setPoiCache_(payload, sourceUrl) {
+    const resolvedSource = String(sourceUrl || "").trim();
+    const cache = {
+      data: payload,
+      sourceUrl: resolvedSource
+    };
+    window.__trailPoiCache = cache;
+    // Keep the legacy global for older consumers.
+    window.poiData = payload;
+    return payload;
+  }
+
+  function getPoiData_(dataUrl) {
     const url = String(dataUrl || "").trim() || DEFAULTS.dataUrl;
 
-    // If the URL is a manifest (*.latest.json), resolve it to the versioned file first.
-    const isManifest = url.endsWith(".latest.json");
-    const fetchData = (resolvedUrl) =>
-      fetch(resolvedUrl)
+    const fetchData = (resolvedUrl) => {
+      const sourceUrl = String(resolvedUrl || "").trim();
+      const cached = getPoiCache_();
+      if (cached && cached.sourceUrl === sourceUrl) {
+        return Promise.resolve(cached.data);
+      }
+
+      return fetch(sourceUrl)
         .then((r) => {
           if (!r.ok) throw new Error(`Network ${r.status}`);
           return r.json();
         })
-        .then((json) => {
-          window.poiData = json;
-          return json;
-        });
+        .then((json) => setPoiCache_(json, sourceUrl));
+    };
+
+    // If the URL is a manifest (*.latest.json), resolve it to the versioned file first.
+    const isManifest = url.endsWith(".latest.json");
 
     if (!isManifest) return fetchData(url);
 
@@ -764,6 +784,14 @@ if ('scrollRestoration' in history) {
       .filter(Boolean);
   }
 
+  function renderEmptyRow_(tbody, columns, message = "No items found in this category yet.") {
+    if (!tbody) return;
+    tbody.innerHTML = "";
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td colspan="${Math.max(1, columns.length)}">${escHtml(message)}</td>`;
+    tbody.appendChild(tr);
+  }
+
   function hydratePoiTables(config) {
     const cfg = config || {};
     const dataUrl = cfg.dataUrl || DEFAULTS.dataUrl;
@@ -883,7 +911,6 @@ if ('scrollRestoration' in history) {
       getPoiData_(dataUrl)
         .then((payload) => {
           const featuresAll = Array.isArray(payload?.features) ? payload.features : [];
-          if (!featuresAll.length) return;
 
           // Global label filter (ONLY_SHOW_LIST)
           let allowedTypeKeys = null;
@@ -942,6 +969,13 @@ if ('scrollRestoration' in history) {
 
             tbody.innerHTML = "";
 
+            if (!featuresAll.length) {
+              if (loading) loading.hidden = true;
+              if (err) err.hidden = true;
+              renderEmptyRow_(tbody, columns);
+              return;
+            }
+
             // Gather rows from one or more categories
             const rows = [];
             cats.forEach((c) => {
@@ -971,9 +1005,7 @@ if ('scrollRestoration' in history) {
             if (err) err.hidden = true;
 
             if (!finalRows.length) {
-              const tr = document.createElement("tr");
-              tr.innerHTML = `<td colspan="${Math.max(1, columns.length)}">No items found in this category yet.</td>`;
-              tbody.appendChild(tr);
+              renderEmptyRow_(tbody, columns);
             }
           });
 
@@ -984,11 +1016,18 @@ if ('scrollRestoration' in history) {
             const tbody = table ? table.querySelector("tbody") : null;
             if (tbody) {
               tbody.innerHTML = "";
-              // collect leftover rows from buckets that weren't referenced by any table
+              // collect explicit "other" rows plus leftover rows from buckets
+              // that weren't referenced by any table.
               const leftovers = [];
 
+              const otherBucket = buckets.get("other") || [];
+              for (const f of otherBucket) {
+                const id = String(f?.id || "");
+                if (!id || usedFeatureIds.has(id)) continue;
+                leftovers.push(f);
+              }
+
               for (const [cat, arr] of buckets.entries()) {
-                if (cat === "other") continue;           // don't double-add
                 if (usedCats.has(cat)) continue;         // table already exists for this category
                 for (const f of arr) {
                   const id = String(f?.id || "");
@@ -1007,6 +1046,15 @@ if ('scrollRestoration' in history) {
               });
 
               stopRowLinkPropagation(tbody);
+
+              const loading = otherWrap.querySelector("[data-poi-loading]");
+              const err = otherWrap.querySelector("[data-poi-error]");
+              if (loading) loading.hidden = true;
+              if (err) err.hidden = true;
+
+              if (!leftovers.length) {
+                renderEmptyRow_(tbody, columns);
+              }
             }
           }
 

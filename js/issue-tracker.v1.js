@@ -7,7 +7,6 @@
     // -------------------------
     const WORKER_URL = "https://northaventrail-gas-proxy.will-5e4.workers.dev/submit";
     const POI_MANIFEST_URL = "https://assets.northaventrail.org/json/trail-poi.latest.json";
-    const POI_API_URL      = "https://assets.northaventrail.org/json/trail-poi.json"; // fallback
     const TURNSTILE_SITE_KEY = "0x4AAAAAACyDAaZelhZKmNJT";
 
     const searchValues = [];
@@ -67,6 +66,53 @@
     // Utilities & Helpers
     // -------------------------
     const isApple = () => /Mac|iPhone|iPad|iPod/.test(navigator.platform);
+
+    function getPoiCache_() {
+        const cache = window.__trailPoiCache;
+        if (!cache || !cache.data || !Array.isArray(cache.data.features) || !cache.sourceUrl) {
+            return null;
+        }
+        return cache;
+    }
+
+    function setPoiCache_(payload, sourceUrl) {
+        const cache = {
+            data: payload,
+            sourceUrl: String(sourceUrl || "").trim()
+        };
+        window.__trailPoiCache = cache;
+        window.poiData = payload; // backward compatibility with trailmap consumers
+        return payload;
+    }
+
+    async function fetchPoiPayload_() {
+        const manifestRes = await fetch(POI_MANIFEST_URL);
+        if (!manifestRes.ok) {
+            throw new Error(`Manifest HTTP ${manifestRes.status}`);
+        }
+
+        const manifest = await manifestRes.json();
+        const versionedUrl =
+            manifest && typeof manifest.current === "string" && manifest.current
+                ? manifest.current
+                : "";
+        if (!versionedUrl) {
+            throw new Error("Manifest missing current POI URL");
+        }
+
+        const cached = getPoiCache_();
+        if (cached && cached.sourceUrl === versionedUrl) {
+            return cached.data;
+        }
+
+        const dataRes = await fetch(versionedUrl);
+        if (!dataRes.ok) {
+            throw new Error(`POI data HTTP ${dataRes.status}`);
+        }
+
+        const payload = await dataRes.json();
+        return setPoiCache_(payload, versionedUrl);
+    }
 
     function announce(el, msg) {
         if (!el) return;
@@ -1024,28 +1070,11 @@
             // Fetch POI data for the location search.
             // Note: onIssueTrackerMapReady is already called from inside map.once('idle') in
             // trailmap-init, so the map is already idle here — no need to wait for another idle.
-            // Reuses window.poiData if trailmap-init already loaded it; otherwise resolves
+            // Reuses the shared source-aware POI cache when possible, otherwise resolves
             // the manifest to fetch the current versioned file.
             (async () => {
                 try {
-                    let payload;
-                    if (window.poiData && Array.isArray(window.poiData.features)) {
-                        payload = window.poiData;
-                    } else {
-                        let dataUrl = POI_API_URL;
-                        try {
-                            const mRes = await fetch(POI_MANIFEST_URL);
-                            if (mRes.ok) {
-                                const manifest = await mRes.json();
-                                if (manifest && typeof manifest.current === "string" && manifest.current) {
-                                    dataUrl = manifest.current;
-                                }
-                            }
-                        } catch (_) { /* manifest unavailable — use fallback */ }
-                        const res = await fetch(dataUrl);
-                        payload = await res.json();
-                        window.poiData = payload;
-                    }
+                    const payload = await fetchPoiPayload_();
                     _poiFeatures = payload.features || [];
                     renderPOIResult_(_poiFeatures);
                 } catch (e) {
