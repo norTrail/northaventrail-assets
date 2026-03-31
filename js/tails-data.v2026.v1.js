@@ -31,10 +31,12 @@ const DATA_CONFIG = {
 
 const CDN_BASE = "https://assets.northaventrail.org/json";
 
-/* Manifest URLs — clients fetch these first, then follow manifest.current */
-const MANIFEST_SHEEP   = `${CDN_BASE}/sheep-locations.latest.json`;
-const MANIFEST_NO_MOW  = `${CDN_BASE}/no-mow-zones.latest.json`;
-const MANIFEST_OVERLAY = `${CDN_BASE}/overlay-state.latest.json`;
+/* Manifest URLs — year-scoped so each grazing season has its own pointer.
+   Update the year constant when rolling over to a new season. */
+const TAILS_YEAR       = "v2026";
+const MANIFEST_SHEEP   = `${CDN_BASE}/sheep-locations.${TAILS_YEAR}.latest.json`;
+const MANIFEST_NO_MOW  = `${CDN_BASE}/no-mow-zones.${TAILS_YEAR}.latest.json`;
+const MANIFEST_OVERLAY = `${CDN_BASE}/overlay-state.${TAILS_YEAR}.latest.json`;
 
 /* Last-known versioned URL per feed — skip data fetch when unchanged */
 const _lastKnownVersion = {

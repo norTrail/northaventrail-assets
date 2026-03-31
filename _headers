@@ -5,13 +5,16 @@
 /js/*
   Cache-Control: public, max-age=31536000, immutable
 
-# Manifests — short TTL so clients pick up new versions quickly
-/json/*.latest.json
-  Cache-Control: public, max-age=60, stale-while-revalidate=30
-
 # Versioned data files — immutable, cache forever
+# Must come BEFORE *.latest.json so year-scoped manifests (e.g. sheep-locations.v2026.latest.json)
+# match both rules; the *.latest.json rule below then overrides Cache-Control for those files.
 /json/*.v*.*
   Cache-Control: public, max-age=31536000, immutable
+
+# Manifests — short TTL so clients pick up new versions quickly.
+# Intentionally placed AFTER *.v*.* so this rule wins for *.v2026.latest.json, etc.
+/json/*.latest.json
+  Cache-Control: public, max-age=60, stale-while-revalidate=30
 
 # Legacy static GeoJSON/JSON — kept until old filenames are retired
 # Specific rules must come before the /json/* catch-all
