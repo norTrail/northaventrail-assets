@@ -6,7 +6,8 @@
     // Globals & Constants
     // -------------------------
     const WORKER_URL = "https://northaventrail-gas-proxy.will-5e4.workers.dev/submit";
-    const POI_API_URL = "https://assets.northaventrail.org/json/trail-poi.json";
+    const POI_MANIFEST_URL = "https://assets.northaventrail.org/json/trail-poi.latest.json";
+    const POI_API_URL      = "https://assets.northaventrail.org/json/trail-poi.json"; // fallback
     const TURNSTILE_SITE_KEY = "0x4AAAAAACyDAaZelhZKmNJT";
 
     const searchValues = [];
@@ -1023,10 +1024,28 @@
             // Fetch POI data for the location search.
             // Note: onIssueTrackerMapReady is already called from inside map.once('idle') in
             // trailmap-init, so the map is already idle here — no need to wait for another idle.
+            // Reuses window.poiData if trailmap-init already loaded it; otherwise resolves
+            // the manifest to fetch the current versioned file.
             (async () => {
                 try {
-                    const res = await fetch(POI_API_URL);
-                    const payload = await res.json();
+                    let payload;
+                    if (window.poiData && Array.isArray(window.poiData.features)) {
+                        payload = window.poiData;
+                    } else {
+                        let dataUrl = POI_API_URL;
+                        try {
+                            const mRes = await fetch(POI_MANIFEST_URL);
+                            if (mRes.ok) {
+                                const manifest = await mRes.json();
+                                if (manifest && typeof manifest.current === "string" && manifest.current) {
+                                    dataUrl = manifest.current;
+                                }
+                            }
+                        } catch (_) { /* manifest unavailable — use fallback */ }
+                        const res = await fetch(dataUrl);
+                        payload = await res.json();
+                        window.poiData = payload;
+                    }
                     _poiFeatures = payload.features || [];
                     renderPOIResult_(_poiFeatures);
                 } catch (e) {
