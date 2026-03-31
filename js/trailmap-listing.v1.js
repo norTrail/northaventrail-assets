@@ -260,9 +260,9 @@ if ('scrollRestoration' in history) {
           class="mapsBtn"
           id="${btnId}"
           title="Open Map Options"
-          aria-haspopup="true"
           aria-expanded="false"
           aria-controls="${menuId}"
+          aria-label="${name ? `Open map options for ${name}` : "Open map options"}"
           data-menu-id="${menuId}"
         >
           Maps <span class="mapsBtnCaret" aria-hidden="true">▾</span>
@@ -270,10 +270,12 @@ if ('scrollRestoration' in history) {
 
         <div class="mapsMenu" id="${menuId}" aria-label="Map options${name ? ` for ${name}` : ""}" hidden>
           ${titleHtml}
-          ${tUrl ? `<a class="mapsMenuItem" title="Open in Trail Map" href="${escHtml(tUrl)}">Trail Map</a>` : ""}
-          ${gg ? `<a class="mapsMenuItem" title="Open location in Google Maps" href="${escHtml(gg)}" target="_blank" rel="noopener noreferrer">Google Maps</a>` : ""}
-          ${aa ? `<a class="mapsMenuItem" title="Open location in Apple Maps" href="${escHtml(aa)}" target="_blank" rel="noopener noreferrer">Apple Maps</a>` : ""}
-          <button type="button" class="mapsMenuItem mapsMenuCancel">Cancel</button>
+          <div class="mapsMenuList">
+            ${tUrl ? `<a class="mapsMenuItem" title="Open in Trail Map" href="${escHtml(tUrl)}">Trail Map</a>` : ""}
+            ${gg ? `<a class="mapsMenuItem" title="Open location in Google Maps" href="${escHtml(gg)}" target="_blank" rel="noopener noreferrer">Google Maps</a>` : ""}
+            ${aa ? `<a class="mapsMenuItem" title="Open location in Apple Maps" href="${escHtml(aa)}" target="_blank" rel="noopener noreferrer">Apple Maps</a>` : ""}
+            <button type="button" class="mapsMenuItem mapsMenuCancel">Cancel</button>
+          </div>
         </div>
       </div>
     `.trim();
@@ -301,9 +303,10 @@ if ('scrollRestoration' in history) {
       return id ? document.getElementById(id) : null;
     }
 
-    function closeMenu_() {
+    function closeMenu_(restoreFocus = false) {
       if (!openBtn) return;
       const menu = getMenu_(openBtn);
+      const btnToRestore = openBtn;
       openBtn.setAttribute("aria-expanded", "false");
       if (menu) {
         menu.hidden = true;
@@ -314,6 +317,7 @@ if ('scrollRestoration' in history) {
       menuKeyDown_ = null;
       openBtn = null;
       clearMenuRowHighlight_();
+      if (restoreFocus) btnToRestore?.focus?.();
     }
 
     function openMenu_(btn) {
@@ -377,6 +381,7 @@ if ('scrollRestoration' in history) {
       const btn = e.target.closest?.(".mapsBtn");
       const inMaps = e.target.closest?.(".poiMaps");
       const cancel = e.target.closest?.(".mapsMenuCancel");
+      const closeBtn = e.target.closest?.(".mapsMenuTitle__close");
       const menuLink = e.target.closest?.(".mapsMenu a.mapsMenuItem");
 
       // Button toggles
@@ -384,15 +389,15 @@ if ('scrollRestoration' in history) {
         e.preventDefault();
         e.stopPropagation(); // don't trigger row click
         const expanded = btn.getAttribute("aria-expanded") === "true";
-        expanded ? closeMenu_() : openMenu_(btn);
+        expanded ? closeMenu_(true) : openMenu_(btn);
         return;
       }
 
       // Cancel closes
-      if (cancel) {
+      if (cancel || closeBtn) {
         e.preventDefault();
         e.stopPropagation();
-        closeMenu_();
+        closeMenu_(true);
         return;
       }
 
@@ -409,7 +414,7 @@ if ('scrollRestoration' in history) {
     });
 
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") closeMenu_();
+      if (e.key === "Escape") closeMenu_(true);
     });
   }
 
@@ -792,6 +797,44 @@ if ('scrollRestoration' in history) {
     tbody.appendChild(tr);
   }
 
+  function normalizeTableHead_(table, columns) {
+    if (!table) return;
+
+    let thead = table.querySelector("thead");
+    if (!thead) {
+      thead = document.createElement("thead");
+      const tr = document.createElement("tr");
+      columns.forEach(col => {
+        const th = document.createElement("th");
+        th.scope = "col";
+        th.textContent = columnToLabel_(col);
+        tr.appendChild(th);
+      });
+      thead.appendChild(tr);
+      table.insertBefore(thead, table.querySelector("tbody"));
+      return;
+    }
+
+    const headerRow = thead.querySelector("tr");
+    if (!headerRow) return;
+
+    while (headerRow.children.length < columns.length) {
+      const th = document.createElement("th");
+      th.scope = "col";
+      headerRow.appendChild(th);
+    }
+
+    Array.from(headerRow.children).forEach((cell, idx) => {
+      if (cell.tagName !== "TH") return;
+      cell.scope = "col";
+      const col = columns[idx];
+      if (!col) return;
+      if (!String(cell.textContent || "").trim()) {
+        cell.textContent = columnToLabel_(col);
+      }
+    });
+  }
+
   function hydratePoiTables(config) {
     const cfg = config || {};
     const dataUrl = cfg.dataUrl || DEFAULTS.dataUrl;
@@ -904,8 +947,16 @@ if ('scrollRestoration' in history) {
       wraps.forEach((w) => {
         const loading = w.querySelector("[data-poi-loading]");
         const err = w.querySelector("[data-poi-error]");
-        if (loading) loading.hidden = false;
-        if (err) err.hidden = true;
+        w.setAttribute("aria-busy", "true");
+        if (loading) {
+          loading.hidden = false;
+          loading.setAttribute("role", "status");
+          loading.setAttribute("aria-live", "polite");
+        }
+        if (err) {
+          err.hidden = true;
+          err.setAttribute("role", "alert");
+        }
       });
 
       getPoiData_(dataUrl)
@@ -953,23 +1004,13 @@ if ('scrollRestoration' in history) {
 
             const columns = parseColumnsFromWrap_(wrap);
 
-            // Inject thead if missing for accessibility
-            if (!table.querySelector("thead")) {
-              const thead = document.createElement("thead");
-              const tr = document.createElement("tr");
-              columns.forEach(col => {
-                const th = document.createElement("th");
-                th.scope = "col";
-                th.textContent = columnToLabel_(col);
-                tr.appendChild(th);
-              });
-              thead.appendChild(tr);
-              table.insertBefore(thead, tbody);
-            }
+            // Ensure headers exist and blank headings are labeled.
+            normalizeTableHead_(table, columns);
 
             tbody.innerHTML = "";
 
             if (!featuresAll.length) {
+              wrap.setAttribute("aria-busy", "false");
               if (loading) loading.hidden = true;
               if (err) err.hidden = true;
               renderEmptyRow_(tbody, columns);
@@ -1001,6 +1042,7 @@ if ('scrollRestoration' in history) {
 
             stopRowLinkPropagation(tbody);
 
+            wrap.setAttribute("aria-busy", "false");
             if (loading) loading.hidden = true;
             if (err) err.hidden = true;
 
@@ -1049,6 +1091,7 @@ if ('scrollRestoration' in history) {
 
               const loading = otherWrap.querySelector("[data-poi-loading]");
               const err = otherWrap.querySelector("[data-poi-error]");
+              otherWrap.setAttribute("aria-busy", "false");
               if (loading) loading.hidden = true;
               if (err) err.hidden = true;
 
@@ -1079,6 +1122,7 @@ if ('scrollRestoration' in history) {
           wraps.forEach((wrap) => {
             const loading = wrap.querySelector("[data-poi-loading]");
             const err = wrap.querySelector("[data-poi-error]");
+            wrap.setAttribute("aria-busy", "false");
             if (loading) loading.hidden = true;
             if (err) err.hidden = false;
           });
