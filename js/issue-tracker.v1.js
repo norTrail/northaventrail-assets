@@ -27,6 +27,7 @@
     let files = [];
     let formSubmitted = false;
     let hasAutoLocated = false;
+    let searchResults = [];
 
     // DOM Refs
     let form, submitButton, fileInput, previewContainer, errorMessage, uploadButton, usePhotoGPSButton,
@@ -591,6 +592,21 @@
         hpField.setAttribute('aria-hidden', 'true');
         form.appendChild(hpField);
 
+        if (locationListInput) {
+            locationListInput.setAttribute('role', 'combobox');
+            locationListInput.setAttribute('aria-haspopup', 'listbox');
+            locationListInput.setAttribute('aria-controls', 'locationListbox');
+            locationListInput.setAttribute('aria-expanded', 'false');
+            locationListInput.setAttribute('aria-autocomplete', 'list');
+        }
+        if (locationList) locationList.setAttribute('role', 'listbox');
+
+        const issueMapEl = document.getElementById('map');
+        if (issueMapEl) {
+            issueMapEl.setAttribute('role', 'region');
+            issueMapEl.setAttribute('aria-roledescription', 'interactive map');
+        }
+
         function initTurnstile() {
             if (typeof turnstile !== 'undefined' && !turnstileWidgetId) {
                 turnstile.ready(() => {
@@ -786,6 +802,7 @@
         // -------------------------
         let _poiFeatures = [];
         let _searchListenersAttached = false;
+        let _activeOptionIndex = -1;
 
         function decodeHTML_(str) {
             const txt = document.createElement('textarea');
@@ -793,10 +810,44 @@
             return txt.value;
         }
 
+        function selectPOIOption_(item) {
+            if (!item) return;
+            moveMarker(item.coords[1], item.coords[0], item.name);
+            locationListInput.value = item.name;
+            hideDropdown_();
+            clearSearch.classList.remove('hidden');
+            if (map) {
+                new mapboxgl.Popup({ offset: 35 })
+                    .setLngLat([item.coords[0], item.coords[1]])
+                    .setHTML(`<strong>${item.name}</strong>`)
+                    .addTo(map);
+            }
+        }
+
+        function syncActivePOIOption_() {
+            const options = locationList.querySelectorAll('.optionDropdown[role="option"]');
+            options.forEach((opt, idx) => {
+                const active = idx === _activeOptionIndex;
+                opt.setAttribute('aria-selected', active ? 'true' : 'false');
+                opt.classList.toggle('activeOption', active);
+            });
+
+            const activeEl = options[_activeOptionIndex];
+            if (activeEl) {
+                locationListInput.setAttribute('aria-activedescendant', activeEl.id);
+                activeEl.scrollIntoView({ block: 'nearest' });
+            } else {
+                locationListInput.removeAttribute('aria-activedescendant');
+            }
+        }
+
         function renderPOIResult_(features) {
             locationList.innerHTML = '';
+            searchResults = [];
+            _activeOptionIndex = -1;
             if (features.length === 0) {
-                locationList.innerHTML = '<div class="optionDropdown" role="option" aria-selected="false">No matches found</div>';
+                locationList.innerHTML = '<div class="optionDropdown" role="option" aria-selected="false" id="poi-opt-empty">No matches found</div>';
+                locationListInput.removeAttribute('aria-activedescendant');
                 return;
             }
             features.forEach((feat, idx) => {
@@ -806,27 +857,28 @@
                 const name = decodeHTML_(rawName);
                 const coords = feat.geometry?.coordinates;
                 if (!coords || coords.length !== 2) return;
+                const item = { name, coords };
+                searchResults.push(item);
 
                 const opt = document.createElement('div');
                 opt.className = 'optionDropdown';
                 opt.setAttribute('role', 'option');
                 opt.setAttribute('aria-selected', 'false');
-                opt.id = `poi-opt-${idx}`;
+                opt.id = `poi-opt-${searchResults.length - 1}`;
                 opt.textContent = name;
-                opt.onclick = () => {
-                    moveMarker(coords[1], coords[0], name);
-                    locationListInput.value = name;
-                    hideDropdown_();
-                    clearSearch.classList.remove('hidden');
-                    if (map) {
-                        new mapboxgl.Popup({ offset: 35 })
-                            .setLngLat([coords[0], coords[1]])
-                            .setHTML(`<strong>${name}</strong>`)
-                            .addTo(map);
-                    }
-                };
+                opt.dataset.idx = String(searchResults.length - 1);
+                opt.addEventListener('mouseenter', () => {
+                    _activeOptionIndex = Number(opt.dataset.idx);
+                    syncActivePOIOption_();
+                });
+                opt.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    selectPOIOption_(item);
+                });
                 locationList.appendChild(opt);
             });
+            _activeOptionIndex = searchResults.length ? 0 : -1;
+            syncActivePOIOption_();
         }
 
         function syncDropdownWidth_() {
@@ -841,6 +893,8 @@
         function hideDropdown_() {
             locationList.classList.add('hidden');
             locationListInput.setAttribute('aria-expanded', 'false');
+            _activeOptionIndex = -1;
+            locationListInput.removeAttribute('aria-activedescendant');
         }
 
         function attachSearchListeners_() {
@@ -875,6 +929,41 @@
                 hideDropdown_();
                 locationListInput.focus();
             };
+
+            locationListInput.addEventListener('keydown', (e) => {
+                const isOpen = !locationList.classList.contains('hidden');
+                if (!isOpen && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+                    renderPOIResult_(locationListInput.value.trim() ? searchResults : _poiFeatures);
+                    syncDropdownWidth_();
+                    showDropdown_();
+                }
+
+                if (e.key === 'Escape') {
+                    hideDropdown_();
+                    return;
+                }
+
+                if (locationList.classList.contains('hidden') || searchResults.length === 0) return;
+
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    _activeOptionIndex = Math.min(_activeOptionIndex + 1, searchResults.length - 1);
+                    syncActivePOIOption_();
+                    return;
+                }
+
+                if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    _activeOptionIndex = Math.max(_activeOptionIndex - 1, 0);
+                    syncActivePOIOption_();
+                    return;
+                }
+
+                if (e.key === 'Enter' && _activeOptionIndex >= 0) {
+                    e.preventDefault();
+                    selectPOIOption_(searchResults[_activeOptionIndex]);
+                }
+            });
 
             document.addEventListener('click', (e) => {
                 if (!locationList.contains(e.target) && e.target !== locationListInput) {

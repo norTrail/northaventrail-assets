@@ -352,6 +352,10 @@
   font-size: 40px;
   font-weight: bold;
   transition: 0.3s;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  line-height: 1;
 }
 
 .close:hover,
@@ -359,6 +363,12 @@
   color: #bbb;
   text-decoration: none;
   cursor: pointer;
+}
+
+.close:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 4px;
+  border-radius: 6px;
 }
 
 /* 100% Image Width on Smaller Screens */

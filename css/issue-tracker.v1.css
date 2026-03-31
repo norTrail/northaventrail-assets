@@ -218,6 +218,13 @@ input[type="checkbox"] {
     color: white;
 }
 
+.tab-header li:focus-visible {
+    outline: 3px solid #108452;
+    outline-offset: 2px;
+    position: relative;
+    z-index: 1;
+}
+
 .tab-header li:hover:not(.active) {
     background-color: #e0e0e0;
     border-color: #008000;
@@ -391,6 +398,11 @@ input[type="checkbox"] {
 #clearSearch:hover {
     background: white;
     color: #008f0c;
+}
+
+#clearSearch:focus-visible {
+    outline: 3px solid #108452;
+    outline-offset: 2px;
 }
 
 /* Marker helper */

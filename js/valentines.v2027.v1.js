@@ -59,6 +59,7 @@ let currentClingByLocationID = new Map();      // locationID -> feature
 let currentClingByClingID = new Map();         // clingID -> feature
 let activeFeatureId = null;                    // feature.id currently active
 let activePopup = null;                        // mapbox Popup
+let modalRestoreFocusEl = null;
 
 // -------------------- Carousel globals --------------------
 const CAROUSEL_MOUNT_ID = "valentine-carousel";
@@ -1054,11 +1055,28 @@ function initModalHandlers() {
   const modal = getElementById('myModal');
   if (!modal) return;
 
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-modal', 'true');
+  modal.setAttribute('aria-labelledby', 'caption');
+  modal.setAttribute('aria-hidden', 'true');
+  if (!modal.hasAttribute('tabindex')) modal.setAttribute('tabindex', '-1');
+
   const closeBtn = querySelectorSingle('.close', modal);
   if (closeBtn) {
+    if (closeBtn.tagName !== 'BUTTON') {
+      closeBtn.setAttribute('role', 'button');
+      closeBtn.setAttribute('tabindex', '0');
+    }
+    closeBtn.setAttribute('aria-label', 'Close image dialog');
     closeBtn.addEventListener('click', (e) => {
       e.preventDefault();
       closeModal();
+    });
+    closeBtn.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        closeModal();
+      }
     });
   }
 
@@ -1066,38 +1084,69 @@ function initModalHandlers() {
     if (e.target === modal) closeModal();
   });
 
-  document.addEventListener('keyup', (e) => {
-    if (e.key === 'Escape') closeModal();
+  modal.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      closeModal();
+      return;
+    }
+
+    if (e.key !== 'Tab') return;
+    const focusables = modal.querySelectorAll('button, [href], [tabindex]:not([tabindex="-1"])');
+    if (!focusables.length) return;
+
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
   });
 }
 
 function showModal(element){
+  const modal = getElementById('myModal');
+  if (!modal) return;
   const scrollY = window.scrollY;
   scrollYModal = scrollY;
+  modalRestoreFocusEl = document.activeElement instanceof HTMLElement ? document.activeElement : null;
 
   document.body.style.position = 'fixed';
   document.body.style.top = `-${scrollY}px`;   // <-- important
   document.body.style.left = '0';
   document.body.style.right = '0';
 
-  showEl(getElementById('myModal'), 'block');  // <-- force visibility
+  showEl(modal, 'block');  // <-- force visibility
+  modal.setAttribute('aria-hidden', 'false');
 
   const modalImg = getElementById('img01');
-  if (modalImg) modalImg.src = element.getAttribute('src_large') || '';
+  if (modalImg) {
+    modalImg.src = element.getAttribute('src_large') || '';
+    modalImg.alt = decodeClingTextSafe(element.alt || '');
+  }
 
   const captionText = decodeClingTextSafe(element.alt || '');
   setTextSafe(getElementById('caption'), captionText);
+  querySelectorSingle('.close', modal)?.focus();
 }
 
 function closeModal(){
+  const modal = getElementById('myModal');
   document.body.style.position = '';
   document.body.style.top = '';
   document.body.style.left = '';
   document.body.style.right = '';
 
-  hideEl(getElementById('myModal'));
+  if (modal) {
+    modal.setAttribute('aria-hidden', 'true');
+    hideEl(modal);
+  }
 
   window.scrollTo(0, parseInt(scrollYModal || '0', 10));
+  modalRestoreFocusEl?.focus?.();
 }
 
 // ---------------------------------------------------------------------
