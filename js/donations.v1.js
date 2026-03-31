@@ -116,27 +116,55 @@
         }
       });
 
-      // Fetch + render for one URL group
+      // Fetch + render for one URL group.
+      // If the URL ends in .latest.json it is treated as a manifest:
+      //   1. Fetch the manifest to get the current versioned data URL.
+      //   2. Compare manifest.current to the cached _manifestCurrent value.
+      //   3. If unchanged → skip the data fetch (use existing cached payload).
+      //   4. If changed (or no cache) → fetch the versioned data file.
       function fetchAndRender(url, group) {
         if (group.inFlight) return;
         group.inFlight = true;
-        fetch(url, { cache: 'no-store' })
-          .then(r => r.json())
-          .then(data => {
-            const payload = {
-              raised:         num(data.raised,        group.raisedDefault),
-              goal:           num(data.goal,          group.goalDefault),
-              matchingFunds:  sanitizeNum(data.matchingFunds),
-              remainingFunds: sanitizeNum(data.remainingFunds ?? data.remainingFundsCell),
-              updated:        data.updated || new Date().toISOString()
-            };
-            group.bars.forEach(({ root, goalAttr, raisedAttr }) => {
-              renderBar(root, payload, { goalAttr, raisedAttr });
+
+        const isManifest = url.endsWith('.latest.json');
+
+        const doFetchData = (dataUrl) =>
+          fetch(dataUrl, { cache: 'no-store' })
+            .then(r => r.json())
+            .then(data => {
+              const payload = {
+                raised:         num(data.raised,        group.raisedDefault),
+                goal:           num(data.goal,          group.goalDefault),
+                matchingFunds:  sanitizeNum(data.matchingFunds),
+                remainingFunds: sanitizeNum(data.remainingFunds ?? data.remainingFundsCell),
+                updated:        data.updated || new Date().toISOString()
+              };
+              group.bars.forEach(({ root, goalAttr, raisedAttr }) => {
+                renderBar(root, payload, { goalAttr, raisedAttr });
+              });
+              updateMatchLines(payload);
+              saveCache(group.cacheKey, { ...payload, _manifestCurrent: dataUrl });
+              group.lastFetchedAt = Date.now();
             });
-            updateMatchLines(payload);
-            saveCache(group.cacheKey, payload);
-            group.lastFetchedAt = Date.now();
-          })
+
+        const run = isManifest
+          ? fetch(url)
+              .then(r => r.json())
+              .then(manifest => {
+                const versionedUrl =
+                  manifest && typeof manifest.current === 'string' && manifest.current
+                    ? manifest.current
+                    : null;
+                if (!versionedUrl) return; // manifest malformed — keep existing UI
+
+                const cached = loadCache(group.cacheKey);
+                if (cached && cached._manifestCurrent === versionedUrl) return; // unchanged
+
+                return doFetchData(versionedUrl);
+              })
+          : doFetchData(url);
+
+        run
           .catch(() => { /* keep existing UI on error */ })
           .finally(() => { group.inFlight = false; });
       }

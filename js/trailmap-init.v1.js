@@ -13,6 +13,10 @@ const VISIBLE = 'visible';
 const GOOGLE_POI_API =
   'https://assets.northaventrail.org/json/trail-poi.json';
 
+// Manifest URL for trail POI data — resolved at runtime to the current versioned file
+const URL_MARKER_MANIFEST = 'https://assets.northaventrail.org/json/trail-poi.latest.json';
+
+// Fallback direct URL if manifest is unavailable
 const URL_MARKER_DATA = GOOGLE_POI_API;
 
 const GOOGLE_MAP_URL = 'https://maps.google.com/maps?q=';
@@ -729,26 +733,53 @@ function typeKeysForIcons_(payload, icons) {
 }
 
 let __markerReqId = 0;
+let __markerManifestCurrent = null; // last-known versioned URL from manifest
 
 function getMarkerData() {
   const reqId = ++__markerReqId;
   const mapAtStart = map; // capture current instance
 
+  // Resolve the manifest to find the current versioned data URL,
+  // then fetch only if the version has changed (or on first load).
+  // Falls back to the direct URL if the manifest is unavailable.
+  const manifestController = new AbortController();
+  const manifestTimeout = setTimeout(() => manifestController.abort(), 15000);
+
+  fetch(URL_MARKER_MANIFEST, { signal: manifestController.signal })
+    .then((r) => { clearTimeout(manifestTimeout); return r.json(); })
+    .then((manifest) => {
+      if (reqId !== __markerReqId) return;
+      const dataUrl = (manifest && typeof manifest.current === "string" && manifest.current)
+        ? manifest.current
+        : URL_MARKER_DATA; // fallback
+
+      // Skip data fetch if the versioned URL hasn't changed since last load
+      if (dataUrl === __markerManifestCurrent && poiData) return;
+
+      return _fetchAndApplyMarkerData(reqId, mapAtStart, dataUrl)
+        .then(() => { __markerManifestCurrent = dataUrl; });
+    })
+    .catch(() => {
+      // Manifest fetch failed — fall through to direct URL
+      clearTimeout(manifestTimeout);
+      if (reqId !== __markerReqId) return;
+      _fetchAndApplyMarkerData(reqId, mapAtStart, URL_MARKER_DATA);
+    });
+}
+
+function _fetchAndApplyMarkerData(reqId, mapAtStart, dataUrl) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-  fetch(URL_MARKER_DATA, { signal: controller.signal })
+  return fetch(dataUrl, { signal: controller.signal })
     .then((r) => { clearTimeout(timeoutId); return r.json(); })
     .then((payload) => {
-      // If a newer request started, or map instance changed, ignore this response
       if (reqId !== __markerReqId) return;
-      if (!mapAtStart || map !== mapAtStart) return;            // map was rebuilt
-      if (mapAtStart._removed) return;                           // map was removed
+      if (!mapAtStart || map !== mapAtStart) return;
+      if (mapAtStart._removed) return;
 
-      // Style must exist before getSource/addSource
       if (!mapAtStart.isStyleLoaded || !mapAtStart.isStyleLoaded()) {
         mapAtStart.once("idle", () => {
-          // re-check staleness after waiting
           if (reqId !== __markerReqId) return;
           if (!mapAtStart || map !== mapAtStart || mapAtStart._removed) return;
           applyMarkerPayload_(mapAtStart, payload);

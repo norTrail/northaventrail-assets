@@ -17,8 +17,11 @@ if ('scrollRestoration' in history) {
     emptyMessage: "No locations found.",
     errorMessage: "Unable to load locations at this time.",
     tableClass: "listing-table",
-    // Default CDN endpoint:
+    // Manifest URL — resolves to current versioned data file at runtime.
+    // Falls back to direct URL if manifest is unavailable.
     dataUrl:
+      "https://assets.northaventrail.org/json/trail-poi.latest.json",
+    dataUrlFallback:
       "https://assets.northaventrail.org/json/trail-poi.json",
   };
 
@@ -454,23 +457,41 @@ if ('scrollRestoration' in history) {
   }
 
   function getPoiData_(dataUrl) {
-    // Prefer map-loaded payload
+    // Prefer map-loaded payload (trailmap-init already fetched and applied it)
     if (window.poiData && Array.isArray(window.poiData.features)) {
       return Promise.resolve(window.poiData);
     }
 
     const url = String(dataUrl || "").trim() || DEFAULTS.dataUrl;
 
+    // If the URL is a manifest (*.latest.json), resolve it to the versioned file first.
+    const isManifest = url.endsWith(".latest.json");
+    const fetchData = (resolvedUrl) =>
+      fetch(resolvedUrl)
+        .then((r) => {
+          if (!r.ok) throw new Error(`Network ${r.status}`);
+          return r.json();
+        })
+        .then((json) => {
+          window.poiData = json;
+          return json;
+        });
+
+    if (!isManifest) return fetchData(url);
+
     return fetch(url)
       .then((r) => {
-        if (!r.ok) throw new Error(`Network ${r.status}`);
+        if (!r.ok) throw new Error(`Manifest HTTP ${r.status}`);
         return r.json();
       })
-      .then((json) => {
-        // Cache for other consumers (and map pages that load listing first)
-        window.poiData = json;
-        return json;
-      });
+      .then((manifest) => {
+        const versionedUrl =
+          manifest && typeof manifest.current === "string" && manifest.current
+            ? manifest.current
+            : DEFAULTS.dataUrlFallback;
+        return fetchData(versionedUrl);
+      })
+      .catch(() => fetchData(DEFAULTS.dataUrlFallback));
   }
 
   // ---------------------------

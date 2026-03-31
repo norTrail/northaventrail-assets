@@ -11,7 +11,11 @@ mapboxgl.accessToken = 'pk.eyJ1Ijoid2Rhd3NvIiwiYSI6ImNqb2c3MmJ5czAwbXYzd2xoN2o0c
 const SALES_DIV_ID = ['block-yui_3_17_2_1_1673283235024_2521','block-yui_3_17_2_1_1673289954674_3052','block-yui_3_17_2_1_1673896880328_4180','block-63c18efae56ef1315372db3a', 'block-yui_3_17_2_1_1673896880328_3826'];
 const LAST_SALES_DATE = new Date(2026, 1, 5, 23, 59, 59);  // months are 0-11
 
-const CLING_GEOJSON_URL = `https://assets.northaventrail.org/json/valinetine-cling.v2027.geojson`;
+const CLING_MANIFEST_URL = `https://assets.northaventrail.org/json/valinetine-cling.latest.json`;
+const CLING_GEOJSON_URL  = `https://assets.northaventrail.org/json/valinetine-cling.v2027.geojson`; // fallback
+
+// Last-known versioned URL from manifest — skip data fetch when unchanged
+let __clingManifestCurrent = null;
 
 // POPUP
 const markerHeight = 52;
@@ -989,10 +993,24 @@ function goToParamFeature() {
 }
 
 // ---------------------------------------------------------------------
-// Refresh: fetch GeoJSON once, update source + carousel + indexes
+// Refresh: resolve manifest → fetch versioned GeoJSON if version changed
+// → update source + carousel + indexes
 // ---------------------------------------------------------------------
 async function refreshClingData() {
-  const fc = normalizeFeatureCollection(await fetchJson(CLING_GEOJSON_URL));
+  // Resolve manifest to find the current versioned URL
+  let dataUrl = CLING_GEOJSON_URL; // default fallback
+  try {
+    const manifest = await fetchJson(CLING_MANIFEST_URL);
+    if (manifest && typeof manifest.current === "string" && manifest.current) {
+      dataUrl = manifest.current;
+    }
+  } catch (_) { /* manifest unavailable — use fallback */ }
+
+  // Skip data fetch if the versioned URL hasn't changed and we already have data
+  if (dataUrl === __clingManifestCurrent && currentClingGeojson) return;
+
+  const fc = normalizeFeatureCollection(await fetchJson(dataUrl));
+  __clingManifestCurrent = dataUrl;
   currentClingGeojson = fc;
   indexFeatures(fc);
 

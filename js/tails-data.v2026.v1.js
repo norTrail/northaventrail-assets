@@ -31,6 +31,18 @@ const DATA_CONFIG = {
 
 const CDN_BASE = "https://assets.northaventrail.org/json";
 
+/* Manifest URLs — clients fetch these first, then follow manifest.current */
+const MANIFEST_SHEEP   = `${CDN_BASE}/sheep-locations.latest.json`;
+const MANIFEST_NO_MOW  = `${CDN_BASE}/no-mow-zones.latest.json`;
+const MANIFEST_OVERLAY = `${CDN_BASE}/overlay-state.latest.json`;
+
+/* Last-known versioned URL per feed — skip data fetch when unchanged */
+const _lastKnownVersion = {
+  sheep:   null,
+  noMow:   null,
+  overlay: null
+};
+
 /* ----------------------------
    Internal state
    ---------------------------- */
@@ -178,6 +190,28 @@ async function fetchJsonStable(url) {
 }
 
 /* ----------------------------
+   Manifest resolver
+   Fetches a *.latest.json manifest and returns the versioned data URL.
+   Throws if the manifest is missing or malformed.
+   ---------------------------- */
+
+async function fetchManifest(manifestUrl) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), DATA_CONFIG.fetchTimeoutMs);
+  try {
+    const res = await fetch(manifestUrl, { signal: controller.signal });
+    if (!res.ok) throw new Error(`Manifest HTTP ${res.status}: ${manifestUrl}`);
+    const manifest = await res.json();
+    if (!manifest || typeof manifest.current !== "string" || !manifest.current) {
+      throw new Error(`Manifest missing "current" field: ${manifestUrl}`);
+    }
+    return manifest.current;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+/* ----------------------------
    Sheep / Herd data
    ---------------------------- */
 
@@ -197,7 +231,11 @@ async function fetchSheepData() {
   if (!pageVisible || !grazingActive) return;
 
   try {
-    const data = await fetchJson(`${CDN_BASE}/sheep-locations.v2026.geojson`);
+    const versionedUrl = await fetchManifest(MANIFEST_SHEEP);
+    if (versionedUrl === _lastKnownVersion.sheep) return; // data unchanged
+
+    const data = await fetchJson(versionedUrl);
+    _lastKnownVersion.sheep = versionedUrl;
     lastSheepFetch = Date.now();
     retryCounts.sheep = 0;
     clearScheduledRetry("sheep");
@@ -217,7 +255,11 @@ async function fetchSheepData() {
 
 async function fetchNoMowZones() {
   try {
-    const geojson = await fetchJsonStable(`${CDN_BASE}/no-mow-zones.v2026.geojson`);
+    const versionedUrl = await fetchManifest(MANIFEST_NO_MOW);
+    if (versionedUrl === _lastKnownVersion.noMow) return; // data unchanged
+
+    const geojson = await fetchJsonStable(versionedUrl);
+    _lastKnownVersion.noMow = versionedUrl;
 
     if (typeof updateNoMowLayers === "function") {
       updateNoMowLayers(mapRef, geojson);
@@ -236,7 +278,14 @@ async function fetchOverlayState(isInitial = false) {
   if (!pageVisible) return;
 
   try {
-    const overlay = await fetchJson(`${CDN_BASE}/overlay-state.v2026.json`);
+    const versionedUrl = await fetchManifest(MANIFEST_OVERLAY);
+
+    // Skip data fetch only on non-initial polls when version hasn't changed.
+    // On initial load always fetch so the overlay state is applied.
+    if (!isInitial && versionedUrl === _lastKnownVersion.overlay) return;
+
+    const overlay = await fetchJson(versionedUrl);
+    _lastKnownVersion.overlay = versionedUrl;
     lastOverlayFetch = Date.now();
     retryCounts.overlay = 0;
     clearScheduledRetry("overlay");

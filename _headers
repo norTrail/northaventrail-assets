@@ -5,7 +5,15 @@
 /js/*
   Cache-Control: public, max-age=31536000, immutable
 
-# Static GeoJSON/JSON — changes ~monthly, cache 1 week (604800s)
+# Manifests — short TTL so clients pick up new versions quickly
+/json/*.latest.json
+  Cache-Control: public, max-age=60, stale-while-revalidate=30
+
+# Versioned data files — immutable, cache forever
+/json/*.v*.*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Legacy static GeoJSON/JSON — kept until old filenames are retired
 # Specific rules must come before the /json/* catch-all
 /json/trail-poi.json
   Cache-Control: public, max-age=604800, stale-while-revalidate=86400
