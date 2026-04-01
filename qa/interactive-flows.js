@@ -146,15 +146,31 @@ async function tailsMarkerFlow(browser) {
   try {
     await goto(page, "https://northaventrail.org/tails-2026");
     await waitForMap(page);
-    await page.waitForSelector(".sheep-marker", { visible: true, timeout: 30000 });
 
-    await page.click(".sheep-marker");
-    await page.waitForSelector(".mapboxgl-popup", { visible: true, timeout: 15000 });
+    // Detect whether the herd is currently active (markers visible) or pre-launch ("coming" state)
+    const overlayState = await page.evaluate(() => {
+      const pill = document.getElementById("status-pill");
+      return pill ? pill.dataset.state : null;
+    });
 
-    const popupHeading = await page.$eval(".mapboxgl-popup h3", (el) => (el.textContent || "").trim());
-    assert.ok(popupHeading.length > 0, "TAILS popup should have a heading");
-
-    console.log("tails marker popup: pass");
+    if (overlayState === "coming" || overlayState === "sleeping" || overlayState === "history") {
+      // Pre-launch / off-hours: verify the status pill and overlay banner are shown
+      await page.waitForFunction(() => {
+        const pill = document.getElementById("status-pill");
+        return pill && pill.offsetParent !== null;
+      }, { timeout: 15000 });
+      const pillText = await page.$eval("#status-pill", (el) => el.innerText.trim());
+      assert.ok(pillText.length > 0, "TAILS status pill should have text when not active");
+      console.log(`tails status ui (${overlayState}): pass`);
+    } else {
+      // Active: verify a sheep marker is present and opens a popup
+      await page.waitForSelector(".sheep-marker", { visible: true, timeout: 30000 });
+      await page.click(".sheep-marker");
+      await page.waitForSelector(".mapboxgl-popup", { visible: true, timeout: 15000 });
+      const popupHeading = await page.$eval(".mapboxgl-popup h3", (el) => (el.textContent || "").trim());
+      assert.ok(popupHeading.length > 0, "TAILS popup should have a heading");
+      console.log("tails marker popup: pass");
+    }
   } finally {
     await page.close();
   }

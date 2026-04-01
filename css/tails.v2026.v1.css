@@ -281,9 +281,9 @@ body {
   background: transparent;
   border: none;
   transition: transform 120ms ease;
-  /* Minimum 44×44px touch target (WCAG 2.1 AA) */
-  min-width: 44px;
-  min-height: 44px;
+  /* Minimum 48×48px touch target (WCAG 2.1 AA updated) */
+  min-width: 48px;
+  min-height: 48px;
   font-size: 22px;
 }
 
@@ -763,10 +763,10 @@ body.is-map-fullscreen {
   /* #ada-long-text is always sr-only; #ada-short-text is always shown — no mobile override needed */
 
   .map-bottom-button {
-    /* 44px minimum touch target height (WCAG 2.1 AA) */
-    min-height: 44px;
+    /* 48px minimum touch target height (WCAG 2.1 AA updated) */
+    min-height: 48px;
     width: 70px;
-    min-width: 44px;
+    min-width: 48px;
     max-width: 70px;
   }
 
@@ -783,8 +783,8 @@ body.is-map-fullscreen {
   }
 
   .no-mow-marker {
-    min-width: 44px;
-    min-height: 44px;
+    min-width: 48px;
+    min-height: 48px;
     font-size: 24px;
   }
 

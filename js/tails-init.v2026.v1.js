@@ -124,6 +124,15 @@ async function bootstrapTailsApp() {
   initMap(mapEl);
   wireUIControls();
   labelUntiledIframes();
+  
+  // Fix Squarespace "Link opens in a new window" mismatch for ADA
+  document.querySelectorAll('a[aria-label="Link opens in a new window"]').forEach(a => {
+    if (a.textContent.trim()) {
+      a.setAttribute('aria-label', a.textContent.trim() + ' (opens in a new window)');
+    } else {
+      a.removeAttribute('aria-label');
+    }
+  });
 }
 
 
