@@ -1,5 +1,6 @@
 {
-  "current": "https://assets.northaventrail.org/json/sheep-locations.v2026.v20260331-220317.geojson",
-  "version": "20260331-220317",
-  "updatedAt": "2026-03-31T22:03:17.347Z"
+  "current": "https://assets.northaventrail.org/json/sheep-locations.v2026.v20260401-002350.geojson",
+  "version": "20260401-002350",
+  "updatedAt": "2026-04-01T00:23:50.108Z",
+  "previous": "https://assets.northaventrail.org/json/sheep-locations.v2026.v20260331-220317.geojson"
 }
