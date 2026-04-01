@@ -12,7 +12,6 @@ const SALES_DIV_ID = ['block-yui_3_17_2_1_1673283235024_2521','block-yui_3_17_2_
 const LAST_SALES_DATE = new Date(2026, 1, 5, 23, 59, 59);  // months are 0-11
 
 const CLING_MANIFEST_URL = `https://assets.northaventrail.org/json/valinetine-cling.v2027.latest.json`;
-const CLING_GEOJSON_URL  = `https://assets.northaventrail.org/json/valinetine-cling.v2027.geojson`; // fallback
 
 // Last-known versioned URL from manifest — skip data fetch when unchanged
 let __clingManifestCurrent = null;
@@ -341,6 +340,14 @@ async function fetchJson(url) {
   const res = await fetch(url, { method: 'GET', credentials: 'omit', redirect: 'follow' });
   if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
   return await res.json();
+}
+
+function getManifestDataUrls(manifest) {
+  return [...new Set(
+    [manifest?.current, manifest?.fallback, manifest?.previous]
+      .map((value) => String(value || '').trim())
+      .filter(Boolean)
+  )];
 }
 
 function withCacheBust(url) {
@@ -997,20 +1004,29 @@ function goToParamFeature() {
 // → update source + carousel + indexes
 // ---------------------------------------------------------------------
 async function refreshClingData() {
-  // Resolve manifest to find the current versioned URL
-  let dataUrl = CLING_GEOJSON_URL; // default fallback
-  try {
-    const manifest = await fetchJson(CLING_MANIFEST_URL);
-    if (manifest && typeof manifest.current === "string" && manifest.current) {
-      dataUrl = manifest.current;
+  const manifest = await fetchJson(CLING_MANIFEST_URL);
+  const candidateUrls = getManifestDataUrls(manifest);
+  if (!candidateUrls.length) {
+    throw new Error('Manifest missing current cling URL');
+  }
+
+  if (currentClingGeojson && candidateUrls.includes(__clingManifestCurrent)) return;
+
+  let fc = null;
+  let selectedUrl = null;
+  let lastError = null;
+  for (const candidateUrl of candidateUrls) {
+    try {
+      fc = normalizeFeatureCollection(await fetchJson(candidateUrl));
+      selectedUrl = candidateUrl;
+      break;
+    } catch (err) {
+      lastError = err;
     }
-  } catch (_) { /* manifest unavailable — use fallback */ }
+  }
+  if (!fc || !selectedUrl) throw lastError || new Error('Unable to load cling data');
 
-  // Skip data fetch if the versioned URL hasn't changed and we already have data
-  if (dataUrl === __clingManifestCurrent && currentClingGeojson) return;
-
-  const fc = normalizeFeatureCollection(await fetchJson(dataUrl));
-  __clingManifestCurrent = dataUrl;
+  __clingManifestCurrent = selectedUrl;
   currentClingGeojson = fc;
   indexFeatures(fc);
 

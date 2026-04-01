@@ -2,7 +2,7 @@
    trailmap-listing.js
    - Single table: TrailmapListing.initTrailListing(cfg)
    - Multi table:  TrailmapListing.hydratePoiTables(cfg)
-   - Uses trail-poi.json from CDN (reuses window.poiData when present)
+   - Uses trail-poi.latest.json manifest from CDN (reuses window.poiData when present)
    ============================================================ */
 
 /* prevent scroll to hash on page load */
@@ -18,11 +18,8 @@ if ('scrollRestoration' in history) {
     errorMessage: "Unable to load locations at this time.",
     tableClass: "listing-table",
     // Manifest URL — resolves to current versioned data file at runtime.
-    // Falls back to direct URL if manifest is unavailable.
     dataUrl:
       "https://assets.northaventrail.org/json/trail-poi.latest.json",
-    dataUrlFallback:
-      "https://assets.northaventrail.org/json/trail-poi.json",
   };
 
   // ---------------------------
@@ -481,6 +478,14 @@ if ('scrollRestoration' in history) {
     return payload;
   }
 
+  function getManifestDataUrls_(manifest) {
+    return [...new Set(
+      [manifest?.current, manifest?.fallback, manifest?.previous]
+        .map((value) => String(value || "").trim())
+        .filter(Boolean)
+    )];
+  }
+
   function getPoiData_(dataUrl) {
     const url = String(dataUrl || "").trim() || DEFAULTS.dataUrl;
 
@@ -499,7 +504,7 @@ if ('scrollRestoration' in history) {
         .then((json) => setPoiCache_(json, sourceUrl));
     };
 
-    // If the URL is a manifest (*.latest.json), resolve it to the versioned file first.
+    // If the URL is a manifest (*.latest.json), resolve it to one or more versioned files first.
     const isManifest = url.endsWith(".latest.json");
 
     if (!isManifest) return fetchData(url);
@@ -510,13 +515,25 @@ if ('scrollRestoration' in history) {
         return r.json();
       })
       .then((manifest) => {
-        const versionedUrl =
-          manifest && typeof manifest.current === "string" && manifest.current
-            ? manifest.current
-            : DEFAULTS.dataUrlFallback;
-        return fetchData(versionedUrl);
+        const candidateUrls = getManifestDataUrls_(manifest);
+        if (!candidateUrls.length) throw new Error("Manifest missing current POI URL");
+
+        const cached = getPoiCache_();
+        if (cached && candidateUrls.includes(cached.sourceUrl)) {
+          return cached.data;
+        }
+
+        let chain = Promise.reject();
+        candidateUrls.forEach((candidateUrl) => {
+          chain = chain.catch(() => fetchData(candidateUrl));
+        });
+        return chain;
       })
-      .catch(() => fetchData(DEFAULTS.dataUrlFallback));
+      .catch((err) => {
+        const cached = getPoiCache_();
+        if (cached) return cached.data;
+        throw err;
+      });
   }
 
   // ---------------------------

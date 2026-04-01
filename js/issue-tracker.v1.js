@@ -85,6 +85,17 @@
         return payload;
     }
 
+    function getManifestDataUrls_(manifest) {
+        const urls = [
+            manifest?.current,
+            manifest?.fallback,
+            manifest?.previous
+        ]
+            .map(value => String(value || "").trim())
+            .filter(Boolean);
+        return [...new Set(urls)];
+    }
+
     async function fetchPoiPayload_() {
         const manifestRes = await fetch(POI_MANIFEST_URL);
         if (!manifestRes.ok) {
@@ -92,26 +103,32 @@
         }
 
         const manifest = await manifestRes.json();
-        const versionedUrl =
-            manifest && typeof manifest.current === "string" && manifest.current
-                ? manifest.current
-                : "";
-        if (!versionedUrl) {
+        const candidateUrls = getManifestDataUrls_(manifest);
+        if (!candidateUrls.length) {
             throw new Error("Manifest missing current POI URL");
         }
 
         const cached = getPoiCache_();
-        if (cached && cached.sourceUrl === versionedUrl) {
+        if (cached && candidateUrls.includes(cached.sourceUrl)) {
             return cached.data;
         }
 
-        const dataRes = await fetch(versionedUrl);
-        if (!dataRes.ok) {
-            throw new Error(`POI data HTTP ${dataRes.status}`);
+        let lastError = null;
+        for (const versionedUrl of candidateUrls) {
+            try {
+                const dataRes = await fetch(versionedUrl);
+                if (!dataRes.ok) {
+                    throw new Error(`POI data HTTP ${dataRes.status}`);
+                }
+
+                const payload = await dataRes.json();
+                return setPoiCache_(payload, versionedUrl);
+            } catch (err) {
+                lastError = err;
+            }
         }
 
-        const payload = await dataRes.json();
-        return setPoiCache_(payload, versionedUrl);
+        throw lastError || new Error("Unable to load POI data");
     }
 
     function announce(el, msg) {

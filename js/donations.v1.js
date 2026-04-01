@@ -116,12 +116,20 @@
         }
       });
 
+      function getManifestDataUrls(manifest) {
+        return [...new Set(
+          [manifest?.current, manifest?.fallback, manifest?.previous]
+            .map((value) => String(value || "").trim())
+            .filter(Boolean)
+        )];
+      }
+
       // Fetch + render for one URL group.
       // If the URL ends in .latest.json it is treated as a manifest:
-      //   1. Fetch the manifest to get the current versioned data URL.
-      //   2. Compare manifest.current to the cached _manifestCurrent value.
+      //   1. Fetch the manifest to get the candidate versioned data URLs.
+      //   2. Compare them to the cached _manifestCurrent value.
       //   3. If unchanged → skip the data fetch (use existing cached payload).
-      //   4. If changed (or no cache) → fetch the versioned data file.
+      //   4. If changed (or no cache) → try each versioned data file in order.
       function fetchAndRender(url, group) {
         if (group.inFlight) return;
         group.inFlight = true;
@@ -151,16 +159,17 @@
           ? fetch(url)
               .then(r => r.json())
               .then(manifest => {
-                const versionedUrl =
-                  manifest && typeof manifest.current === 'string' && manifest.current
-                    ? manifest.current
-                    : null;
-                if (!versionedUrl) return; // manifest malformed — keep existing UI
+                const candidateUrls = getManifestDataUrls(manifest);
+                if (!candidateUrls.length) return; // manifest malformed — keep existing UI
 
                 const cached = loadCache(group.cacheKey);
-                if (cached && cached._manifestCurrent === versionedUrl) return; // unchanged
+                if (cached && candidateUrls.includes(cached._manifestCurrent)) return; // unchanged
 
-                return doFetchData(versionedUrl);
+                let chain = Promise.reject();
+                candidateUrls.forEach((candidateUrl) => {
+                  chain = chain.catch(() => doFetchData(candidateUrl));
+                });
+                return chain;
               })
           : doFetchData(url);
 

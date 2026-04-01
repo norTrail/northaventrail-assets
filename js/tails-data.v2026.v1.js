@@ -191,26 +191,36 @@ async function fetchJsonStable(url) {
   }
 }
 
-/* ----------------------------
-   Manifest resolver
-   Fetches a *.latest.json manifest and returns the versioned data URL.
-   Throws if the manifest is missing or malformed.
-   ---------------------------- */
+function getManifestDataUrls(manifest) {
+  return [...new Set(
+    [manifest?.current, manifest?.fallback, manifest?.previous]
+      .map((value) => String(value || "").trim())
+      .filter(Boolean)
+  )];
+}
 
-async function fetchManifest(manifestUrl) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), DATA_CONFIG.fetchTimeoutMs);
-  try {
-    const res = await fetch(manifestUrl, { signal: controller.signal });
-    if (!res.ok) throw new Error(`Manifest HTTP ${res.status}: ${manifestUrl}`);
-    const manifest = await res.json();
-    if (!manifest || typeof manifest.current !== "string" || !manifest.current) {
-      throw new Error(`Manifest missing "current" field: ${manifestUrl}`);
-    }
-    return manifest.current;
-  } finally {
-    clearTimeout(timeout);
+async function fetchManifestData(manifestUrl, fetcher, lastKnownVersion, { allowCached = true } = {}) {
+  const manifest = await fetchJson(manifestUrl);
+  const candidateUrls = getManifestDataUrls(manifest);
+  if (!candidateUrls.length) {
+    throw new Error(`Manifest missing "current" field: ${manifestUrl}`);
   }
+
+  if (allowCached && lastKnownVersion && candidateUrls.includes(lastKnownVersion)) {
+    return { url: lastKnownVersion, data: null, unchanged: true };
+  }
+
+  let lastError = null;
+  for (const candidateUrl of candidateUrls) {
+    try {
+      const data = await fetcher(candidateUrl);
+      return { url: candidateUrl, data, unchanged: false };
+    } catch (err) {
+      lastError = err;
+    }
+  }
+
+  throw lastError || new Error(`Unable to fetch manifest-backed data: ${manifestUrl}`);
 }
 
 /* ----------------------------
@@ -233,17 +243,16 @@ async function fetchSheepData() {
   if (!pageVisible || !grazingActive) return;
 
   try {
-    const versionedUrl = await fetchManifest(MANIFEST_SHEEP);
-    if (versionedUrl === _lastKnownVersion.sheep) return; // data unchanged
+    const result = await fetchManifestData(MANIFEST_SHEEP, fetchJson, _lastKnownVersion.sheep);
+    if (result.unchanged) return;
 
-    const data = await fetchJson(versionedUrl);
-    _lastKnownVersion.sheep = versionedUrl;
+    _lastKnownVersion.sheep = result.url;
     lastSheepFetch = Date.now();
     retryCounts.sheep = 0;
     clearScheduledRetry("sheep");
 
     if (typeof renderAllHerds === "function") {
-      renderAllHerds(data, mapRef);
+      renderAllHerds(result.data, mapRef);
     }
   } catch (err) {
     logCaughtError("fetchSheepData", err, { phase: "sheep fetch" });
@@ -257,14 +266,13 @@ async function fetchSheepData() {
 
 async function fetchNoMowZones() {
   try {
-    const versionedUrl = await fetchManifest(MANIFEST_NO_MOW);
-    if (versionedUrl === _lastKnownVersion.noMow) return; // data unchanged
+    const result = await fetchManifestData(MANIFEST_NO_MOW, fetchJsonStable, _lastKnownVersion.noMow);
+    if (result.unchanged) return;
 
-    const geojson = await fetchJsonStable(versionedUrl);
-    _lastKnownVersion.noMow = versionedUrl;
+    _lastKnownVersion.noMow = result.url;
 
     if (typeof updateNoMowLayers === "function") {
-      updateNoMowLayers(mapRef, geojson);
+      updateNoMowLayers(mapRef, result.data);
     }
   } catch (err) {
     logCaughtError("fetchNoMowZones", err, { phase: "no mow zone fetch" });
@@ -280,14 +288,16 @@ async function fetchOverlayState(isInitial = false) {
   if (!pageVisible) return;
 
   try {
-    const versionedUrl = await fetchManifest(MANIFEST_OVERLAY);
+    const result = await fetchManifestData(
+      MANIFEST_OVERLAY,
+      fetchJson,
+      isInitial ? null : _lastKnownVersion.overlay,
+      { allowCached: !isInitial }
+    );
+    if (result.unchanged) return;
 
-    // Skip data fetch only on non-initial polls when version hasn't changed.
-    // On initial load always fetch so the overlay state is applied.
-    if (!isInitial && versionedUrl === _lastKnownVersion.overlay) return;
-
-    const overlay = await fetchJson(versionedUrl);
-    _lastKnownVersion.overlay = versionedUrl;
+    const overlay = result.data;
+    _lastKnownVersion.overlay = result.url;
     lastOverlayFetch = Date.now();
     retryCounts.overlay = 0;
     clearScheduledRetry("overlay");

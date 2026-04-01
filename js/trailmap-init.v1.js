@@ -10,14 +10,8 @@
 
 const VISIBLE = 'visible';
 
-const GOOGLE_POI_API =
-  'https://assets.northaventrail.org/json/trail-poi.json';
-
 // Manifest URL for trail POI data — resolved at runtime to the current versioned file
 const URL_MARKER_MANIFEST = 'https://assets.northaventrail.org/json/trail-poi.latest.json';
-
-// Fallback direct URL if manifest is unavailable
-const URL_MARKER_DATA = GOOGLE_POI_API;
 
 const GOOGLE_MAP_URL = 'https://maps.google.com/maps?q=';
 const APPLE_MAP_URL = 'https://maps.apple.com/?z=20&q=';
@@ -735,13 +729,20 @@ function typeKeysForIcons_(payload, icons) {
 let __markerReqId = 0;
 let __markerManifestCurrent = null; // last-known versioned URL from manifest
 
+function getManifestDataUrls_(manifest) {
+  return [...new Set(
+    [manifest?.current, manifest?.fallback, manifest?.previous]
+      .map((value) => String(value || "").trim())
+      .filter(Boolean)
+  )];
+}
+
 function getMarkerData() {
   const reqId = ++__markerReqId;
   const mapAtStart = map; // capture current instance
 
-  // Resolve the manifest to find the current versioned data URL,
-  // then fetch only if the version has changed (or on first load).
-  // Falls back to the direct URL if the manifest is unavailable.
+  // Resolve the manifest to find one or more versioned data URLs,
+  // then fetch only if the selected version has changed (or on first load).
   const manifestController = new AbortController();
   const manifestTimeout = setTimeout(() => manifestController.abort(), 15000);
 
@@ -749,25 +750,24 @@ function getMarkerData() {
     .then((r) => { clearTimeout(manifestTimeout); return r.json(); })
     .then((manifest) => {
       if (reqId !== __markerReqId) return;
-      const dataUrl = (manifest && typeof manifest.current === "string" && manifest.current)
-        ? manifest.current
-        : URL_MARKER_DATA; // fallback
+      const candidateUrls = getManifestDataUrls_(manifest);
+      if (!candidateUrls.length) throw new Error("Manifest missing current POI URL");
 
-      // Skip data fetch if the versioned URL hasn't changed since last load
-      if (dataUrl === __markerManifestCurrent && poiData) return;
+      if (poiData && candidateUrls.includes(__markerManifestCurrent)) return;
 
-      return _fetchAndApplyMarkerData(reqId, mapAtStart, dataUrl)
-        .then(() => { __markerManifestCurrent = dataUrl; });
+      return _fetchAndApplyMarkerData(reqId, mapAtStart, candidateUrls, 0);
     })
-    .catch(() => {
-      // Manifest fetch failed — fall through to direct URL
+    .catch((err) => {
       clearTimeout(manifestTimeout);
-      if (reqId !== __markerReqId) return;
-      _fetchAndApplyMarkerData(reqId, mapAtStart, URL_MARKER_DATA);
+      if (reqId !== __markerReqId || poiData) return;
+      console.error("Marker manifest fetch failed:", err);
     });
 }
 
-function _fetchAndApplyMarkerData(reqId, mapAtStart, dataUrl) {
+function _fetchAndApplyMarkerData(reqId, mapAtStart, dataUrls, index = 0) {
+  const dataUrl = Array.isArray(dataUrls) ? dataUrls[index] : dataUrls;
+  if (!dataUrl) return Promise.reject(new Error("No marker data URL available"));
+
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 15000);
 
@@ -788,9 +788,13 @@ function _fetchAndApplyMarkerData(reqId, mapAtStart, dataUrl) {
       }
 
       applyMarkerPayload_(mapAtStart, payload);
+      __markerManifestCurrent = dataUrl;
     })
     .catch((err) => {
       clearTimeout(timeoutId);
+      if (Array.isArray(dataUrls) && index + 1 < dataUrls.length) {
+        return _fetchAndApplyMarkerData(reqId, mapAtStart, dataUrls, index + 1);
+      }
       console.error("Marker fetch failed:", err);
       window.__trailCrumbs?.add("markers:fetch_fail", { msg: err?.message });
       window.TrailmapError?.logClientErrorToServer?.({
@@ -805,6 +809,7 @@ function _fetchAndApplyMarkerData(reqId, mapAtStart, dataUrl) {
       setTimeout(() => {
         if (reqId === __markerReqId) getMarkerData();
       }, 8000);
+      throw err;
     });
 }
 
