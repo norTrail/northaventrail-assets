@@ -9,6 +9,12 @@ html, body {
 /* ----------------------------
    Accessibility helpers
    ---------------------------- */
+/* Form Description Contrast Override */
+.sqs-block-form .description.required,
+.sqs-block-form .caption-text .description {
+  color: #595959 !important;
+}
+
 .sr-only {
   position: absolute !important;
   width: 1px;

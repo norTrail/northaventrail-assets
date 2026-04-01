@@ -259,7 +259,7 @@ if ('scrollRestoration' in history) {
           title="Open Map Options"
           aria-expanded="false"
           aria-controls="${menuId}"
-          aria-label="${name ? `Open map options for ${name}` : "Open map options"}"
+          aria-label="${name ? `Maps options for ${name}` : "Maps options"}"
           data-menu-id="${menuId}"
         >
           Maps <span class="mapsBtnCaret" aria-hidden="true">▾</span>
