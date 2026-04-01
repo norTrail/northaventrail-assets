@@ -1,0 +1,14 @@
+{
+  "state": "coming",
+  "image": "https://assets.northaventrail.org/img/GoatsPacking.webp",
+  "startDate": "2026-10-02T15:00:00.000Z",
+  "grazingStartHour": 7,
+  "grazingEndHour": 22,
+  "adminSheet": [
+    {
+      "herdCode": "H01",
+      "herdName": "Northaven TAILS",
+      "color": "#66BB66"
+    }
+  ]
+}
