@@ -537,6 +537,27 @@ if ('scrollRestoration' in history) {
       });
   }
 
+  function buildRowModel_(feature, payload) {
+    const poi = resolvePoi_(feature, payload);
+    const coords = getFeatureCoords_(feature);
+    const id = poi.id;
+    const urlmapping = id ? `/trailmap?loc=${encodeURIComponent(id)}` : "/trailmap";
+    const gUrl = coords ? `https://www.google.com/maps/search/?api=1&query=${coords.lat},${coords.lng}` : "";
+    const aUrl = coords ? `https://maps.apple.com/?z=20&q=${coords.lat},${coords.lng}` : "";
+    return { feature, poi, coords, id, urlmapping, gUrl, aUrl, sortTitle: poi.title };
+  }
+
+  function attachRowActivation_(tbody, pageTitle, tableClass) {
+    if (!tbody || tbody.dataset.rowActivationBound === "1") return;
+    tbody.dataset.rowActivationBound = "1";
+    tbody.addEventListener("click", (e) => {
+      if (e.target && e.target.closest && e.target.closest(".poiMaps")) return;
+      const row = e.target && e.target.closest ? e.target.closest("tr[data-feature-id]") : null;
+      if (!row) return;
+      setActiveFeature_(row.dataset.featureId, pageTitle, tableClass);
+    });
+  }
+
   // ---------------------------
   // Single-table listing
   // ---------------------------
@@ -597,12 +618,8 @@ if ('scrollRestoration' in history) {
             return;
           }
 
-          // Sort (if payload already server-sorted east->west, this keeps stable)
-          features.sort((a, b) => {
-            const ra = resolvePoi_(a, payload);
-            const rb = resolvePoi_(b, payload);
-            return ra.title.localeCompare(rb.title);
-          });
+          const rowModels = features.map((feature) => buildRowModel_(feature, payload));
+          rowModels.sort((a, b) => a.sortTitle.localeCompare(b.sortTitle));
 
           const table = document.createElement("table");
           table.className = tableClass;
@@ -617,18 +634,11 @@ if ('scrollRestoration' in history) {
           `;
 
           const tbody = table.querySelector("tbody");
+          attachRowActivation_(tbody, pageTitle, tableClass);
 
-          features.forEach((feature) => {
-            const poi = resolvePoi_(feature, payload);
-            const coords = getFeatureCoords_(feature);
-
-            // map deep link uses loc=id
-            const id = poi.id;
-            const urlmapping = id ? `/trailmap?loc=${encodeURIComponent(id)}` : "/trailmap";
+          rowModels.forEach((rowModel) => {
+            const { poi, id, urlmapping, gUrl, aUrl } = rowModel;
             const titleLink = `<a href="${escHtml(urlmapping)}" class="poi-name__link">${escHtml(poi.title)}</a>`;
-
-            const gUrl = coords ? `https://www.google.com/maps/search/?api=1&query=${coords.lat},${coords.lng}` : "";
-            const aUrl = coords ? `https://maps.apple.com/?z=20&q=${coords.lat},${coords.lng}` : "";
             const mapsLinks = [
               gUrl ? `<a href="${escHtml(gUrl)}" target="_blank" rel="noopener noreferrer">Google</a>` : "",
               aUrl ? `<a href="${escHtml(aUrl)}" target="_blank" rel="noopener noreferrer">Apple</a>` : ""
@@ -654,11 +664,6 @@ if ('scrollRestoration' in history) {
               }
               </td>
             `;
-
-            tr.addEventListener("click", (e) => {
-              if (e.target && e.target.closest && e.target.closest(".poiMaps")) return;
-              setActiveFeature_(id, pageTitle, tableClass);
-            });
 
             tbody.appendChild(tr);
           });
@@ -749,16 +754,9 @@ if ('scrollRestoration' in history) {
     return "other";
   }
 
-  function buildRowForColumns_(feature, payload, pageTitle, tableClass, columns) {
-    const poi = resolvePoi_(feature, payload);
-    const coords = getFeatureCoords_(feature);
-
-    const id = poi.id;
-    const urlmapping = id ? `/trailmap?loc=${encodeURIComponent(id)}` : "/trailmap";
+  function buildRowForColumns_(rowModel, payload, pageTitle, tableClass, columns) {
+    const { poi, id, urlmapping, gUrl, aUrl } = rowModel;
     const titleLink = `<a href="${escHtml(urlmapping)}" class="poi-name__link">${escHtml(poi.title)}</a>`;
-
-    const gUrl = coords ? `https://www.google.com/maps/search/?api=1&query=${coords.lat},${coords.lng}` : "";
-    const aUrl = coords ? `https://maps.apple.com/?z=20&q=${coords.lat},${coords.lng}` : "";
     const mapsLinks = [
       urlmapping ? `<a href="${escHtml(urlmapping)}" class="poi-name__link">Trail</a>` : "",
       gUrl ? `<a href="${escHtml(gUrl)}" target="_blank" rel="noopener noreferrer">Google</a>` : "",
@@ -767,11 +765,6 @@ if ('scrollRestoration' in history) {
 
     const tr = document.createElement("tr");
     tr.dataset.featureId = id;
-
-    tr.addEventListener("click", (e) => {
-      if (e.target && e.target.closest && e.target.closest(".poiMaps")) return;
-      setActiveFeature_(id, pageTitle, tableClass);
-    });
 
     const cellHtml = columns.map((col) => {
       if (col === "name") {
@@ -989,16 +982,16 @@ if ('scrollRestoration' in history) {
           }
 
           // Bucket features by category
-          const buckets = new Map(); // cat -> features[]
+          const buckets = new Map(); // cat -> rowModels[]
           for (const f of featuresAll) {
-            const coords = getFeatureCoords_(f);
-            if (!coords) continue;
+            const rowModel = buildRowModel_(f, payload);
+            if (!rowModel.coords) continue;
 
             if (allowedTypeKeys && !allowedTypeKeys.has(String(f?.properties?.t || ""))) continue;
 
             const cat = featureToCategory_(f, payload);
             if (!buckets.has(cat)) buckets.set(cat, []);
-            buckets.get(cat).push(f);
+            buckets.get(cat).push(rowModel);
           }
 
           const usedCats = new Set();   // category keys used by any table
@@ -1006,7 +999,7 @@ if ('scrollRestoration' in history) {
 
           // Sort each bucket by title
           for (const [cat, arr] of buckets.entries()) {
-            arr.sort((a, b) => buildDropdownText_(a, payload).localeCompare(buildDropdownText_(b, payload)));
+            arr.sort((a, b) => a.sortTitle.localeCompare(b.sortTitle));
           }
 
           // Fill each section
@@ -1021,6 +1014,7 @@ if ('scrollRestoration' in history) {
             if (!table || !tbody) return;
 
             const columns = parseColumnsFromWrap_(wrap);
+            attachRowActivation_(tbody, pageTitle, tableClass);
 
             // Ensure headers exist and blank headings are labeled.
             normalizeTableHead_(table, columns);
@@ -1044,19 +1038,19 @@ if ('scrollRestoration' in history) {
 
             // Optional: de-dupe by feature id
             const uniq = new Map();
-            rows.forEach((f) => uniq.set(String(f.id || ""), f));
+            rows.forEach((rowModel) => uniq.set(String(rowModel.id || ""), rowModel));
             const finalRows = Array.from(uniq.values());
 
             // Keep stable order
             finalRows.sort((a, b) =>
-              buildDropdownText_(a, payload).localeCompare(buildDropdownText_(b, payload))
+              a.sortTitle.localeCompare(b.sortTitle)
             );
 
-            finalRows.forEach((f) => {
-              tbody.appendChild(buildRowForColumns_(f, payload, pageTitle, tableClass, columns));
+            finalRows.forEach((rowModel) => {
+              tbody.appendChild(buildRowForColumns_(rowModel, payload, pageTitle, tableClass, columns));
             });
 
-            finalRows.forEach(f => usedFeatureIds.add(String(f.id || ""))); // mark as used
+            finalRows.forEach(rowModel => usedFeatureIds.add(String(rowModel.id || ""))); // mark as used
 
             stopRowLinkPropagation(tbody);
 
@@ -1081,28 +1075,29 @@ if ('scrollRestoration' in history) {
               const leftovers = [];
 
               const otherBucket = buckets.get("other") || [];
-              for (const f of otherBucket) {
-                const id = String(f?.id || "");
+              for (const rowModel of otherBucket) {
+                const id = String(rowModel.id || "");
                 if (!id || usedFeatureIds.has(id)) continue;
-                leftovers.push(f);
+                leftovers.push(rowModel);
               }
 
               for (const [cat, arr] of buckets.entries()) {
                 if (usedCats.has(cat)) continue;         // table already exists for this category
-                for (const f of arr) {
-                  const id = String(f?.id || "");
+                for (const rowModel of arr) {
+                  const id = String(rowModel.id || "");
                   if (!id || usedFeatureIds.has(id)) continue;
-                  leftovers.push(f);
+                  leftovers.push(rowModel);
                 }
               }
 
               // sort leftovers
-              leftovers.sort((a, b) => buildDropdownText_(a, payload).localeCompare(buildDropdownText_(b, payload)));
+              leftovers.sort((a, b) => a.sortTitle.localeCompare(b.sortTitle));
 
               // append to Other table
               const columns = parseColumnsFromWrap_(otherWrap);
-              leftovers.forEach((f) => {
-                tbody.appendChild(buildRowForColumns_(f, payload, pageTitle, tableClass, columns));
+              attachRowActivation_(tbody, pageTitle, tableClass);
+              leftovers.forEach((rowModel) => {
+                tbody.appendChild(buildRowForColumns_(rowModel, payload, pageTitle, tableClass, columns));
               });
 
               stopRowLinkPropagation(tbody);

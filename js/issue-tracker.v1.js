@@ -866,8 +866,11 @@
         // Handles everything that requires the map instance: marker, drag events, POI search.
         // -------------------------
         let _poiFeatures = [];
+        let _poiSearchIndex = [];
         let _searchListenersAttached = false;
         let _activeOptionIndex = -1;
+        let _searchRenderTimer = null;
+        const MAX_SEARCH_RESULTS = 25;
 
         function decodeHTML_(str) {
             const txt = document.createElement('textarea');
@@ -906,54 +909,54 @@
             }
         }
 
-        function renderPOIResult_(features) {
+        function buildPOISearchIndex_(features) {
+            return features.reduce((items, feat) => {
+                const p = feat.properties || {};
+                const rawName = String(p.l || p.n || '').trim();
+                const coords = feat.geometry?.coordinates;
+                if (!rawName || !coords || coords.length !== 2) return items;
+                const name = decodeHTML_(rawName);
+                items.push({ name, nameLower: name.toLowerCase(), coords });
+                return items;
+            }, []);
+        }
+
+        function renderPOIResult_(items) {
             locationList.innerHTML = '';
-            searchResults = [];
+            searchResults = Array.isArray(items) ? items.slice(0, MAX_SEARCH_RESULTS) : [];
             _activeOptionIndex = -1;
-            if (features.length === 0) {
+            if (searchResults.length === 0) {
                 locationList.innerHTML = '<div class="optionDropdown" role="option" aria-selected="false" id="poi-opt-empty">No matches found</div>';
                 locationListInput.removeAttribute('aria-activedescendant');
                 return;
             }
-            features.forEach((feat, idx) => {
-                const p = feat.properties || {};
-                const rawName = String(p.l || p.n || '').trim();
-                if (!rawName) return;
-                const name = decodeHTML_(rawName);
-                const coords = feat.geometry?.coordinates;
-                if (!coords || coords.length !== 2) return;
-                const item = { name, coords };
-                searchResults.push(item);
-
+            const frag = document.createDocumentFragment();
+            searchResults.forEach((item, idx) => {
                 const opt = document.createElement('div');
                 opt.className = 'optionDropdown';
                 opt.setAttribute('role', 'option');
                 opt.setAttribute('aria-selected', 'false');
-                opt.id = `poi-opt-${searchResults.length - 1}`;
-                opt.textContent = name;
-                opt.dataset.idx = String(searchResults.length - 1);
-                opt.addEventListener('mouseenter', () => {
-                    _activeOptionIndex = Number(opt.dataset.idx);
-                    syncActivePOIOption_();
-                });
-                opt.addEventListener('mousedown', (e) => {
-                    e.preventDefault();
-                    selectPOIOption_(item);
-                });
-                locationList.appendChild(opt);
+                opt.id = `poi-opt-${idx}`;
+                opt.textContent = item.name;
+                opt.dataset.idx = String(idx);
+                frag.appendChild(opt);
             });
+            locationList.appendChild(frag);
             _activeOptionIndex = searchResults.length ? 0 : -1;
             syncActivePOIOption_();
         }
 
-        function getFilteredPOIFeatures_() {
+        function getFilteredPOIResults_() {
             const q = locationListInput.value.toLowerCase().trim();
-            if (!q) return _poiFeatures;
-            return _poiFeatures.filter(f => {
-                const p = f.properties || {};
-                const name = (p.l || p.n || '').toLowerCase();
-                return name.includes(q);
-            });
+            if (!q) return _poiSearchIndex.slice(0, MAX_SEARCH_RESULTS);
+            const matches = [];
+            for (const item of _poiSearchIndex) {
+                if (item.nameLower.includes(q)) {
+                    matches.push(item);
+                    if (matches.length >= MAX_SEARCH_RESULTS) break;
+                }
+            }
+            return matches;
         }
 
         function syncDropdownWidth_() {
@@ -976,35 +979,55 @@
             if (_searchListenersAttached) return;
             _searchListenersAttached = true;
 
+            const scheduleSearchRender_ = (items) => {
+                clearTimeout(_searchRenderTimer);
+                _searchRenderTimer = setTimeout(() => {
+                    renderPOIResult_(items);
+                    syncDropdownWidth_();
+                    showDropdown_();
+                }, 60);
+            };
+
             locationListInput.oninput = () => {
                 const q = locationListInput.value.toLowerCase().trim();
                 clearSearch.classList.toggle('hidden', q.length === 0);
-                const filtered = getFilteredPOIFeatures_();
-                renderPOIResult_(filtered);
-                syncDropdownWidth_();
-                showDropdown_();
+                scheduleSearchRender_(getFilteredPOIResults_());
             };
 
             locationListInput.onfocus = () => {
-                if (locationListInput.value.trim() === '') {
-                    renderPOIResult_(_poiFeatures);
-                }
-                syncDropdownWidth_();
-                showDropdown_();
+                scheduleSearchRender_(getFilteredPOIResults_());
             };
 
             clearSearch.onclick = () => {
                 locationListInput.value = '';
                 clearSearch.classList.add('hidden');
-                renderPOIResult_(_poiFeatures);
+                renderPOIResult_(_poiSearchIndex.slice(0, MAX_SEARCH_RESULTS));
                 hideDropdown_();
                 locationListInput.focus();
             };
 
+            locationList.addEventListener('mousemove', (e) => {
+                const opt = e.target.closest('.optionDropdown[role="option"]');
+                if (!opt) return;
+                const idx = Number(opt.dataset.idx);
+                if (!Number.isFinite(idx) || idx === _activeOptionIndex) return;
+                _activeOptionIndex = idx;
+                syncActivePOIOption_();
+            });
+
+            locationList.addEventListener('mousedown', (e) => {
+                const opt = e.target.closest('.optionDropdown[role="option"]');
+                if (!opt) return;
+                const idx = Number(opt.dataset.idx);
+                if (!Number.isFinite(idx) || !searchResults[idx]) return;
+                e.preventDefault();
+                selectPOIOption_(searchResults[idx]);
+            });
+
             locationListInput.addEventListener('keydown', (e) => {
                 const isOpen = !locationList.classList.contains('hidden');
                 if (!isOpen && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
-                    renderPOIResult_(getFilteredPOIFeatures_());
+                    renderPOIResult_(getFilteredPOIResults_());
                     syncDropdownWidth_();
                     showDropdown_();
                 }
@@ -1094,7 +1117,8 @@
                 try {
                     const payload = await fetchPoiPayload_();
                     _poiFeatures = payload.features || [];
-                    renderPOIResult_(_poiFeatures);
+                    _poiSearchIndex = buildPOISearchIndex_(_poiFeatures);
+                    renderPOIResult_(_poiSearchIndex.slice(0, MAX_SEARCH_RESULTS));
                 } catch (e) {
                     console.error("Failed to load POIs", e);
                 }
