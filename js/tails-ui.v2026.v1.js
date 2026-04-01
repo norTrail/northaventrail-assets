@@ -348,6 +348,8 @@ const noMowZoneMarkers = {};
 let selectedZoneCode = null;
 let pendingZoneScrollCode = null;
 let lastNoMowHash = null;
+let noMowMarkerDelegationBound = false;
+let tableInteractionDelegationBound = false;
 
 // Cheap structural hash — avoids full JSON.stringify on every poll
 function quickGeoHash_(geojson) {
@@ -369,6 +371,130 @@ function featureCenter(geometry) {
   return null;
 }
 
+function pruneOpenPopups() {
+  openPopups = openPopups.filter(popup => popup?.isOpen?.());
+  if (currentFullPopup && !currentFullPopup?.isOpen?.()) {
+    currentFullPopup = null;
+  }
+}
+
+function setNoMowMarkerHoverState_(markerEl, hovered) {
+  if (!markerEl) return;
+  markerEl.classList.toggle("is-hover", hovered);
+}
+
+function openNoMowZonePopup_(zoneCode, markerEl) {
+  const obj = noMowZoneMarkers?.[zoneCode];
+  const map = window.TAILS?.getMap?.() || window.TAILS_DATA?.getMap?.() || getMapInstance?.();
+  if (!obj || !obj.feature || !markerEl || !map) return;
+
+  const props = obj.feature.properties || {};
+  const center =
+    props.center ||
+    featureCenter(obj.feature.geometry) ||
+    [props.centerLng, props.centerLat];
+  if (!center) return;
+
+  const [lng, lat] = center;
+  const name = (props.zoneName || "No-Mow Zone")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  const desc = String(props.description || "");
+
+  closeAllPopups();
+  selectedZoneCode = zoneCode;
+
+  const noMowShareText = desc
+    ? `${name} — ${desc}`
+    : `${name} on the Northaven Trail`;
+
+  const popupHTML = `
+        <div class="popup-container">
+          <h3>${escapeHtml(name)}</h3>
+          <p>${escapeHtml(desc)}</p>
+          ${buildPopupNavIcons(lat, lng, noMowShareText)}
+        </div>
+      `;
+
+  const popup = new mapboxgl.Popup({
+    closeButton: true,
+    closeOnClick: true,
+    offset: 15,
+    className: props.popupClass || "custom-popup-brown"
+  })
+    .setLngLat(center)
+    .setHTML(popupHTML)
+    .addTo(map);
+
+  markerEl.setAttribute("aria-expanded", "true");
+  wirePopupShare(popup);
+  popup.on("close", () => {
+    selectedZoneCode = null;
+    markerEl.setAttribute("aria-expanded", "false");
+    const i = openPopups.indexOf(popup);
+    if (i !== -1) openPopups.splice(i, 1);
+    pruneOpenPopups();
+  });
+
+  pruneOpenPopups();
+  openPopups.push(popup);
+  currentFullPopup = popup;
+}
+
+function attachNoMowMarkerDelegationOnce() {
+  if (noMowMarkerDelegationBound) return;
+
+  const mapContainer = document.getElementById("map");
+  if (!mapContainer) return;
+
+  mapContainer.addEventListener("mouseover", event => {
+    const markerEl = event.target.closest(".no-mow-marker");
+    if (!markerEl || !mapContainer.contains(markerEl)) return;
+    if (markerEl.contains(event.relatedTarget)) return;
+    setNoMowMarkerHoverState_(markerEl, true);
+  });
+
+  mapContainer.addEventListener("mouseout", event => {
+    const markerEl = event.target.closest(".no-mow-marker");
+    if (!markerEl || !mapContainer.contains(markerEl)) return;
+    if (markerEl.contains(event.relatedTarget)) return;
+    setNoMowMarkerHoverState_(markerEl, false);
+  });
+
+  mapContainer.addEventListener("focusin", event => {
+    const markerEl = event.target.closest(".no-mow-marker");
+    if (!markerEl || !mapContainer.contains(markerEl)) return;
+    setNoMowMarkerHoverState_(markerEl, true);
+  });
+
+  mapContainer.addEventListener("focusout", event => {
+    const markerEl = event.target.closest(".no-mow-marker");
+    if (!markerEl || !mapContainer.contains(markerEl)) return;
+    if (markerEl.contains(event.relatedTarget)) return;
+    setNoMowMarkerHoverState_(markerEl, false);
+  });
+
+  mapContainer.addEventListener("keydown", event => {
+    const markerEl = event.target.closest(".no-mow-marker");
+    if (!markerEl || !mapContainer.contains(markerEl)) return;
+    if (event.key !== "Enter" && event.key !== " ") return;
+
+    event.preventDefault();
+    openNoMowZonePopup_(markerEl.dataset.zoneCode, markerEl);
+  });
+
+  mapContainer.addEventListener("click", event => {
+    const markerEl = event.target.closest(".no-mow-marker");
+    if (!markerEl || !mapContainer.contains(markerEl)) return;
+
+    event.stopPropagation();
+    openNoMowZonePopup_(markerEl.dataset.zoneCode, markerEl);
+  });
+
+  noMowMarkerDelegationBound = true;
+}
+
 function updateNoMowLayers(map, geojson, force = false) {
   if (!map || !geojson || geojson.type !== "FeatureCollection") {
     if (UI.tableBtn) UI.tableBtn.style.display = "none";
@@ -380,6 +506,7 @@ function updateNoMowLayers(map, geojson, force = false) {
   // Skip unchanged unless forced
   if (!force && hash === lastNoMowHash) return;
   lastNoMowHash = hash;
+  attachNoMowMarkerDelegationOnce();
 
   // Show the table button
   UI.tableBtn.style.display = "block";
@@ -428,7 +555,6 @@ function updateNoMowLayers(map, geojson, force = false) {
 
     if (!center) return;
 
-    const [lng, lat] = center;
     const code = props.zoneCode || props.zoneName || "zone";
 
     const el = document.createElement("button");
@@ -442,62 +568,10 @@ function updateNoMowLayers(map, geojson, force = false) {
     el.title = props.zoneCode || "";
 
     const name = (props.zoneName || "No-Mow Zone").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
-    const desc = props.description || "";
 
     el.setAttribute("aria-label", `${name}: open details`);
     el.setAttribute("aria-expanded", "false");
-
-    el.addEventListener("keydown", ev => {
-      if (ev.key === "Enter" || ev.key === " ") {
-        ev.preventDefault();
-        el.click();
-      }
-    });
-
-    el.addEventListener("mouseenter", () => el.classList.add("is-hover"));
-    el.addEventListener("mouseleave", () => el.classList.remove("is-hover"));
-    el.addEventListener("focus", () => el.classList.add("is-hover"));
-    el.addEventListener("blur", () => el.classList.remove("is-hover"));
-
-    el.addEventListener("click", evt => {
-      evt.stopPropagation();
-      closeAllPopups();
-
-      selectedZoneCode = code;
-
-      const noMowShareText = desc
-        ? `${name} — ${desc}`
-        : `${name} on the Northaven Trail`;
-
-      const popupHTML = `
-        <div class="popup-container">
-          <h3>${escapeHtml(name)}</h3>
-          <p>${escapeHtml(desc)}</p>
-          ${buildPopupNavIcons(lat, lng, noMowShareText)}
-        </div>
-      `;
-
-      const popup = new mapboxgl.Popup({
-        closeButton: true,
-        closeOnClick: true,
-        offset: 15,
-        className: props.popupClass || "custom-popup-brown"
-      })
-        .setLngLat(center)
-        .setHTML(popupHTML)
-        .addTo(map);
-      el.setAttribute("aria-expanded", "true");
-      wirePopupShare(popup);
-      popup.on("close", () => {
-        selectedZoneCode = null;
-        el.setAttribute("aria-expanded", "false");
-        const i = openPopups.indexOf(popup);
-        if (i !== -1) openPopups.splice(i, 1);
-      });
-
-      openPopups.push(popup);
-      currentFullPopup = popup;
-    });
+    el.dataset.zoneCode = code;
 
     const marker = new mapboxgl.Marker(el, { anchor: "center" })
       .setLngLat(center)
@@ -669,6 +743,7 @@ function showTableView(zones) {
 
   const table = document.getElementById("grazingTableBody");
   if (!table) return;
+  attachTableInteractionDelegationOnce();
   table.innerHTML = "";
 
   // 1️⃣ Sort by date (ISO strings sort correctly without parsing)
@@ -715,36 +790,6 @@ function showTableView(zones) {
     tr.setAttribute("tabindex", firstDataRow ? "0" : "-1");
     firstDataRow = false;
 
-    const activateRow = () => {
-      selectedZoneCode = zone.code;
-      focusNoMowZone(zone.code);
-    };
-
-    tr.addEventListener("click", activateRow);
-    tr.addEventListener("keydown", ev => {
-      // Enter / Space — activate the row
-      if (ev.key === "Enter" || ev.key === " ") {
-        ev.preventDefault();
-        activateRow();
-        return;
-      }
-
-      // Up / Down arrows — move focus within the table (roving tabindex)
-      if (ev.key === "ArrowDown" || ev.key === "ArrowUp") {
-        ev.preventDefault();   // stop the page from scrolling
-        const rows = Array.from(table.querySelectorAll("tr[data-code]"));
-        const idx  = rows.indexOf(tr);
-        const next = ev.key === "ArrowDown"
-          ? Math.min(idx + 1, rows.length - 1)
-          : Math.max(idx - 1, 0);
-        if (next !== idx) {
-          tr.setAttribute("tabindex", "-1");
-          rows[next].setAttribute("tabindex", "0");
-          rows[next].focus();
-        }
-      }
-    });
-
     tr.innerHTML = `
       <td>${escapeHtml(zone.name)}</td>
       <td class="status-cell">${escapeHtml(zone.status)}</td>
@@ -759,20 +804,10 @@ function showTableView(zones) {
       </td>
     `;
 
-    // Wire the Google Maps icon via event listener (not inline onclick)
     const gmapsSpan = tr.querySelector(".gmaps-emoji");
     if (gmapsSpan) {
-      gmapsSpan.addEventListener("click", ev => {
-        ev.stopPropagation();
-        openZoneGoogleMaps(zone.lat, zone.lng);
-      });
-      gmapsSpan.addEventListener("keydown", ev => {
-        if (ev.key === "Enter" || ev.key === " ") {
-          ev.preventDefault();
-          ev.stopPropagation();
-          openZoneGoogleMaps(zone.lat, zone.lng);
-        }
-      });
+      gmapsSpan.dataset.lat = String(zone.lat ?? "");
+      gmapsSpan.dataset.lng = String(zone.lng ?? "");
     }
 
     table.appendChild(tr);
@@ -835,6 +870,79 @@ function applyPendingTableScroll() {
 }
 
 let tableScrollListenerAttached = false;
+function activateTableRow_(row) {
+  const zoneCode = row?.dataset?.code;
+  if (!zoneCode) return;
+  selectedZoneCode = zoneCode;
+  focusNoMowZone(zoneCode);
+}
+
+function moveTableRowFocus_(row, direction) {
+  const table = document.getElementById("grazingTableBody");
+  if (!table || !row) return;
+
+  const rows = Array.from(table.querySelectorAll("tr[data-code]"));
+  const idx = rows.indexOf(row);
+  if (idx === -1) return;
+
+  const next = direction === "down"
+    ? Math.min(idx + 1, rows.length - 1)
+    : Math.max(idx - 1, 0);
+
+  if (next === idx) return;
+
+  row.setAttribute("tabindex", "-1");
+  rows[next].setAttribute("tabindex", "0");
+  rows[next].focus();
+}
+
+function attachTableInteractionDelegationOnce() {
+  if (tableInteractionDelegationBound) return;
+
+  const table = document.getElementById("grazingTableBody");
+  if (!table) return;
+
+  table.addEventListener("click", event => {
+    const mapsButton = event.target.closest(".gmaps-emoji");
+    if (mapsButton && table.contains(mapsButton)) {
+      event.stopPropagation();
+      openZoneGoogleMaps(mapsButton.dataset.lat, mapsButton.dataset.lng);
+      return;
+    }
+
+    const row = event.target.closest("tr[data-code]");
+    if (!row || !table.contains(row)) return;
+    activateTableRow_(row);
+  });
+
+  table.addEventListener("keydown", event => {
+    const mapsButton = event.target.closest(".gmaps-emoji");
+    if (mapsButton && table.contains(mapsButton)) {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        event.stopPropagation();
+        openZoneGoogleMaps(mapsButton.dataset.lat, mapsButton.dataset.lng);
+      }
+      return;
+    }
+
+    const row = event.target.closest("tr[data-code]");
+    if (!row || !table.contains(row)) return;
+
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      activateTableRow_(row);
+      return;
+    }
+
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      moveTableRowFocus_(row, event.key === "ArrowDown" ? "down" : "up");
+    }
+  });
+
+  tableInteractionDelegationBound = true;
+}
 
 function attachTableScrollTrackingOnce() {
   if (tableScrollListenerAttached) return;
@@ -861,6 +969,7 @@ function attachTableScrollTrackingOnce() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  attachTableInteractionDelegationOnce();
   attachTableScrollTrackingOnce();
 });
 
@@ -1147,10 +1256,12 @@ let currentFullPopup = null;
 
 function closeAllPopups() {
   try {
+    pruneOpenPopups();
     while (openPopups.length) {
       openPopups.pop().remove();
     }
     selectedZoneCode = null;
+    currentFullPopup = null;
   } catch (error) {
     console.warn("closeAllPopups error:", error);
     logCaughtError?.("closeAllPopups", error);
