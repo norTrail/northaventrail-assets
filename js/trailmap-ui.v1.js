@@ -296,7 +296,6 @@ function wireCustomSearchUI_() {
 
     const html = results.map((r, i) => {
       const selected = i === activeIndex ? ` aria-selected="true"` : ` aria-selected="false"`;
-      const descHtml = r.desc ? `<span class="desc">${escapeHtml_(r.desc)}</span>` : "";
       return `
        <div
          class="searchOption"
@@ -1369,8 +1368,6 @@ function removeActive() {
 /* ------------------------------------------------------------ */
 
 const isApple = () => /(Mac|iPhone|iPad|iPod)/i.test(navigator.platform);
-const isSafari = () =>
-  /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 const isMobile = () =>
   /(iPhone|Android|BlackBerry|Windows Phone)/i.test(navigator.userAgent);
 

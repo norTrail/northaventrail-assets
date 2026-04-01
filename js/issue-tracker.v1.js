@@ -9,11 +9,9 @@
     const POI_MANIFEST_URL = "https://assets.northaventrail.org/json/trail-poi.latest.json";
     const TURNSTILE_SITE_KEY = "0x4AAAAAACyDAaZelhZKmNJT";
 
-    const searchValues = [];
     let map, marker;
     const DEFAULT_MARKER_LONGITUDE = -96.82099635665163;
     const DEFAULT_MARKER_LATITUDE = 32.89603152402648;
-    const DEFAULT_TRAIL_ZOOM = 12; // used by resetMapMarker()
 
     let turnstileWidgetId = null;
     let turnstileToken = null;
@@ -21,9 +19,6 @@
     let uploadsInProgress = 0;
     let uploadedImageNames = [];
     let imageList = [];
-    let geolocationServiceActive = true;
-    let currentFocus = -1;
-    let uploadTimer;
     let files = [];
     let formSubmitted = false;
     let hasAutoLocated = false;
@@ -65,8 +60,6 @@
     // -------------------------
     // Utilities & Helpers
     // -------------------------
-    const isApple = () => /Mac|iPhone|iPad|iPod/.test(navigator.platform);
-
     function getPoiCache_() {
         const cache = window.__trailPoiCache;
         if (!cache || !cache.data || !Array.isArray(cache.data.features) || !cache.sourceUrl) {

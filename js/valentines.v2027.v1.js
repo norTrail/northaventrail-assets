@@ -1,8 +1,4 @@
 const HOST_NAME = 'northaventrail.org'
-const SHOW = 'Show';
-const HIDE = 'Hide';
-const VISIBLE = 'visible';
-
 // Map
 let map;
 mapboxgl.accessToken = 'pk.eyJ1Ijoid2Rhd3NvIiwiYSI6ImNqb2c3MmJ5czAwbXYzd2xoN2o0cmFwZHYifQ.xhCPovJ-VNHHbVOrkjNdMA';
@@ -20,16 +16,6 @@ let __clingManifestCurrent = null;
 const markerHeight = 52;
 const markerRadius = 16;
 const linearOffset = 10;
-const POP_UP_OFFSET = {
-  'top': [0, 0],
-  'top-left': [0, 0],
-  'top-right': [0, 0],
-  'bottom': [0, -markerHeight],
-  'bottom-left': [linearOffset, (markerHeight - markerRadius + linearOffset) * -1],
-  'bottom-right': [-linearOffset, (markerHeight - markerRadius + linearOffset) * -1],
-  'left': [markerRadius, (markerHeight - markerRadius) * -1],
-  'right': [-markerRadius, (markerHeight - markerRadius) * -1]
-};
 const POP_UP_MAX_WIDTH = "300px";
 
 let scrollYModal;
@@ -678,12 +664,6 @@ function addClingLayersIfMissing() {
   if (!map) return;
 
   const baseFilter = getFilterForBaseVisibility();
-
-  const iconSizeExpr = [
-    'case',
-    ['boolean', ['feature-state', 'active'], false], 1.45,
-    1.0
-  ];
 
   function addLayer(id, statusValue, iconName) {
     if (map.getLayer(id)) return;

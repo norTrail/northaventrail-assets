@@ -26,7 +26,6 @@ const BEARING_PARAM = 'b';
 const PITCH_PARAM = 'pi';
 const SATELLITE_PARAM = 'si';
 const GROUP_FILTER_PARAM = 'f';
-const SHOW_DIRECTIONS_PARM = 'd';
 const URL_FIXED_NUMBER = 5;
 
 const MARKER_HEIGHT = 25;
