@@ -1005,12 +1005,13 @@ function goToParamFeature() {
 // ---------------------------------------------------------------------
 async function refreshClingData() {
   const manifest = await fetchJson(CLING_MANIFEST_URL);
+  const currentUrl = String(manifest?.current || '').trim();
   const candidateUrls = getManifestDataUrls(manifest);
   if (!candidateUrls.length) {
     throw new Error('Manifest missing current cling URL');
   }
 
-  if (currentClingGeojson && candidateUrls.includes(__clingManifestCurrent)) return;
+  if (currentClingGeojson && currentUrl && __clingManifestCurrent === currentUrl) return;
 
   let fc = null;
   let selectedUrl = null;

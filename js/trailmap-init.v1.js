@@ -750,10 +750,11 @@ function getMarkerData() {
     .then((r) => { clearTimeout(manifestTimeout); return r.json(); })
     .then((manifest) => {
       if (reqId !== __markerReqId) return;
+      const currentUrl = String(manifest?.current || "").trim();
       const candidateUrls = getManifestDataUrls_(manifest);
       if (!candidateUrls.length) throw new Error("Manifest missing current POI URL");
 
-      if (poiData && candidateUrls.includes(__markerManifestCurrent)) return;
+      if (poiData && currentUrl && __markerManifestCurrent === currentUrl) return;
 
       return _fetchAndApplyMarkerData(reqId, mapAtStart, candidateUrls, 0);
     })

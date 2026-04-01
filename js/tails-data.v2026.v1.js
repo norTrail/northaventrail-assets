@@ -201,12 +201,13 @@ function getManifestDataUrls(manifest) {
 
 async function fetchManifestData(manifestUrl, fetcher, lastKnownVersion, { allowCached = true } = {}) {
   const manifest = await fetchJson(manifestUrl);
+  const currentUrl = String(manifest?.current || "").trim();
   const candidateUrls = getManifestDataUrls(manifest);
   if (!candidateUrls.length) {
     throw new Error(`Manifest missing "current" field: ${manifestUrl}`);
   }
 
-  if (allowCached && lastKnownVersion && candidateUrls.includes(lastKnownVersion)) {
+  if (allowCached && lastKnownVersion && currentUrl && lastKnownVersion === currentUrl) {
     return { url: lastKnownVersion, data: null, unchanged: true };
   }
 

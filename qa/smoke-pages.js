@@ -17,6 +17,13 @@ const PAGES = [
   "https://northaventrail.org/valentine-cling-map-2027"
 ];
 
+function launchBrowser() {
+  return puppeteer.launch({
+    headless: true,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"]
+  });
+}
+
 function isIgnorableRequestFailure(url) {
   return [
     "google-analytics.com/g/collect",
@@ -83,9 +90,7 @@ async function checkPage(browser, url) {
 }
 
 async function main() {
-  const browser = await puppeteer.launch({
-    headless: true
-  });
+  const browser = await launchBrowser();
 
   const results = [];
   try {

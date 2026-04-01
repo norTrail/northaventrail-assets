@@ -159,11 +159,12 @@
           ? fetch(url)
               .then(r => r.json())
               .then(manifest => {
+                const currentUrl = String(manifest?.current || "").trim();
                 const candidateUrls = getManifestDataUrls(manifest);
                 if (!candidateUrls.length) return; // manifest malformed — keep existing UI
 
                 const cached = loadCache(group.cacheKey);
-                if (cached && candidateUrls.includes(cached._manifestCurrent)) return; // unchanged
+                if (cached && currentUrl && cached._manifestCurrent === currentUrl) return; // unchanged
 
                 let chain = Promise.reject();
                 candidateUrls.forEach((candidateUrl) => {

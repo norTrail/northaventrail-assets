@@ -515,11 +515,12 @@ if ('scrollRestoration' in history) {
         return r.json();
       })
       .then((manifest) => {
+        const currentUrl = String(manifest?.current || "").trim();
         const candidateUrls = getManifestDataUrls_(manifest);
         if (!candidateUrls.length) throw new Error("Manifest missing current POI URL");
 
         const cached = getPoiCache_();
-        if (cached && candidateUrls.includes(cached.sourceUrl)) {
+        if (cached && currentUrl && cached.sourceUrl === currentUrl) {
           return cached.data;
         }
 

@@ -18,6 +18,13 @@ async function waitForMap(page) {
   });
 }
 
+function launchBrowser() {
+  return puppeteer.launch({
+    headless: true,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"]
+  });
+}
+
 async function trailmapSearchFlow(browser) {
   const page = await browser.newPage();
   try {
@@ -213,7 +220,7 @@ async function valentineModalFlow(browser) {
 }
 
 async function main() {
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await launchBrowser();
   try {
     await trailmapSearchFlow(browser);
     await listingMapsMenuFlow(browser);
