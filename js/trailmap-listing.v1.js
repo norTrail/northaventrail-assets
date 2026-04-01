@@ -291,6 +291,9 @@ if ('scrollRestoration' in history) {
   }
 
   function installMapsMenuController_() {
+    if (window.__mapsMenuControllerInstalled) return;
+    window.__mapsMenuControllerInstalled = true;
+
     let openBtn = null;
     let menuFocusOut_ = null;    // track so we can remove it on close
     let menuKeyDown_ = null;
@@ -556,6 +559,14 @@ if ('scrollRestoration' in history) {
       if (!row) return;
       setActiveFeature_(row.dataset.featureId, pageTitle, tableClass);
     });
+    tbody.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter" && e.key !== " ") return;
+      if (e.target && e.target.closest && e.target.closest(".poiMaps")) return;
+      const row = e.target && e.target.closest ? e.target.closest("tr[data-feature-id]") : null;
+      if (!row) return;
+      e.preventDefault();
+      setActiveFeature_(row.dataset.featureId, pageTitle, tableClass);
+    });
   }
 
   // ---------------------------
@@ -639,20 +650,18 @@ if ('scrollRestoration' in history) {
           rowModels.forEach((rowModel) => {
             const { poi, id, urlmapping, gUrl, aUrl } = rowModel;
             const titleLink = `<a href="${escHtml(urlmapping)}" class="poi-name__link">${escHtml(poi.title)}</a>`;
-            const mapsLinks = [
-              gUrl ? `<a href="${escHtml(gUrl)}" target="_blank" rel="noopener noreferrer">Google</a>` : "",
-              aUrl ? `<a href="${escHtml(aUrl)}" target="_blank" rel="noopener noreferrer">Apple</a>` : ""
-            ].filter(Boolean).join(" | ");
+            const menuHtml = buildMapsMenuHtml_(id, urlmapping, gUrl, aUrl, poi.title, poi.typeLabel);
 
             const tr = document.createElement("tr");
             tr.dataset.featureId = id;
+            tr.setAttribute("tabindex", "0");
 
             const desc = poi.descText || "";
             tr.innerHTML = `
               <td>
                 <div class="poi-name__title">${titleLink}</div>
                 ${poi.near ? `<div class="poi-near">${escHtml(poi.near)}</div>` : ""}
-                ${mapsLinks ? `<div class="poi-links">${mapsLinks}</div>` : ""}
+                <div class="poi-links">${menuHtml}</div>
               </td>
               <td>
                 ${poi.imgUrl ? `<img src="${escHtml(poi.imgUrl)}" class="poi-marker-img" width="80" alt="${escHtml(poi.title)}" loading="lazy" decoding="async">` : ""}
@@ -715,15 +724,6 @@ if ('scrollRestoration' in history) {
     if (!idStr) return;
 
     highlightFeature_(idStr, tableClass);
-
-    //const LOCATION_PARM = window.LOCATION_PARM || "loc";
-    //setHistoryParam(LOCATION_PARM, idStr, pageTitle);
-
-    try {
-      if (typeof window.goToElement === "function") window.goToElement(idStr);
-    } catch (_) { }
-
-    //if (pageTitle) document.title = pageTitle;
   }
 
   // ---------------------------
@@ -757,14 +757,10 @@ if ('scrollRestoration' in history) {
   function buildRowForColumns_(rowModel, payload, pageTitle, tableClass, columns) {
     const { poi, id, urlmapping, gUrl, aUrl } = rowModel;
     const titleLink = `<a href="${escHtml(urlmapping)}" class="poi-name__link">${escHtml(poi.title)}</a>`;
-    const mapsLinks = [
-      urlmapping ? `<a href="${escHtml(urlmapping)}" class="poi-name__link">Trail</a>` : "",
-      gUrl ? `<a href="${escHtml(gUrl)}" target="_blank" rel="noopener noreferrer">Google</a>` : "",
-      aUrl ? `<a href="${escHtml(aUrl)}" target="_blank" rel="noopener noreferrer">Apple</a>` : ""
-    ].filter(Boolean).join(" | ");
 
     const tr = document.createElement("tr");
     tr.dataset.featureId = id;
+    tr.setAttribute("tabindex", "0");
 
     const cellHtml = columns.map((col) => {
       if (col === "name") {
@@ -954,6 +950,16 @@ if ('scrollRestoration' in history) {
       const wraps = Array.from(document.querySelectorAll(".poi-table-wrap[data-poi-category]"));
       if (!wraps.length) return;
 
+      // Give the first section a stable anchor and retarget the skip link so
+      // keyboard users can bypass the map and jump straight to the POI listing.
+      const firstWrap = wraps[0];
+      if (!firstWrap.id) firstWrap.id = "poi-listing";
+      const skipLink = document.querySelector(".skip-link");
+      if (skipLink) {
+        skipLink.href = "#" + firstWrap.id;
+        skipLink.textContent = "Skip to trail locations";
+      }
+
       // Loading indicators
       wraps.forEach((w) => {
         const loading = w.querySelector("[data-poi-loading]");
@@ -1064,7 +1070,7 @@ if ('scrollRestoration' in history) {
           });
 
           // Add the unused POIs to "Other"
-          const otherWrap = document.querySelector('.poi-table-wrap[data-poi-category*="other"]');
+          const otherWrap = document.querySelector('.poi-table-wrap[data-poi-category="other"]');
           if (otherWrap) {
             const table = otherWrap.querySelector("table");
             const tbody = table ? table.querySelector("tbody") : null;

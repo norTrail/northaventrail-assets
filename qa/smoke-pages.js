@@ -105,13 +105,13 @@ async function main() {
   for (const result of results) {
     const badStatus = result.status !== 200;
     const hasJsErrors = result.pageErrors.length > 0;
-  const actionableNetworkFailures = result.failedRequests.filter(
-    (item) => !isIgnorableRequestFailure(item.url)
-  );
-  const ignoredNetworkFailures = result.failedRequests.filter((item) =>
-    isIgnorableRequestFailure(item.url)
-  );
-  const hasNetworkFailures = actionableNetworkFailures.length > 0;
+    const actionableNetworkFailures = result.failedRequests.filter(
+      (item) => !isIgnorableRequestFailure(item.url)
+    );
+    const ignoredNetworkFailures = result.failedRequests.filter((item) =>
+      isIgnorableRequestFailure(item.url)
+    );
+    const hasNetworkFailures = actionableNetworkFailures.length > 0;
     const hasFallback = result.fallbackVisible;
     const isProblem = badStatus || hasJsErrors || hasNetworkFailures || hasFallback;
 
