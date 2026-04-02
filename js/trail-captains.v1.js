@@ -107,7 +107,8 @@
         );
       }
 
-      var captainHtml = captains.length === 1
+      var captainLabel = captains.length === 1 ? "Trail Captain" : "Trail Captains";
+      var captainHtml  = captains.length === 1
         ? escHtml(captains[0])
         : '<ul class="tc-captain-list">' +
           captains.map(function (name) {
@@ -118,7 +119,7 @@
       return (
         "<tr>" +
         '<td data-label="Trail Segment">' + escHtml(segName) + "</td>" +
-        '<td data-label="Trail Captain(s)">' + captainHtml + "</td>" +
+        '<td data-label="' + captainLabel + '">' + captainHtml + "</td>" +
         "</tr>"
       );
     });

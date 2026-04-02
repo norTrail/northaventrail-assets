@@ -73,6 +73,7 @@
   font-size: 0.9rem;
   text-align: left;
   padding: 8px 10px;
+  border: none !important;
   border-bottom: 2px solid rgb(16, 132, 82) !important;
 }
 
