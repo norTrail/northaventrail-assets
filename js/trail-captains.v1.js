@@ -56,13 +56,13 @@
 
   // ------------------------------------------------------------------
   // Build mailto href with pre-filled subject and body
+  // Optionally segment-specific when segmentName is provided
   // ------------------------------------------------------------------
 
-  function buildMailtoHref(sectionLabel) {
-    var body =
-      "I would like to learn more about being the trail captain for the " +
-      sectionLabel +
-      " section of the trail.";
+  function buildMailtoHref(sectionLabel, segmentName) {
+    var body = segmentName
+      ? "I would like to adopt the " + segmentName + " segment in the " + sectionLabel + " section of the trail."
+      : "I would like to learn more about becoming a trail captain for the Northaven Trail.";
     return (
       "mailto:" +
       encodeURIComponent(SIGNUP_EMAIL) +
@@ -74,6 +74,54 @@
   }
 
   // ------------------------------------------------------------------
+  // Count total and vacant segments across all sections
+  // ------------------------------------------------------------------
+
+  function countVacancies(sections) {
+    var total = 0, vacant = 0;
+    Object.keys(sections).forEach(function (key) {
+      var segs = Array.isArray(sections[key].segments) ? sections[key].segments : [];
+      total += segs.length;
+      segs.forEach(function (seg) {
+        if (!seg.captains || seg.captains.length === 0) vacant++;
+      });
+    });
+    return { total: total, vacant: vacant };
+  }
+
+  // ------------------------------------------------------------------
+  // Render the header block: vacancy summary + CTA + section jump nav
+  // Injected into .tc-header if present on the page
+  // ------------------------------------------------------------------
+
+  function renderHeader(headerEl, sections, sectionOrder) {
+    var counts = countVacancies(sections);
+
+    var summaryHtml = counts.vacant === 0
+      ? "All <strong>" + counts.total + "</strong> trail segments are currently staffed."
+      : "<strong>" + counts.vacant + "</strong> of " + counts.total + " trail segments need a captain.";
+
+    var navLinks = sectionOrder.map(function (key) {
+      var s = sections[key];
+      if (!s) return "";
+      return (
+        '<a class="tc-nav-link" href="#tc-' + escHtml(key) + '">' +
+        escHtml(s.label) +
+        "</a>"
+      );
+    }).join("");
+
+    headerEl.innerHTML =
+      '<div class="tc-header-bar">' +
+        '<p class="tc-summary-text">' + summaryHtml + "</p>" +
+        '<a class="tc-cta-btn" href="' + escHtml(buildMailtoHref()) + '">Volunteer for a segment \u2192</a>' +
+      "</div>" +
+      '<nav class="tc-section-nav" aria-label="Jump to trail section">' +
+        navLinks +
+      "</nav>";
+  }
+
+  // ------------------------------------------------------------------
   // Render one table into a container element
   // ------------------------------------------------------------------
 
@@ -81,11 +129,19 @@
     var label    = sectionData.label || "";
     var range    = sectionData.range || "";
     var segments = Array.isArray(sectionData.segments) ? sectionData.segments : [];
-    var mailtoHref = buildMailtoHref(label);
+
+    // Count vacancies for this section
+    var vacantCount = segments.filter(function (s) {
+      return !s.captains || s.captains.length === 0;
+    }).length;
 
     var captionText =
       escHtml(label) +
       (range ? " \u2014 " + escHtml(range) : "");
+
+    var vacancyBadge = vacantCount > 0
+      ? " \u00b7 <span class='tc-vacancy-count'>" + vacantCount + (vacantCount === 1 ? " vacancy" : " vacancies") + "</span>"
+      : " \u00b7 <span class='tc-fully-staffed'>Fully staffed</span>";
 
     var rows = segments.map(function (seg) {
       var segName  = String(seg.segment || "");
@@ -93,6 +149,7 @@
       var isVacant = captains.length === 0;
 
       if (isVacant) {
+        var mailtoHref = buildMailtoHref(label, segName);
         return (
           '<tr class="tc-vacant">' +
           '<td data-label="Trail Segment">' + escHtml(segName) + "</td>" +
@@ -100,8 +157,8 @@
           '<span class="tc-vacant-label">Captain Needed</span>' +
           '<br><a class="tc-signup-link"' +
           ' href="' + escHtml(mailtoHref) + '"' +
-          ' aria-label="Sign up to be Trail Captain for ' + escHtml(segName) + '">' +
-          "Sign up to be a Trail Captain</a>" +
+          ' aria-label="Adopt the ' + escHtml(segName) + ' segment as Trail Captain">' +
+          "Adopt this segment \u2192</a>" +
           "</td>" +
           "</tr>"
         );
@@ -132,7 +189,7 @@
       "<thead>" +
       // Caption row — sticks together with the column header row as one unit
       '<tr class="tc-caption-row">' +
-      '<th colspan="2" class="tc-caption-cell">' + captionText + "</th>" +
+      '<th colspan="2" class="tc-caption-cell">' + captionText + vacancyBadge + "</th>" +
       "</tr>" +
       "<tr>" +
       '<th scope="col">Trail Segment</th>' +
@@ -167,9 +224,26 @@
       .then(function (data) {
         var sections = (data && data.sections) || {};
 
+        // Collect section order from DOM for the jump nav
+        var sectionOrder = [];
+        containers.forEach(function (el) {
+          var key = el.getAttribute("data-section");
+          if (key) sectionOrder.push(key);
+        });
+
+        // Render header block (summary + CTA + jump nav) if present
+        var headerEl = document.querySelector(".tc-header");
+        if (headerEl) {
+          renderHeader(headerEl, sections, sectionOrder);
+        }
+
+        // Render each section table and set anchor ID for jump nav
         containers.forEach(function (el) {
           var key         = el.getAttribute("data-section");
           var sectionData = sections[key];
+
+          // Add anchor ID so jump nav links work
+          el.id = "tc-" + key;
 
           if (!sectionData) {
             setStatus(

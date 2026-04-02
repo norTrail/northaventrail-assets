@@ -4,6 +4,93 @@
    Used on: northaventrail.org/trail-captains
    ============================================================ */
 
+/* ---- Header block: vacancy summary + CTA + section jump nav ---- */
+.tc-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: #eef6f0;
+  border: 1px solid rgb(16, 132, 82);
+  border-radius: 8px;
+  padding: 14px 20px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.tc-summary-text {
+  margin: 0;
+  font-size: 1rem;
+  color: #1a1a1a;
+}
+
+.tc-cta-btn {
+  display: inline-block;
+  background: rgb(16, 132, 82);
+  color: #fff;
+  text-decoration: none;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.tc-cta-btn:hover {
+  background: #0a6640;
+  color: #fff;
+}
+
+.tc-cta-btn:focus-visible {
+  background: #0a6640;
+  color: #fff;
+  outline: 2px solid rgb(16, 132, 82);
+  outline-offset: 3px;
+}
+
+/* ---- Section jump nav ---- */
+.tc-section-nav {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.tc-nav-link {
+  display: inline-block;
+  padding: 5px 16px;
+  border: 1.5px solid rgb(16, 132, 82);
+  border-radius: 20px;
+  color: rgb(16, 132, 82);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+}
+
+.tc-nav-link:hover,
+.tc-nav-link:focus-visible {
+  background: rgb(16, 132, 82);
+  color: #fff;
+}
+
+.tc-nav-link:focus-visible {
+  outline: 2px solid rgb(16, 132, 82);
+  outline-offset: 2px;
+}
+
+/* ---- Vacancy / staffing badges in section caption ---- */
+.tc-vacancy-count {
+  font-weight: 600;
+  color: #b91c1c;
+}
+
+.tc-fully-staffed {
+  font-weight: 600;
+  color: rgb(16, 132, 82);
+}
+
 /* ---- Trail section map images ---- */
 .tc-map-image {
   width: 100%;
@@ -224,5 +311,15 @@
   /* Hide the label prefix on the first (segment) cell — it's already the card title */
   .tc-table td:first-child[data-label]::before {
     display: none;
+  }
+
+  .tc-header-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .tc-cta-btn {
+    width: 100%;
+    text-align: center;
   }
 }
