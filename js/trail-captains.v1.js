@@ -126,8 +126,13 @@
     container.innerHTML =
       '<div class="tc-wrap">' +
       '<table class="tc-table" aria-label="' + escHtml(label) + ' Trail Captains">' +
-      "<caption>" + captionText + "</caption>" +
+      // Visually hidden <caption> kept for screen readers / SEO
+      '<caption class="tc-sr-only">' + captionText + "</caption>" +
       "<thead>" +
+      // Caption row — sticks together with the column header row as one unit
+      '<tr class="tc-caption-row">' +
+      '<th colspan="2" class="tc-caption-cell">' + captionText + "</th>" +
+      "</tr>" +
       "<tr>" +
       '<th scope="col">Trail Segment</th>' +
       '<th scope="col">Trail Captain(s)</th>' +

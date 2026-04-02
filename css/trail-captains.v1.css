@@ -57,15 +57,30 @@
   vertical-align: middle;
 }
 
-/* ---- Sticky header ---- */
+/* ---- Sticky header — entire thead sticks as one unit ---- */
 .tc-wrap thead th {
   position: sticky;
-  top: 0;
   z-index: 80;
-  background: rgb(16, 132, 82);
-  color: #fff;
   border: 1px solid #ccc;
   font-weight: 600;
+}
+
+/* Caption row: sits at top: 0 */
+.tc-caption-cell {
+  top: 0;
+  background: #fff;
+  color: #1a1a1a;
+  font-size: 0.9rem;
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 2px solid rgb(16, 132, 82) !important;
+}
+
+/* Column header row: sits directly below the caption row */
+.tc-wrap thead tr:last-child th {
+  top: 37px; /* matches caption row height — update if caption wraps on mobile */
+  background: rgb(16, 132, 82);
+  color: #fff;
 }
 
 /* ---- Body rows ---- */
