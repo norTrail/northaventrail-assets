@@ -78,27 +78,28 @@
   // ------------------------------------------------------------------
 
   function renderTable(container, sectionData) {
-    var label = sectionData.label || "";
-    var range = sectionData.range || "";
+    var label    = sectionData.label || "";
+    var range    = sectionData.range || "";
     var segments = Array.isArray(sectionData.segments) ? sectionData.segments : [];
+    var mailtoHref = buildMailtoHref(label);
 
     var captionText =
       escHtml(label) +
       (range ? " \u2014 " + escHtml(range) : "");
 
     var rows = segments.map(function (seg) {
-      var segName = String(seg.segment || "");
+      var segName  = String(seg.segment || "");
       var captains = Array.isArray(seg.captains) ? seg.captains : [];
       var isVacant = captains.length === 0;
 
       if (isVacant) {
-        var mailtoHref = buildMailtoHref(label);
         return (
           '<tr class="tc-vacant">' +
           '<td data-label="Trail Segment">' + escHtml(segName) + "</td>" +
           '<td data-label="Trail Captain(s)">' +
           '<span class="tc-vacant-label">Captain Needed</span>' +
-          '<br><a class="tc-signup-link" href="' + escHtml(mailtoHref) + '"' +
+          '<br><a class="tc-signup-link"' +
+          ' href="' + escHtml(mailtoHref) + '"' +
           ' aria-label="Sign up to be Trail Captain for ' + escHtml(segName) + '">' +
           "Sign up to be a Trail Captain</a>" +
           "</td>" +
@@ -106,19 +107,13 @@
         );
       }
 
-      var captainHtml;
-      if (captains.length === 1) {
-        captainHtml = escHtml(captains[0]);
-      } else {
-        captainHtml =
-          '<ul class="tc-captain-list">' +
-          captains
-            .map(function (name) {
-              return "<li>" + escHtml(name) + "</li>";
-            })
-            .join("") +
+      var captainHtml = captains.length === 1
+        ? escHtml(captains[0])
+        : '<ul class="tc-captain-list">' +
+          captains.map(function (name) {
+            return "<li>" + escHtml(name) + "</li>";
+          }).join("") +
           "</ul>";
-      }
 
       return (
         "<tr>" +
@@ -153,7 +148,6 @@
     var containers = document.querySelectorAll(".tc-section[data-section]");
     if (!containers.length) return;
 
-    // Show loading state in each container immediately
     containers.forEach(function (el) {
       setStatus(el, "Loading trail captains\u2026", false);
     });
@@ -168,7 +162,7 @@
         var sections = (data && data.sections) || {};
 
         containers.forEach(function (el) {
-          var key = el.getAttribute("data-section");
+          var key         = el.getAttribute("data-section");
           var sectionData = sections[key];
 
           if (!sectionData) {
@@ -186,7 +180,6 @@
       .catch(function (err) {
         console.error("[trail-captains]", err);
         containers.forEach(function (el) {
-          // Only update containers still showing the loading message
           if (el.querySelector(".tc-loading")) {
             setStatus(
               el,
