@@ -60,7 +60,7 @@
 /* ---- Sticky header ---- */
 .tc-wrap thead th {
   position: sticky;
-  top: 40px;
+  top: 0;
   z-index: 80;
   background: rgb(16, 132, 82);
   color: #fff;
@@ -116,15 +116,11 @@
   border-radius: 2px;
 }
 
-/* ---- Co-captain names ---- */
-.tc-captain-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.tc-captain-list li + li {
-  margin-top: 2px;
+/* ---- Captain title (subtitle under name) ---- */
+.tc-captain-title {
+  font-size: 0.8rem;
+  color: #555;
+  font-style: italic;
 }
 
 /* ---- Keyboard focus ring (keyboard nav only) ---- */
