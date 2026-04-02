@@ -1,0 +1,37 @@
+{
+  "sections": {
+    "eastern": {
+      "label": "Eastern Section",
+      "range": "US 75 to Preston Road",
+      "segments": [
+        { "segment": "US 75 to St. Michaels Dr", "captains": ["Martin Goodman"] },
+        { "segment": "St. Michaels Dr to Hillcrest Rd", "captains": ["Elizabeth Niksich", "Steve Niksich"] },
+        { "segment": "Hillcrest Rd to Edgemere Rd", "captains": [] },
+        { "segment": "Edgemere Rd to Preston Rd", "captains": ["Evan Anderson"] }
+      ]
+    },
+    "center": {
+      "label": "Center Section",
+      "range": "Preston Road to Midway Road",
+      "segments": [
+        { "segment": "Preston Rd to Dallas North Tollway", "captains": ["Jon Ross"] },
+        { "segment": "Dallas North Tollway to Inwood Rd", "captains": ["Jim Griffin"] },
+        { "segment": "Inwood Rd to Welch Rd", "captains": ["Chris Pierce"] },
+        { "segment": "Welch Rd to Midway Rd", "captains": ["Nancy Burke", "Oliver Burke"] }
+      ]
+    },
+    "western": {
+      "label": "Western Section",
+      "range": "Midway Road to Monroe Drive",
+      "segments": [
+        { "segment": "Midway Rd to Rosser Rd", "captains": ["Angee Epker", "Justin Epker"] },
+        { "segment": "Rosser Rd to Marsh Ln", "captains": ["Mary Brooks"] },
+        { "segment": "Marsh Ln to Cromwell Dr", "captains": ["Angela Edgell"] },
+        { "segment": "Cromwell Dr to Royal Ln", "captains": ["Diane Ramsay", "Chris Roberts"] },
+        { "segment": "Royal Ln to Webb Chappel Rd", "captains": ["Bobby Morgan"] },
+        { "segment": "Webb Chappel Rd to Monroe Dr", "captains": ["Debra Elliott", "Don Elliott"] }
+      ]
+    }
+  },
+  "generatedAt": "2026-04-02T00:00:00.000Z"
+}

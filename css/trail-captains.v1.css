@@ -1,0 +1,205 @@
+/* ============================================================
+   trail-captains.v1.css
+   Styles for the Trail Captains directory tables.
+   Used on: northaventrail.org/trail-captains
+   ============================================================ */
+
+/* ---- Screen-reader only utility ---- */
+.tc-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---- Section wrapper ---- */
+.tc-section {
+  margin: 16px 0 28px;
+}
+
+/* ---- Loading / error states ---- */
+.tc-loading,
+.tc-error {
+  margin: 8px 0;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.tc-error {
+  color: #b91c1c;
+}
+
+/* ---- Table wrapper — allows sticky headers to work inside SquareSpace ---- */
+.tc-wrap {
+  overflow: visible !important;
+}
+
+.sqs-block-content {
+  overflow: visible !important;
+}
+
+/* ---- Base table ---- */
+.tc-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.tc-table th,
+.tc-table td {
+  padding: 10px 16px 10px 10px;
+  border-bottom: 1px solid #ddd;
+  vertical-align: middle;
+}
+
+/* ---- Sticky header ---- */
+.tc-wrap thead th {
+  position: sticky;
+  top: 40px;
+  z-index: 80;
+  background: rgb(16, 132, 82);
+  color: #fff;
+  border: 1px solid #ccc;
+  font-weight: 600;
+}
+
+/* ---- Body rows ---- */
+.tc-table tbody tr {
+  transition: background-color 0.15s ease-in-out;
+}
+
+.tc-table tbody tr:hover {
+  background-color: #eef6f0;
+}
+
+/* ---- Vacant / Captain Needed rows ---- */
+.tc-table tbody tr.tc-vacant {
+  background-color: #fff5f5;
+  border-left: 3px solid #b91c1c;
+}
+
+.tc-table tbody tr.tc-vacant:hover {
+  background-color: #ffe4e4;
+}
+
+.tc-table tbody tr.tc-vacant td {
+  color: #b91c1c;
+}
+
+.tc-vacant-label {
+  font-style: italic;
+}
+
+.tc-signup-link {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 0.875rem;
+  font-style: normal;
+  color: #b91c1c;
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+.tc-signup-link:hover,
+.tc-signup-link:focus-visible {
+  color: #7f1d1d;
+}
+
+.tc-signup-link:focus-visible {
+  outline: 2px solid #b91c1c;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* ---- Co-captain names ---- */
+.tc-captain-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tc-captain-list li + li {
+  margin-top: 2px;
+}
+
+/* ---- Keyboard focus ring (keyboard nav only) ---- */
+.tc-table tbody tr:focus-visible {
+  outline: 2px solid rgb(16, 132, 82);
+  outline-offset: -2px;
+  background-color: #eef6f0;
+}
+
+/* Suppress outline on mouse click */
+.tc-table tbody tr:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ---- Mobile card view (≤640px) ---- */
+@media (max-width: 640px) {
+  /* Visually hide column headers — keep them in DOM for screen readers */
+  .tc-table thead {
+    border: 0;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+  }
+
+  /* Each row becomes a card */
+  .tc-table tr {
+    display: block;
+    margin-bottom: 1.25rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fff;
+    padding: 0.5rem;
+  }
+
+  .tc-table tbody tr.tc-vacant {
+    border-left: 4px solid #b91c1c;
+  }
+
+  .tc-table td {
+    display: block !important;
+    border: none !important;
+    padding: 0.4rem 0.5rem !important;
+  }
+
+  /* Segment name is the card title */
+  .tc-table td:first-child {
+    font-weight: 700;
+    font-size: 1rem;
+    color: rgb(16, 132, 82);
+    border-bottom: 1px solid #eee !important;
+    margin-bottom: 0.25rem;
+  }
+
+  .tc-table tbody tr.tc-vacant td:first-child {
+    color: #b91c1c;
+  }
+
+  /* Prefix each data cell with its column label via data attribute */
+  .tc-table td[data-label]::before {
+    content: attr(data-label) ": ";
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: #555;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  /* Hide the label prefix on the first (segment) cell — it's already the card title */
+  .tc-table td:first-child[data-label]::before {
+    display: none;
+  }
+}
