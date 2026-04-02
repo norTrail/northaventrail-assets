@@ -96,7 +96,7 @@
         return (
           '<tr class="tc-vacant">' +
           '<td data-label="Trail Segment">' + escHtml(segName) + "</td>" +
-          '<td data-label="Trail Captain(s)">' +
+          "<td>" +
           '<span class="tc-vacant-label">Captain Needed</span>' +
           '<br><a class="tc-signup-link"' +
           ' href="' + escHtml(mailtoHref) + '"' +
