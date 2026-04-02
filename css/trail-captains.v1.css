@@ -4,6 +4,13 @@
    Used on: northaventrail.org/trail-captains
    ============================================================ */
 
+/* ---- Trail section map images ---- */
+.tc-map-image {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
 /* ---- Screen-reader only utility ---- */
 .tc-sr-only {
   position: absolute;
