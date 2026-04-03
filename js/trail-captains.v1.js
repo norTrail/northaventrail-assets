@@ -16,36 +16,8 @@
 
   var MANIFEST_URL =
     "https://assets.northaventrail.org/json/trail-captains.latest.json";
-  var ASSET_BASE_URL = "https://assets.northaventrail.org/img/";
   var SIGNUP_EMAIL = "trailcaptainsignup@northaventrail.org";
   var SIGNUP_SUBJECT = "I would like to learn more about being a trail captain";
-  var RESPONSIVE_MAPS = {
-    "trail-map-east.webp": {
-      fallbackSrc: ASSET_BASE_URL + "trail-map-east-700.webp",
-      srcset:
-        ASSET_BASE_URL + "trail-map-east-700.webp 700w, " +
-        ASSET_BASE_URL + "trail-map-east-1300.webp 1300w",
-      width: 700,
-      height: 300
-    },
-    "trail-map-center.webp": {
-      fallbackSrc: ASSET_BASE_URL + "trail-map-center-700.webp",
-      srcset:
-        ASSET_BASE_URL + "trail-map-center-700.webp 700w, " +
-        ASSET_BASE_URL + "trail-map-center-1300.webp 1300w",
-      width: 700,
-      height: 300
-    },
-    "trail-map-west.webp": {
-      fallbackSrc: ASSET_BASE_URL + "trail-map-west-700.webp",
-      srcset:
-        ASSET_BASE_URL + "trail-map-west-700.webp 700w, " +
-        ASSET_BASE_URL + "trail-map-west-1300.webp 1300w",
-      width: 700,
-      height: 393
-    }
-  };
-  var RESPONSIVE_MAP_SIZES = "(max-width: 768px) calc(100vw - 32px), 651px";
 
   // ------------------------------------------------------------------
   // Helpers
@@ -69,23 +41,6 @@
     el.innerHTML =
       '<p class="' + (isError ? "tc-error" : "tc-loading") + '" role="status" aria-live="polite">' +
       escHtml(msg) + "</p>";
-  }
-
-  function enhanceMapImages() {
-    var images = document.querySelectorAll("img.tc-map-image");
-    images.forEach(function (img) {
-      var rawSrc = img.getAttribute("src") || "";
-      var fileName = rawSrc.split("/").pop().split("?")[0];
-      var config = RESPONSIVE_MAPS[fileName];
-      if (!config) return;
-
-      img.setAttribute("src", config.fallbackSrc);
-      img.setAttribute("srcset", config.srcset);
-      img.setAttribute("sizes", RESPONSIVE_MAP_SIZES);
-      img.setAttribute("width", String(config.width));
-      img.setAttribute("height", String(config.height));
-      img.setAttribute("decoding", "async");
-    });
   }
 
   // ------------------------------------------------------------------
@@ -257,8 +212,6 @@
   // ------------------------------------------------------------------
 
   function init() {
-    enhanceMapImages();
-
     var containers = document.querySelectorAll(".tc-section[data-section]");
     if (!containers.length) return;
 
