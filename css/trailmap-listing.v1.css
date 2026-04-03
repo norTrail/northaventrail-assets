@@ -143,6 +143,7 @@ tr.maps-menu-open .mapsBtnCaret {
 }
 
 .mapsMenuCancel {
+  display: none;
   margin-top: 6px;
   padding-top: 12px;
   font-weight: 600;
@@ -336,6 +337,10 @@ tr.maps-menu-open td:first-child {
     border-radius: 16px;
     padding: 10px;
     z-index: 9999;
+  }
+
+  .mapsMenuCancel {
+    display: block;
   }
 }
 
