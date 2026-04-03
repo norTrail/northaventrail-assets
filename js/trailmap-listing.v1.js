@@ -334,10 +334,10 @@ if ('scrollRestoration' in history) {
       menu.style.top = "";
       menu.style.bottom = "";
 
-      // Desktop default is anchored to the right edge of the button group.
+      // Desktop default is anchored to the left edge of the trigger wrapper.
       // Re-apply it here so any previous collision adjustment is cleared.
       if (!isMobileMapsMenu_()) {
-        menu.style.right = "0";
+        menu.style.left = "0";
       }
 
       // 2. Perform the boundary check
@@ -352,20 +352,20 @@ if ('scrollRestoration' in history) {
         menu.style.bottom = "calc(100% + 4px)";
       }
 
-      // 4. Keep the menu visually attached to the trigger by preserving the
-      // right-edge anchor and only nudging it left when it would overflow.
+      // 4. Keep the menu visually attached to the trigger and nudge it only
+      // as much as needed to keep it inside the viewport.
       if (!isMobileMapsMenu_()) {
         const overshootRight = rect.right - (viewportWidth - viewportPadding);
         if (overshootRight > 0) {
-          const currentRight = Number.parseFloat(menu.style.right || "0") || 0;
-          menu.style.right = `${currentRight + overshootRight}px`;
+          const currentLeft = Number.parseFloat(menu.style.left || "0") || 0;
+          menu.style.left = `${currentLeft - overshootRight}px`;
         }
 
         const clampedRect = menu.getBoundingClientRect();
         const overshootLeft = viewportPadding - clampedRect.left;
         if (overshootLeft > 0) {
-          const currentRight = Number.parseFloat(menu.style.right || "0") || 0;
-          menu.style.right = `${Math.max(0, currentRight - overshootLeft)}px`;
+          const currentLeft = Number.parseFloat(menu.style.left || "0") || 0;
+          menu.style.left = `${currentLeft + overshootLeft}px`;
         }
       }
 

@@ -42,6 +42,7 @@
 
 .poiMaps {
   position: relative;
+  display: inline-block;
   text-align: center;
 }
 
@@ -90,7 +91,7 @@ tr.maps-menu-open .mapsBtnCaret {
 .mapsMenu {
   position: absolute;
   top: calc(100% + 4px);
-  right: 0;
+  left: 0;
   min-width: 180px;
   max-width: min(320px, calc(100vw - 24px));
   background: #fff;
