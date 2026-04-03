@@ -80,6 +80,22 @@
   outline-offset: 2px;
 }
 
+/* ---- Nav link: vacant section variant ---- */
+.tc-nav-link--vacant {
+  border-color: #b91c1c;
+  color: #b91c1c;
+}
+
+.tc-nav-link--vacant:hover,
+.tc-nav-link--vacant:focus-visible {
+  background: #b91c1c;
+  color: #fff;
+}
+
+.tc-nav-link--vacant:focus-visible {
+  outline-color: #b91c1c;
+}
+
 /* ---- Vacancy / staffing badges in section caption ---- */
 .tc-vacancy-count {
   font-weight: 600;

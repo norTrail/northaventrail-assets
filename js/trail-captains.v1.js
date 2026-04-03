@@ -104,8 +104,12 @@
     var navLinks = sectionOrder.map(function (key) {
       var s = sections[key];
       if (!s) return "";
+      var segs = Array.isArray(s.segments) ? s.segments : [];
+      var hasVacancy = segs.some(function (seg) {
+        return !seg.captains || seg.captains.length === 0;
+      });
       return (
-        '<a class="tc-nav-link" href="#tc-' + escHtml(key) + '">' +
+        '<a class="tc-nav-link' + (hasVacancy ? " tc-nav-link--vacant" : "") + '" href="#tc-' + escHtml(key) + '">' +
         escHtml(s.label) +
         "</a>"
       );
@@ -242,8 +246,17 @@
           var key         = el.getAttribute("data-section");
           var sectionData = sections[key];
 
-          // Add anchor ID so jump nav links work
-          el.id = "tc-" + key;
+          // Add anchor ID to the preceding H2 so jump nav lands above the table
+          var anchorTarget = el;
+          var prev = el.previousElementSibling;
+          while (prev) {
+            if (prev.tagName === "H2") {
+              anchorTarget = prev;
+              break;
+            }
+            prev = prev.previousElementSibling;
+          }
+          anchorTarget.id = "tc-" + key;
 
           if (!sectionData) {
             setStatus(
