@@ -222,7 +222,7 @@ if ('scrollRestoration' in history) {
   }
 
   // ---------------------------
-  // Maps menu (Option 1: single “Maps” control)
+  // Maps menu (Option 1: single "Maps" control)
   // - Desktop: popover menu
   // - Mobile: bottom sheet + backdrop
   // ---------------------------
@@ -764,27 +764,27 @@ if ('scrollRestoration' in history) {
 
     const cellHtml = columns.map((col) => {
       const label = escHtml(columnToLabel_(col));
-      if (col === “name”) {
-        return `<td data-label=”${label}”><div class=”poi-name__title”>${titleLink}</div></td>`;
+      if (col === "name") {
+        return `<td data-label="${label}"><div class="poi-name__title">${titleLink}</div></td>`;
       }
-      if (col === “image”) {
-        return `<td data-label=”${label}”>${poi.imgUrl
-          ? `<img src=”${escHtml(poi.imgUrl)}” class=”poi-marker-img” width=”80” alt=”${escHtml(poi.title)}” loading=”lazy” decoding=”async”>`
-          : “”}</td>`;
+      if (col === "image") {
+        return `<td data-label="${label}">${poi.imgUrl
+          ? `<img src="${escHtml(poi.imgUrl)}" class="poi-marker-img" width="80" alt="${escHtml(poi.title)}" loading="lazy" decoding="async">`
+          : ""}</td>`;
       }
-      if (col === “near”) {
-        return `<td data-label=”${label}”><div class=”poi-near”>${escHtml(poi.near || “”)}</div></td>`;
+      if (col === "near") {
+        return `<td data-label="${label}"><div class="poi-near">${escHtml(poi.near || "")}</div></td>`;
       }
-      if (col === “description”) {
-        return `<td data-label=”${label}”><div class=”poi-desc”>${escHtml(poi.descText || “”)}</div></td>`;
+      if (col === "description") {
+        return `<td data-label="${label}"><div class="poi-desc">${escHtml(poi.descText || "")}</div></td>`;
       }
-      if (col === “maps”) {
-        // Option 1: single “Maps” control (prevents 3-link overflow on mobile)
+      if (col === "maps") {
+        // Option 1: single "Maps" control (prevents 3-link overflow on mobile)
         const menuHtml = buildMapsMenuHtml_(id, urlmapping, gUrl, aUrl, poi.title, poi.typeLabel);
-        return `<td data-label=”${label}”>${menuHtml}</td>`;
+        return `<td data-label="${label}">${menuHtml}</td>`;
       }
       return `<td></td>`;
-    }).join(“”);
+    }).join("");
 
     tr.innerHTML = cellHtml;
     return tr;
@@ -902,7 +902,7 @@ if ('scrollRestoration' in history) {
       // If more resizes happen after we scroll, we'll allow another scroll,
       // but only after a quiet period again.
       const SETTLE_MS = 450;        // quiet window after last resize
-      const MAX_TOTAL_MS = 8000;    // total time we’ll keep trying
+      const MAX_TOTAL_MS = 8000;    // total time we'll keep trying
       const POST_SCROLL_GRACE_MS = 800; // after a scroll, keep watching briefly
 
       let postScrollTimer = null;
@@ -935,7 +935,7 @@ if ('scrollRestoration' in history) {
         hasScrolled = true;
 
         // After we scroll, keep observing for a bit:
-        // if *nothing* else resizes during this grace period, we’re done.
+        // if *nothing* else resizes during this grace period, we're done.
         clearTimeout(postScrollTimer);
         postScrollTimer = setTimeout(() => {
           cleanup();
@@ -952,7 +952,7 @@ if ('scrollRestoration' in history) {
       if (!wraps.length) return;
 
       ro = new ResizeObserver(() => {
-        // Any resize cancels the “we’re done” grace timer
+        // Any resize cancels the "we're done" grace timer
         clearTimeout(postScrollTimer);
 
         // Keep pushing the settle window out until resizes stop
