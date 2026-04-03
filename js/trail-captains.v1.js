@@ -278,6 +278,15 @@
 
           renderTable(el, sectionData);
         });
+
+        // If the URL has a hash, the browser already tried to scroll before IDs
+        // were assigned. Now that all anchor IDs are in place, scroll there manually.
+        if (window.location.hash) {
+          var hashTarget = document.getElementById(window.location.hash.slice(1));
+          if (hashTarget) {
+            hashTarget.scrollIntoView();
+          }
+        }
       })
       .catch(function (err) {
         console.error("[trail-captains]", err);
