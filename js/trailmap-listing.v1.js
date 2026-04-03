@@ -763,30 +763,63 @@ if ('scrollRestoration' in history) {
     tr.setAttribute("tabindex", "0");
 
     const cellHtml = columns.map((col) => {
-      if (col === "name") {
-        return `<td><div class="poi-name__title">${titleLink}</div></td>`;
+      const label = escHtml(columnToLabel_(col));
+      if (col === “name”) {
+        return `<td data-label=”${label}”><div class=”poi-name__title”>${titleLink}</div></td>`;
       }
-      if (col === "image") {
-        return `<td>${poi.imgUrl
-          ? `<img src="${escHtml(poi.imgUrl)}" class="poi-marker-img" width="80" alt="${escHtml(poi.title)}" loading="lazy" decoding="async">`
-          : ""}</td>`;
+      if (col === “image”) {
+        return `<td data-label=”${label}”>${poi.imgUrl
+          ? `<img src=”${escHtml(poi.imgUrl)}” class=”poi-marker-img” width=”80” alt=”${escHtml(poi.title)}” loading=”lazy” decoding=”async”>`
+          : “”}</td>`;
       }
-      if (col === "near") {
-        return `<td><div class="poi-near">${escHtml(poi.near || "")}</div></td>`;
+      if (col === “near”) {
+        return `<td data-label=”${label}”><div class=”poi-near”>${escHtml(poi.near || “”)}</div></td>`;
       }
-      if (col === "description") {
-        return `<td><div class="poi-desc">${escHtml(poi.descText || "")}</div></td>`;
+      if (col === “description”) {
+        return `<td data-label=”${label}”><div class=”poi-desc”>${escHtml(poi.descText || “”)}</div></td>`;
       }
-      if (col === "maps") {
+      if (col === “maps”) {
         // Option 1: single “Maps” control (prevents 3-link overflow on mobile)
         const menuHtml = buildMapsMenuHtml_(id, urlmapping, gUrl, aUrl, poi.title, poi.typeLabel);
-        return `<td>${menuHtml}</td>`;
+        return `<td data-label=”${label}”>${menuHtml}</td>`;
       }
       return `<td></td>`;
-    }).join("");
+    }).join(“”);
 
     tr.innerHTML = cellHtml;
     return tr;
+  }
+
+  function updatePoiHeader_(total, catCount) {
+    const jumpList = document.querySelector(".poi-jump__list");
+    if (jumpList && !document.querySelector(".poi-summary")) {
+      const p = document.createElement("p");
+      p.className = "poi-summary";
+      p.innerHTML = `<strong>${total}</strong> points of interest across <strong>${catCount}</strong> categories`;
+      jumpList.parentNode.insertBefore(p, jumpList);
+    }
+    if (!jumpList) return;
+    jumpList.querySelectorAll("a[href]").forEach((link) => {
+      const hash = link.getAttribute("href").replace(/^.*#/, "");
+      if (!hash) return;
+      const sectionEl = document.getElementById(hash);
+      if (!sectionEl) return;
+      const wrap = sectionEl.classList.contains("poi-table-wrap")
+        ? sectionEl
+        : sectionEl.querySelector(".poi-table-wrap");
+      if (!wrap) return;
+      const tbody = wrap.querySelector("tbody");
+      if (!tbody) return;
+      const count = Array.from(tbody.querySelectorAll("tr")).filter(
+        (r) => !r.querySelector("td[colspan]")
+      ).length;
+      if (count > 0 && !link.querySelector(".poi-jump__count")) {
+        const badge = document.createElement("span");
+        badge.className = "poi-jump__count";
+        badge.textContent = count;
+        link.appendChild(badge);
+      }
+    });
   }
 
   function parseCategoryList_(attr) {
@@ -1002,6 +1035,8 @@ if ('scrollRestoration' in history) {
 
           const usedCats = new Set();   // category keys used by any table
           const usedFeatureIds = new Set(); // optional: track by feature id (prevents duplicates)
+          let totalPois = 0;
+          let filledCats = 0;
 
           // Sort each bucket by title
           for (const [cat, arr] of buckets.entries()) {
@@ -1055,6 +1090,11 @@ if ('scrollRestoration' in history) {
             finalRows.forEach((rowModel) => {
               tbody.appendChild(buildRowForColumns_(rowModel, payload, pageTitle, tableClass, columns));
             });
+
+            if (finalRows.length > 0) {
+              totalPois += finalRows.length;
+              filledCats++;
+            }
 
             finalRows.forEach(rowModel => usedFeatureIds.add(String(rowModel.id || ""))); // mark as used
 
@@ -1121,6 +1161,8 @@ if ('scrollRestoration' in history) {
           }
 
 
+
+          updatePoiHeader_(totalPois, filledCats);
 
           // Highlight from URL if present
           const params = getURLParamsSafe();

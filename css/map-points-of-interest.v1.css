@@ -61,11 +61,69 @@
   padding: 10px 10px 10px 0px;
 }
 
+.poi-summary {
+  font-size: 0.95rem;
+  color: #444;
+  margin-bottom: 12px;
+}
+
 .poi-jump__list {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px 16px;
-  padding-left: 18px;
+  gap: 10px;
+  padding: 0;
+  list-style: none;
+  margin-bottom: 8px;
+}
+
+.poi-jump__list li {
+  list-style: none;
+}
+
+.poi-jump__list a {
+  display: inline-block;
+  padding: 5px 16px;
+  border: 1.5px solid rgb(16, 132, 82);
+  border-radius: 20px;
+  color: rgb(16, 132, 82);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+}
+
+.poi-jump__list a:hover,
+.poi-jump__list a:focus-visible {
+  background: rgb(16, 132, 82);
+  color: #fff;
+}
+
+.poi-jump__list a:focus-visible {
+  outline: 2px solid rgb(16, 132, 82);
+  outline-offset: 2px;
+}
+
+.poi-jump__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 6px;
+  padding: 0 6px;
+  min-width: 20px;
+  height: 20px;
+  background: rgb(16, 132, 82);
+  color: #fff;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  vertical-align: middle;
+  transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+}
+
+.poi-jump__list a:hover .poi-jump__count,
+.poi-jump__list a:focus-visible .poi-jump__count {
+  background: #fff;
+  color: rgb(16, 132, 82);
 }
 
 .poi-links {
@@ -285,4 +343,63 @@ tr.maps-menu-open td:first-child {
 .mapsMenuTitle__close:focus-visible {
   outline: 2px solid rgb(16, 132, 82);
   outline-offset: 2px;
+}
+
+/* ---- Mobile card layout ---- */
+@media (max-width: 640px) {
+  /* Visually hide column headers — keep in DOM for screen readers */
+  .poi-table thead {
+    border: 0;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+  }
+
+  /* Each row becomes a card */
+  .poi-table tr {
+    display: block;
+    margin-bottom: 1.25rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fff;
+    padding: 0.5rem;
+  }
+
+  .poi-table td {
+    display: block !important;
+    border: none !important;
+    padding: 0.4rem 0.5rem !important;
+  }
+
+  /* Name cell is the card title */
+  .poi-table td:first-child {
+    font-weight: 700;
+    font-size: 1rem;
+    color: rgb(16, 132, 82);
+    border-bottom: 1px solid #eee !important;
+    margin-bottom: 0.25rem;
+  }
+
+  /* Show column label as prefix for Location and Description */
+  .poi-table td[data-label]::before {
+    content: attr(data-label) ": ";
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: #555;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  /* Suppress prefix on Name, Image, and Maps — content speaks for itself */
+  .poi-table td[data-label="Name"]::before,
+  .poi-table td[data-label="Image"]::before,
+  .poi-table td[data-label="Maps"]::before {
+    display: none;
+  }
 }
