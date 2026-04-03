@@ -246,15 +246,24 @@
           var key         = el.getAttribute("data-section");
           var sectionData = sections[key];
 
-          // Add anchor ID to the preceding H2 so jump nav lands above the table
+          // Add anchor ID to the preceding H2 so jump nav lands above the table.
+          // The .tc-section is nested inside a Squarespace .sqs-block wrapper, so
+          // walk up to that block first, then search preceding sibling blocks for an H2.
           var anchorTarget = el;
-          var prev = el.previousElementSibling;
-          while (prev) {
-            if (prev.tagName === "H2") {
-              anchorTarget = prev;
-              break;
+          var blockAncestor = el.parentElement;
+          while (blockAncestor && !blockAncestor.classList.contains("sqs-block")) {
+            blockAncestor = blockAncestor.parentElement;
+          }
+          if (blockAncestor) {
+            var prev = blockAncestor.previousElementSibling;
+            while (prev) {
+              var h2 = prev.tagName === "H2" ? prev : prev.querySelector("h2");
+              if (h2) {
+                anchorTarget = h2;
+                break;
+              }
+              prev = prev.previousElementSibling;
             }
-            prev = prev.previousElementSibling;
           }
           anchorTarget.id = "tc-" + key;
 
