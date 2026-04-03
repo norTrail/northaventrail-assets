@@ -790,6 +790,19 @@ if ('scrollRestoration' in history) {
     return tr;
   }
 
+  // Push each section's thead down so it sticks immediately below its sticky H2
+  // rather than fighting for the same top position.
+  function adjustStickyOffsets_() {
+    document.querySelectorAll(".poi-section").forEach((section) => {
+      const h2 = section.querySelector("h2");
+      const ths = section.querySelectorAll("thead th");
+      if (!h2 || !ths.length) return;
+      const navHeight = parseInt(window.getComputedStyle(h2).top) || 0;
+      const theadTop = navHeight + h2.offsetHeight;
+      ths.forEach((th) => { th.style.top = theadTop + "px"; });
+    });
+  }
+
   function updatePoiHeader_(total, catCount) {
     const jumpList = document.querySelector(".poi-jump__list");
     if (jumpList && !document.querySelector(".poi-summary")) {
@@ -1163,6 +1176,7 @@ if ('scrollRestoration' in history) {
 
 
           updatePoiHeader_(totalPois, filledCats);
+          adjustStickyOffsets_();
 
           // Highlight from URL if present
           const params = getURLParamsSafe();
