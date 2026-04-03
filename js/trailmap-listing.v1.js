@@ -751,6 +751,20 @@ if ('scrollRestoration' in history) {
     if (!idStr) return;
 
     highlightFeature_(idStr, tableClass);
+
+    const LOCATION_PARM = window.LOCATION_PARM || "loc";
+    const hasEmbeddedMap =
+      !!document.getElementById("map") &&
+      typeof window.goToElement === "function" &&
+      Array.isArray(window.poiData?.features);
+
+    if (hasEmbeddedMap) {
+      setHistoryParam(LOCATION_PARM, idStr, pageTitle);
+      window.goToElement(idStr);
+      return;
+    }
+
+    window.location.href = `/trailmap?${LOCATION_PARM}=${encodeURIComponent(idStr)}`;
   }
 
   // ---------------------------
