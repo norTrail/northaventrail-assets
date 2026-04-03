@@ -13,10 +13,6 @@ const CLING_MANIFEST_URL = `https://assets.northaventrail.org/json/valinetine-cl
 let __clingManifestCurrent = null;
 
 // POPUP
-const markerHeight = 52;
-const markerRadius = 16;
-const linearOffset = 10;
-const POP_UP_MAX_WIDTH = "300px";
 
 let scrollYModal;
 
@@ -287,10 +283,6 @@ function getElementById(id) {
   return id ? document.getElementById(id) : null;
 }
 
-// Alias (correct spelling) for readability in new code.
-function getElementByIdSafe(id) {
-  return getElementById(id);
-}
 
 function querySelectorSingle(sel, root = document) {
   try { return root.querySelector(sel); } catch { return null; }
@@ -336,16 +328,6 @@ function getManifestDataUrls(manifest) {
   )];
 }
 
-function withCacheBust(url) {
-  try {
-    const u = new URL(url, window.location.origin);
-    u.searchParams.set("_ts", String(Date.now()));
-    return u.toString();
-  } catch {
-    const sep = url.includes("?") ? "&" : "?";
-    return `${url}${sep}_ts=${Date.now()}`;
-  }
-}
 
 // Hide sales areas after sales close
 (function hideSalesAfterClose(){
@@ -748,7 +730,6 @@ function indexFeatures(fc) {
   // legend key trackers
   let claimedKeySeen = false;
   let installedKeySeen = false;
-  let unclaimedKeySeen = false;
 
   for (const f of fc.features) {
     const p = f && f.properties ? f.properties : null;
@@ -765,7 +746,6 @@ function indexFeatures(fc) {
 
     if (p.status === LOCATION_CLAIMED) claimedKeySeen = true;
     if (p.status === LOCATION_INSTALLED) installedKeySeen = true;
-    if (p.status === LOCATION_UNCLAIMED) unclaimedKeySeen = true;
   }
 
   // Toggle legend keys

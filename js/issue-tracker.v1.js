@@ -19,7 +19,6 @@
     let uploadsInProgress = 0;
     let uploadedImageNames = [];
     let imageList = [];
-    let files = [];
     let formSubmitted = false;
     let hasAutoLocated = false;
     let searchResults = [];
@@ -61,6 +60,21 @@
     // -------------------------
     // Utilities & Helpers
     // -------------------------
+    async function fetchWithTimeout(resource, options = {}, timeout = 10000) {
+        const { signal, ...fetchOptions } = options;
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), timeout);
+        const combinedSignal = signal || controller.signal;
+        try {
+            const response = await fetch(resource, { ...fetchOptions, signal: combinedSignal });
+            clearTimeout(id);
+            return response;
+        } catch (error) {
+            clearTimeout(id);
+            throw error;
+        }
+    }
+
     function getPoiCache_() {
         const cache = window.__trailPoiCache;
         if (!cache || !cache.data || !Array.isArray(cache.data.features) || !cache.sourceUrl) {
@@ -91,7 +105,7 @@
     }
 
     async function fetchPoiPayload_() {
-        const manifestRes = await fetch(POI_MANIFEST_URL);
+        const manifestRes = await fetchWithTimeout(POI_MANIFEST_URL);
         if (!manifestRes.ok) {
             throw new Error(`Manifest HTTP ${manifestRes.status}`);
         }
@@ -111,7 +125,7 @@
         let lastError = null;
         for (const versionedUrl of candidateUrls) {
             try {
-                const dataRes = await fetch(versionedUrl);
+                const dataRes = await fetchWithTimeout(versionedUrl);
                 if (!dataRes.ok) {
                     throw new Error(`POI data HTTP ${dataRes.status}`);
                 }
@@ -239,7 +253,7 @@
             };
             if (isExit) fetchOptions.keepalive = true;
 
-            const response = await fetch(WORKER_URL, fetchOptions);
+            const response = await fetchWithTimeout(WORKER_URL, fetchOptions, 15000);
             if (!response.ok) {
                 const text = await response.text();
                 throw new Error(`Server error (${response.status}): ${text}`);
@@ -286,11 +300,11 @@
                 _hp: '',
             };
 
-            const response = await fetch(WORKER_URL, {
+            const response = await fetchWithTimeout(WORKER_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
-            });
+            }, 30000);
 
             if (!response.ok) {
                 const text = await response.text();
@@ -484,7 +498,7 @@
 
         // Close any open popups
         const popUps = document.getElementsByClassName('mapboxgl-popup');
-        if (popUps[0]) popUps[0].remove();
+        while (popUps[0]) popUps[0].remove();
 
         announce(document.getElementById('sr-updates'), "Map marker reset to default trail location.");
     }
@@ -761,10 +775,31 @@
             }
 
             for (const file of valid) {
-                const reader = new FileReader();
-                reader.onload = async (event) => {
-                    const uniqueFileName = buildUniqueFilename(file.name);
-                    const url = event.target.result;
+                const uniqueFileName = buildUniqueFilename(file.name);
+                const objUrl = URL.createObjectURL(file);
+                const img = new Image();
+                img.onload = async () => {
+                    URL.revokeObjectURL(objUrl);
+                    let width = img.width;
+                    let height = img.height;
+                    const MAX_DIM = 1600;
+                    if (width > MAX_DIM || height > MAX_DIM) {
+                        if (width > height) {
+                            height = Math.round(height * (MAX_DIM / width));
+                            width = MAX_DIM;
+                        } else {
+                            width = Math.round(width * (MAX_DIM / height));
+                            height = MAX_DIM;
+                        }
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = Math.max(width, 1);
+                    canvas.height = Math.max(height, 1);
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    const url = canvas.toDataURL(file.type === 'image/png' ? 'image/png' : 'image/jpeg', 0.85);
+
                     const imgData = { url, fileName: uniqueFileName, file, hasGPS: false };
                     const index = imageList.push(imgData) - 1;
 
@@ -815,7 +850,7 @@
                         updateUploadStatus();
                     }
                 };
-                reader.readAsDataURL(file);
+                img.src = objUrl;
             }
             // Reset input value so the same file selection triggers change event again
             e.target.value = '';

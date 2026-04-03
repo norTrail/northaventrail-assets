@@ -35,7 +35,6 @@ const UI = {
    ---------------------------- */
 
 let currentState = null;
-let bannerCentered = false;
 let countdownTimer = null;
 let isZoomedToHerd = false;
 let lastVisibleZoneCode = null;
@@ -50,7 +49,6 @@ function updateOverlayState(state) {
   if (!state || !state.state) return;
 
   currentState = state;
-  bannerCentered = false;
 
   clearCountdown();
   hideFlockLoader();
@@ -986,7 +984,6 @@ function showBanner() {
 
 function hideBanner() {
   UI.overlayBanner.style.display = "none";
-  bannerCentered = false;
 }
 
 function showSheepUI() {
@@ -1200,9 +1197,6 @@ function formatDateISO(iso, opts) {
 }
 function formatDateISOLong(iso) {
   return formatDateISO(iso, { weekday: "long", month: "long", day: "numeric" });
-}
-function formatDateISOShort(iso) {
-  return formatDateISO(iso, { month: "short", day: "numeric" });
 }
 
 function escapeHtml(value) {

@@ -329,17 +329,53 @@ if ('scrollRestoration' in history) {
       menu.hidden = false;
 
       // 1. Reset any previous "drop-up" logic before measuring
+      menu.style.left = "";
+      menu.style.right = "";
       menu.style.top = "";
       menu.style.bottom = "";
+
+      // Desktop default is anchored to the right edge of the button group.
+      // Re-apply it here so any previous collision adjustment is cleared.
+      if (!isMobileMapsMenu_()) {
+        menu.style.right = "0";
+      }
 
       // 2. Perform the boundary check
       const rect = menu.getBoundingClientRect();
       const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+      const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+      const viewportPadding = 12;
 
       // 3. If the menu bottom goes past the viewport, flip it
       if (rect.bottom > viewportHeight) {
         menu.style.top = "auto";
         menu.style.bottom = "calc(100% + 6px)";
+      }
+
+      // 4. If the menu runs off the right edge, anchor it from the left
+      // side of the trigger so the full menu stays visible on screen.
+      if (!isMobileMapsMenu_()) {
+        if (rect.right > viewportWidth - viewportPadding) {
+          menu.style.right = "auto";
+          menu.style.left = "0";
+        }
+
+        // If it is still too wide or close to the edge, clamp it into view.
+        const adjustedRect = menu.getBoundingClientRect();
+        const overshootRight = adjustedRect.right - (viewportWidth - viewportPadding);
+        if (overshootRight > 0) {
+          const currentLeft = Number.parseFloat(menu.style.left || "0") || 0;
+          menu.style.left = `${currentLeft - overshootRight}px`;
+          menu.style.right = "auto";
+        }
+
+        const clampedRect = menu.getBoundingClientRect();
+        const overshootLeft = viewportPadding - clampedRect.left;
+        if (overshootLeft > 0) {
+          const currentLeft = Number.parseFloat(menu.style.left || "0") || 0;
+          menu.style.left = `${currentLeft + overshootLeft}px`;
+          menu.style.right = "auto";
+        }
       }
 
       setMenuRowHighlight_(btn);
