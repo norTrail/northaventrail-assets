@@ -363,6 +363,19 @@ function attachErrorLogging(map, opts = {}) {
       // Optional: reduce console noise if you’re confident your logger works
       // e.preventDefault();
     });
+
+    document.addEventListener("visibilitychange", () => {
+      const ctx = window.__trailErrorContext;
+      ctx?.crumbs?.add("visibility", { state: document.visibilityState });
+    });
+    window.addEventListener("online", () => {
+      const ctx = window.__trailErrorContext;
+      ctx?.crumbs?.add("net", { online: true });
+    });
+    window.addEventListener("offline", () => {
+      const ctx = window.__trailErrorContext;
+      ctx?.crumbs?.add("net", { online: false });
+    });
   }
 
   installGlobalHandlersOnce_();
@@ -396,9 +409,6 @@ function attachErrorLogging(map, opts = {}) {
 
   // Helpful breadcrumbs you can sprinkle in your app:
   crumbs.add("logger:attached");
-  document.addEventListener("visibilitychange", () => crumbs.add("visibility", { state: document.visibilityState }));
-  window.addEventListener("online", () => crumbs.add("net", { online: true }));
-  window.addEventListener("offline", () => crumbs.add("net", { online: false }));
 
   // Remove
   //console.log("Error logging loaded")

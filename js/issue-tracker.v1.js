@@ -31,6 +31,7 @@
 
     let manualLatitudeInput, manualLongitudeInput, applyLatLngBtn, latErrorEl, lngErrorEl;
     let firstNameInput, lastNameInput, rememberContactCheckbox;
+    let lifecycleHandlersBound = false;
 
     // -------------------------
     // SVG Sprite Loader
@@ -685,6 +686,7 @@
         }
 
         // Turnstile widget container — rendered before the submit button
+        document.getElementById('nt-turnstile-container')?.remove();
         const tsContainer = document.createElement('div');
         tsContainer.id = 'nt-turnstile-container';
         submitButton.parentNode.insertBefore(tsContainer, submitButton);
@@ -1201,16 +1203,23 @@
         init();
     }
 
-    // Handle AJAX-based navigation (specifically for Squarespace)
-    window.addEventListener('popstate', init);
-    window.addEventListener('mercury:load', init); // Squarespace AJAX event
+    function bindLifecycleHandlersOnce() {
+        if (lifecycleHandlersBound) return;
+        lifecycleHandlersBound = true;
 
-    window.addEventListener('pagehide', () => {
-        if (!formSubmitted && imageList.length > 0) {
-            imageList.forEach((img) => {
-                deleteImageFromGAS(img.fileName, true);
-            });
-        }
-    });
+        // Handle AJAX-based navigation (specifically for Squarespace)
+        window.addEventListener('popstate', init);
+        window.addEventListener('mercury:load', init); // Squarespace AJAX event
+
+        window.addEventListener('pagehide', () => {
+            if (!formSubmitted && imageList.length > 0) {
+                imageList.forEach((img) => {
+                    deleteImageFromGAS(img.fileName, true);
+                });
+            }
+        });
+    }
+
+    bindLifecycleHandlersOnce();
 
 })();

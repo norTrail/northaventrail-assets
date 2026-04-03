@@ -7,6 +7,9 @@
 let rotateEndTimer = null;
 
 function wireMapEventsAfterMarkers_() {
+  if (!map || map.__trailmapEventsAfterMarkersWired) return;
+  map.__trailmapEventsAfterMarkersWired = true;
+
   // drag / rotate / pitch / zoom
   map.on("dragend", () => {
     if (!flyToFeature) updatePageDetails();
