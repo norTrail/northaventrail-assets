@@ -790,14 +790,35 @@ if ('scrollRestoration' in history) {
     return tr;
   }
 
-  // Push each section's thead down so it sticks immediately below its sticky H2
-  // rather than fighting for the same top position.
+  // Measure the actual site nav height by finding the tallest fixed/sticky
+  // element anchored to the top of the viewport.
+  function getSiteNavHeight_() {
+    const candidates = document.querySelectorAll(
+      "header, .site-header, #header, [class*='header'], [id*='header']"
+    );
+    let maxBottom = 0;
+    candidates.forEach((el) => {
+      const style = window.getComputedStyle(el);
+      if (style.position === "fixed" || style.position === "sticky") {
+        const rect = el.getBoundingClientRect();
+        if (rect.top <= 4 && rect.bottom > maxBottom) {
+          maxBottom = rect.bottom;
+        }
+      }
+    });
+    return Math.round(maxBottom);
+  }
+
+  // Push each section's H2 and thead down to sit flush below the site nav
+  // (H2 sticks at nav bottom; thead sticks at nav bottom + H2 height).
   function adjustStickyOffsets_() {
+    const navHeight = getSiteNavHeight_();
     document.querySelectorAll(".poi-section").forEach((section) => {
       const h2 = section.querySelector("h2");
       const ths = section.querySelectorAll("thead th");
-      if (!h2 || !ths.length) return;
-      const navHeight = parseInt(window.getComputedStyle(h2).top) || 0;
+      if (!h2) return;
+      h2.style.top = navHeight + "px";
+      if (!ths.length) return;
       const theadTop = navHeight + h2.offsetHeight;
       ths.forEach((th) => { th.style.top = theadTop + "px"; });
     });
