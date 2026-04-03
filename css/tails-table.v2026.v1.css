@@ -278,18 +278,90 @@ td.map-icons .gmaps-emoji {
    Mobile adjustments
    ---------------------------- */
 
-@media (max-width: 600px) {
+@media (max-width: 640px) {
 
-  #grazingTable {
-    font-size: 0.9rem;
+  /* Hide header visually but keep it in the DOM for screen readers */
+  #grazingTable thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
   }
 
-  #grazingTable thead th {
-    padding: 10px 8px;
+  /* Each data row becomes a card */
+  #grazingTable tbody tr[data-code] {
+    display: block;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    background: #fff;
+    cursor: pointer;
   }
 
+  #grazingTable tbody tr[data-code]:hover {
+    background-color: #eef6f0;
+  }
+
+  #grazingTable tbody tr[data-code].active {
+    background-color: #dff1e5;
+  }
+
+  /* Date header rows stay full-width */
+  #grazingTable tbody tr.date-header-row {
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  #grazingTable tbody tr.date-header-row td {
+    display: block;
+    padding: 8px 0 4px;
+  }
+
+  /* Each cell stacks vertically with a label prefix */
   #grazingTable td {
-    padding: 8px;
+    display: block;
+    padding: 4px 0;
+    border-bottom: none;
+    text-align: left !important;
+  }
+
+  #grazingTable td::before {
+    content: attr(data-label) ": ";
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-right: 4px;
+  }
+
+  /* Zone name cell: suppress the label (acts as card title) */
+  #grazingTable td:first-child {
+    font-size: 1rem;
+    font-weight: 600;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 4px;
+  }
+
+  #grazingTable td:first-child::before {
+    display: none;
+  }
+
+  /* Map icons cell: align icons left */
+  #grazingTable td.map-icons {
+    text-align: left !important;
+  }
+
+  #grazingTable td.map-icons::before {
+    vertical-align: middle;
   }
 
 }

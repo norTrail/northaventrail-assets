@@ -230,6 +230,77 @@ function toggleLegendStatus(status) {
   applyLegendVisibilityToMap();
 }
 
+// ---------------------------------------------------------------------
+// Status summary header + legend count badges
+// ---------------------------------------------------------------------
+function countClingsByStatus(fc) {
+  var counts = {};
+  counts[LOCATION_UNCLAIMED] = 0;
+  counts[LOCATION_CLAIMED]   = 0;
+  counts[LOCATION_INSTALLED] = 0;
+  counts.total = 0;
+  if (!fc || !Array.isArray(fc.features)) return counts;
+  for (var i = 0; i < fc.features.length; i++) {
+    var f = fc.features[i];
+    var status = f && f.properties ? String(f.properties.status || '') : '';
+    if      (status === LOCATION_UNCLAIMED) counts[LOCATION_UNCLAIMED]++;
+    else if (status === LOCATION_CLAIMED)   counts[LOCATION_CLAIMED]++;
+    else if (status === LOCATION_INSTALLED) counts[LOCATION_INSTALLED]++;
+    counts.total++;
+  }
+  return counts;
+}
+
+function renderStatusHeader(counts) {
+  var el = document.querySelector('.v-header');
+  if (!el || counts.total === 0) return;
+
+  var unclaimed = counts[LOCATION_UNCLAIMED];
+  var total = counts.total;
+  var isAlert = unclaimed > 0;
+  var msg;
+
+  if (!isAlert) {
+    msg = 'All ' + total + ' cling locations are installed! \uD83C\uDF89';
+  } else {
+    msg = unclaimed + ' of ' + total + ' cling location' +
+          (unclaimed !== 1 ? 's' : '') + ' still need' +
+          (unclaimed === 1 ? 's' : '') + ' to be claimed';
+  }
+
+  el.textContent = msg;
+  el.className = 'v-header ' + (isAlert ? 'v-header--alert' : 'v-header--success');
+  el.setAttribute('aria-live', 'polite');
+}
+
+function updateLegendCounts(counts) {
+  var keyMap = [
+    { status: LOCATION_UNCLAIMED, elId: 'unclaimedKey' },
+    { status: LOCATION_CLAIMED,   elId: 'claimedKey' },
+    { status: LOCATION_INSTALLED, elId: 'installedKey' }
+  ];
+
+  keyMap.forEach(function(item) {
+    var el = getElementById(item.elId);
+    if (!el) return;
+
+    var n = counts[item.status] || 0;
+
+    // Find or create the count span inside .keyText (falls back to the key el itself)
+    var target = el.querySelector('.keyText') || el;
+    var countSpan = target.querySelector('.v-legend-count');
+    if (!countSpan) {
+      countSpan = document.createElement('span');
+      countSpan.className = 'v-legend-count';
+      target.appendChild(countSpan);
+    }
+    countSpan.textContent = ' (' + n + ')';
+
+    // Red-border urgency on the Unclaimed key when clings still need claiming
+    el.classList.toggle('v-legend-key--urgent', item.status === LOCATION_UNCLAIMED && n > 0);
+  });
+}
+
 // Optional ripple hook: if you kept the ripple CSS but don’t have JS ripple,
 // this is safe to omit. (If you want, I can wire it back too.)
 function createLegendRipple_(el, evt) {
@@ -1005,7 +1076,14 @@ async function refreshClingData() {
   }
 
   updateCarouselFromGeojson(fc);
+  updateStatusUI(fc);
   goToParamFeature();
+}
+
+function updateStatusUI(fc) {
+  var counts = countClingsByStatus(fc);
+  renderStatusHeader(counts);
+  updateLegendCounts(counts);
 }
 
 function startClingRefresh() {

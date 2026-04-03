@@ -4,6 +4,12 @@
    Used on: northaventrail.org/trail-captains
    ============================================================ */
 
+/* ---- Global box-sizing reset for all tc-* components ---- */
+[class^="tc-"], [class*=" tc-"], 
+[class^="tc-"] *, [class*=" tc-"] * {
+  box-sizing: border-box;
+}
+
 /* ---- Header block: vacancy summary + CTA + section jump nav ---- */
 .tc-header-bar {
   display: flex;
@@ -16,6 +22,7 @@
   padding: 14px 20px;
   margin-bottom: 12px;
   flex-wrap: wrap;
+  box-sizing: border-box;
 }
 
 .tc-summary-text {
@@ -35,6 +42,7 @@
   font-size: 0.95rem;
   white-space: nowrap;
   transition: background-color 0.15s ease-in-out;
+  box-sizing: border-box;
 }
 
 .tc-cta-btn:hover {
@@ -334,8 +342,16 @@
     align-items: flex-start;
   }
 
+  .tc-summary-text {
+    width: 100%;
+    margin-bottom: 12px;
+    box-sizing: border-box;
+  }
+
   .tc-cta-btn {
+    display: block;
     width: 100%;
     text-align: center;
+    box-sizing: border-box;
   }
 }

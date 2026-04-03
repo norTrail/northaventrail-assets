@@ -789,9 +789,9 @@ function showTableView(zones) {
     firstDataRow = false;
 
     tr.innerHTML = `
-      <td>${escapeHtml(zone.name)}</td>
-      <td class="status-cell">${escapeHtml(zone.status)}</td>
-      <td class="map-icons">
+      <td data-label="Zone">${escapeHtml(zone.name)}</td>
+      <td class="status-cell" data-label="Status">${escapeHtml(zone.status)}</td>
+      <td class="map-icons" data-label="Map">
         <span class="status-emoji" aria-hidden="true">${escapeHtml(zone.statusIcon)}</span>
         <span class="gmaps-emoji" role="button" tabindex="-1"
               aria-label="Open ${escapeHtmlAttr(zone.name)} in Google Maps">

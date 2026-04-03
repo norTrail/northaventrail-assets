@@ -814,6 +814,49 @@
 }
 
 /* -------------------------------------------------------
+   Status summary header
+   ------------------------------------------------------- */
+.v-header {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: center;
+  margin-bottom: 10px;
+  box-sizing: border-box;
+}
+
+.v-header--success {
+  background: #eef6f0;
+  color: #155734;
+  border: 1px solid #b6dfc7;
+}
+
+.v-header--alert {
+  background: #fff5f5;
+  color: #9b1c1c;
+  border: 1px solid #fca5a5;
+}
+
+/* -------------------------------------------------------
+   Legend count badges + urgency styling
+   ------------------------------------------------------- */
+.v-legend-count {
+  font-size: 0.85em;
+  font-weight: 600;
+  opacity: 0.8;
+  white-space: nowrap;
+}
+
+.v-legend-key--urgent {
+  border: 2px solid #b91c1c !important;
+  border-radius: 10px;
+}
+
+/* -------------------------------------------------------
    Find Nearest button
    ------------------------------------------------------- */
 #val-find-nearest-wrap {
