@@ -826,12 +826,19 @@ if ('scrollRestoration' in history) {
 
   function updatePoiHeader_(total, catCount) {
     const jumpList = document.querySelector(".poi-jump__list");
-    if (jumpList && !document.querySelector(".poi-summary")) {
-      const p = document.createElement("p");
-      p.className = "poi-summary";
-      p.innerHTML = `<strong>${total}</strong> points of interest across <strong>${catCount}</strong> categories`;
-      jumpList.parentNode.insertBefore(p, jumpList);
+
+    // Inject summary sentence: before the jump list if one exists,
+    // otherwise before the first table wrap on the page.
+    if (!document.querySelector(".poi-summary")) {
+      const anchor = jumpList || document.querySelector(".poi-table-wrap");
+      if (anchor) {
+        const p = document.createElement("p");
+        p.className = "poi-summary";
+        p.innerHTML = `<strong>${total}</strong> points of interest across <strong>${catCount}</strong> categories`;
+        anchor.parentNode.insertBefore(p, anchor);
+      }
     }
+
     if (!jumpList) return;
     jumpList.querySelectorAll("a[href]").forEach((link) => {
       const hash = link.getAttribute("href").replace(/^.*#/, "");
