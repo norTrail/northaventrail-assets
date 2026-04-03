@@ -111,6 +111,22 @@
     margin-bottom: 0.5rem;
   }
 
+  /* Show column label as prefix on each cell except the name (first) column */
+  .listing-table td[data-label]::before {
+    content: attr(data-label) ": ";
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: #555;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .listing-table td:first-child[data-label]::before,
+  .listing-table td[data-label="Image"]::before,
+  .listing-table td[data-label="Maps"]::before {
+    display: none;
+  }
+
   .poi-marker-img {
     width: 48px !important;
     /* Smaller icon on mobile */
@@ -130,4 +146,34 @@
   outline: 2px solid rgb(16, 132, 82);
   outline-offset: -2px;
   background-color: #eef6f8;
+}
+
+/* ---- Summary header + jump nav count badges (shared with POI page) ---- */
+.poi-summary {
+  font-size: 0.95rem;
+  color: #444;
+  margin-bottom: 12px;
+}
+
+.poi-jump__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 6px;
+  padding: 0 6px;
+  min-width: 20px;
+  height: 20px;
+  background: rgb(16, 132, 82);
+  color: #fff;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  vertical-align: middle;
+  transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+}
+
+.poi-jump__list a:hover .poi-jump__count,
+.poi-jump__list a:focus-visible .poi-jump__count {
+  background: #fff;
+  color: rgb(16, 132, 82);
 }
