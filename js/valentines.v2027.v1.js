@@ -256,16 +256,25 @@ function renderStatusHeader(counts) {
   if (!el || counts.total === 0) return;
 
   var unclaimed = counts[LOCATION_UNCLAIMED];
-  var total = counts.total;
-  var isAlert = unclaimed > 0;
+  var claimed   = counts[LOCATION_CLAIMED];
+  var total     = counts.total;
+  var isAlert   = unclaimed > 0 || claimed > 0;
   var msg;
 
   if (!isAlert) {
     msg = 'All ' + total + ' cling locations are installed! \uD83C\uDF89';
-  } else {
+  } else if (unclaimed > 0 && claimed === 0) {
     msg = unclaimed + ' of ' + total + ' cling location' +
           (unclaimed !== 1 ? 's' : '') + ' still need' +
           (unclaimed === 1 ? 's' : '') + ' to be claimed';
+  } else if (unclaimed === 0 && claimed > 0) {
+    msg = claimed + ' cling location' + (claimed !== 1 ? 's are' : ' is') +
+          ' claimed but not yet installed';
+  } else {
+    msg = unclaimed + ' of ' + total + ' cling location' +
+          (unclaimed !== 1 ? 's' : '') + ' still need' +
+          (unclaimed === 1 ? 's' : '') + ' to be claimed; ' +
+          claimed + ' more claimed but not yet installed';
   }
 
   el.textContent = msg;
