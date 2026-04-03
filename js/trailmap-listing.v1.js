@@ -349,32 +349,23 @@ if ('scrollRestoration' in history) {
       // 3. If the menu bottom goes past the viewport, flip it
       if (rect.bottom > viewportHeight) {
         menu.style.top = "auto";
-        menu.style.bottom = "calc(100% + 6px)";
+        menu.style.bottom = "calc(100% + 4px)";
       }
 
-      // 4. If the menu runs off the right edge, anchor it from the left
-      // side of the trigger so the full menu stays visible on screen.
+      // 4. Keep the menu visually attached to the trigger by preserving the
+      // right-edge anchor and only nudging it left when it would overflow.
       if (!isMobileMapsMenu_()) {
-        if (rect.right > viewportWidth - viewportPadding) {
-          menu.style.right = "auto";
-          menu.style.left = "0";
-        }
-
-        // If it is still too wide or close to the edge, clamp it into view.
-        const adjustedRect = menu.getBoundingClientRect();
-        const overshootRight = adjustedRect.right - (viewportWidth - viewportPadding);
+        const overshootRight = rect.right - (viewportWidth - viewportPadding);
         if (overshootRight > 0) {
-          const currentLeft = Number.parseFloat(menu.style.left || "0") || 0;
-          menu.style.left = `${currentLeft - overshootRight}px`;
-          menu.style.right = "auto";
+          const currentRight = Number.parseFloat(menu.style.right || "0") || 0;
+          menu.style.right = `${currentRight + overshootRight}px`;
         }
 
         const clampedRect = menu.getBoundingClientRect();
         const overshootLeft = viewportPadding - clampedRect.left;
         if (overshootLeft > 0) {
-          const currentLeft = Number.parseFloat(menu.style.left || "0") || 0;
-          menu.style.left = `${currentLeft + overshootLeft}px`;
-          menu.style.right = "auto";
+          const currentRight = Number.parseFloat(menu.style.right || "0") || 0;
+          menu.style.right = `${Math.max(0, currentRight - overshootLeft)}px`;
         }
       }
 

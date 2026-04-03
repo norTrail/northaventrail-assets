@@ -143,6 +143,10 @@
 .mapsBtn {
   appearance: none;
   -webkit-appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .35rem;
   border: 1px solid transparent;
   padding: .25rem .5rem;
   font: inherit;
@@ -151,7 +155,8 @@
   background: rgb(16, 132, 82);
   color: white;
   min-width: 85px;
-  width: 75%;
+  max-width: 100%;
+  white-space: nowrap;
 }
 
 .mapsBtn:focus-visible {
@@ -161,7 +166,6 @@
 }
 
 .mapsBtnCaret {
-  margin-left: .25rem;
   font-size: .9em;
   display: inline-block;
   transform-origin: center;
@@ -180,9 +184,10 @@ tr.maps-menu-open .mapsBtnCaret {
 
 .mapsMenu {
   position: absolute;
-  top: calc(100% + 6px);
+  top: calc(100% + 4px);
   right: 0;
   min-width: 180px;
+  max-width: min(320px, calc(100vw - 24px));
   background: #fff;
   border: 2px solid rgb(16, 132, 82);
   border-radius: 12px;
