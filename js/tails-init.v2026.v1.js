@@ -129,6 +129,7 @@ async function bootstrapTailsApp() {
   }
 
   injectDonateCta();
+  injectFundBarDonateButtons();
   loadSvgSpriteOnce();  // load shared icon sprite from assets.northaventrail.org
   initMap(mapEl);
   wireUIControls();
@@ -184,6 +185,31 @@ function injectDonateCta() {
 
   // Refresh every 5 minutes (mirrors donations.v1.js interval)
   setInterval(fetchAndRenderDonations, 5 * 60 * 1000);
+}
+
+/* ----------------------------
+   Inject #GiveToTheGraze buttons into every .fund-bar on the page.
+   Each button triggers the Squarespace donation modal by programmatically
+   clicking the first .sqs-donate-button (all three on this page share the
+   same donate-page-id so any one opens the correct flow).
+   ---------------------------- */
+function injectFundBarDonateButtons() {
+  document.querySelectorAll('.fund-bar').forEach(bar => {
+    if (bar.querySelector('.tl-fund-donate-btn')) return; // already injected
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'tl-fund-donate-btn';
+    btn.textContent = '#GiveToTheGraze →';
+    btn.setAttribute('aria-label', 'Donate to the TAILS Grazing Project');
+
+    btn.addEventListener('click', () => {
+      const sqsBtn = document.querySelector('.sqs-donate-button');
+      if (sqsBtn) sqsBtn.click();
+    });
+
+    bar.appendChild(btn);
+  });
 }
 
 const DONATION_MANIFEST = "https://assets.northaventrail.org/json/tails-donations.v2026.latest.json";
