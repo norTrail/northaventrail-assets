@@ -77,6 +77,13 @@ async function bootstrapTailsApp() {
     mapboxgl.accessToken = MAPBOX_TOKEN;
   }
 
+  // ADA bar short text: announce state changes to screen readers
+  const adaShortText = document.getElementById("ada-short-text");
+  if (adaShortText) {
+    adaShortText.setAttribute("aria-live", "polite");
+    adaShortText.setAttribute("aria-atomic", "true");
+  }
+
   // Inject "Finding the Flock..." loading overlay
   const mapView = document.getElementById("mapView");
   if (mapView && !document.getElementById("flock-loader")) {
@@ -99,6 +106,7 @@ async function bootstrapTailsApp() {
       </div>
     `;
     mapView.appendChild(loader);
+    mapView.setAttribute("aria-busy", "true");
   }
 
   // Inject sr-only page heading and skip link for screen readers / keyboard users
@@ -395,6 +403,7 @@ function wireUIControls() {
   if (hamburger && controls) {
     hamburger.title = "Map options";
     hamburger.setAttribute("aria-label", hamburger.getAttribute("aria-label") || "Map options");
+    hamburger.setAttribute("aria-controls", "controls");
 
     hamburger.addEventListener("click", () => {
       const open = controls.classList.toggle("show");

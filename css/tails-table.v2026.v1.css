@@ -278,7 +278,7 @@ td.map-icons .gmaps-emoji {
    Mobile adjustments
    ---------------------------- */
 
-@media (max-width: 640px) {
+@media (max-width: 767px) {
 
   /* Hide header visually but keep it in the DOM for screen readers */
   #grazingTable thead {

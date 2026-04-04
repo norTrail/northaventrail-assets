@@ -1058,6 +1058,7 @@ function hideFlockLoader() {
   if (!el) return;
   el.classList.add("flock-loader--hidden");
   el.addEventListener("transitionend", () => el.remove(), { once: true });
+  document.getElementById("mapView")?.setAttribute("aria-busy", "false");
 }
 
 
