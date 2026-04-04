@@ -128,6 +128,7 @@ async function bootstrapTailsApp() {
     }
   }
 
+  injectDonateCta();
   loadSvgSpriteOnce();  // load shared icon sprite from assets.northaventrail.org
   initMap(mapEl);
   wireUIControls();
@@ -141,6 +142,112 @@ async function bootstrapTailsApp() {
       a.removeAttribute('aria-label');
     }
   });
+}
+
+
+/* ----------------------------
+   Donation CTA bar
+   Injected above #ada-info, always visible across all overlay states.
+   Fetches live raised/goal/matching data independently of donations.v1.js.
+   ---------------------------- */
+
+function injectDonateCta() {
+  const appRoot = document.getElementById("tails-app");
+  if (!appRoot || document.getElementById("tl-donate-bar")) return;
+
+  const bar = document.createElement("div");
+  bar.id = "tl-donate-bar";
+  bar.className = "tl-donate-bar";
+  bar.innerHTML = `
+    <p class="tl-donate-headline">🐑 Support the TAILS Grazing Project</p>
+    <div class="tl-donate-progress-row">
+      <div class="tl-donate-track"
+           role="progressbar" aria-valuemin="0" aria-valuemax="100"
+           aria-valuenow="0" aria-label="Donation progress" id="tl-donate-track">
+        <div class="tl-donate-fill" id="tl-donate-fill"></div>
+      </div>
+      <span class="tl-donate-pct" id="tl-donate-pct" aria-hidden="true">—</span>
+    </div>
+    <p class="tl-donate-status" id="tl-donate-status"></p>
+    <p class="tl-donate-match" id="tl-donate-match"></p>
+  `;
+
+  // Insert before #ada-info so it appears at the top of the flex column
+  const adaInfo = document.getElementById("ada-info");
+  if (adaInfo) {
+    appRoot.insertBefore(bar, adaInfo);
+  } else {
+    appRoot.prepend(bar);
+  }
+
+  fetchAndRenderDonations();
+
+  // Refresh every 5 minutes (mirrors donations.v1.js interval)
+  setInterval(fetchAndRenderDonations, 5 * 60 * 1000);
+}
+
+const DONATION_MANIFEST = "https://assets.northaventrail.org/json/tails-donations.v2026.latest.json";
+
+async function fetchAndRenderDonations() {
+  try {
+    const manifest = await fetch(DONATION_MANIFEST, { cache: "no-store" }).then(r => r.json());
+    const dataUrl = (manifest.current || manifest.fallback || "").trim();
+    if (!dataUrl) return;
+    const data = await fetch(dataUrl, { cache: "no-store" }).then(r => r.json());
+    renderDonateCta(data);
+  } catch (err) {
+    // Keep existing UI on error; don't log — donation data is non-critical
+  }
+}
+
+function renderDonateCta(data) {
+  const sanitize = (v) => {
+    if (v === "" || v == null) return NaN;
+    if (typeof v === "number") return v;
+    const s = String(v).replace(/[^0-9.\-]/g, "");
+    return s ? parseFloat(s) : NaN;
+  };
+  const fmt = (n) => new Intl.NumberFormat(undefined, {
+    style: "currency", currency: "USD", maximumFractionDigits: 0
+  }).format(n);
+
+  const raised    = sanitize(data.raised);
+  const goal      = sanitize(data.goal);
+  const matching  = sanitize(data.matchingFunds);
+  const remaining = sanitize(data.remainingFunds ?? data.remainingFundsCell);
+
+  const fill    = document.getElementById("tl-donate-fill");
+  const track   = document.getElementById("tl-donate-track");
+  const pct     = document.getElementById("tl-donate-pct");
+  const status  = document.getElementById("tl-donate-status");
+  const match   = document.getElementById("tl-donate-match");
+  if (!fill) return;
+
+  const pctVal = (goal > 0 && Number.isFinite(raised))
+    ? Math.min(Math.round((raised / goal) * 100), 100) : 0;
+
+  fill.style.width = pctVal + "%";
+  if (track) {
+    track.setAttribute("aria-valuenow", String(pctVal));
+    track.setAttribute("aria-valuetext", `${pctVal}% of goal raised`);
+  }
+  if (pct) pct.textContent = pctVal + "%";
+
+  if (status && Number.isFinite(raised) && Number.isFinite(goal)) {
+    status.textContent = `We have raised ${fmt(raised)} of our ${fmt(goal)} goal so far. Thank you!`;
+  }
+
+  if (match) {
+    if (Number.isFinite(remaining) && remaining > 0 && Number.isFinite(matching)) {
+      match.hidden = false;
+      match.innerHTML =
+        `Double the baa-ng for your buck! Every $1 donated is matched.<br>` +
+        `${fmt(matching)} in Matching Funds (${fmt(Math.max(0, remaining))} remaining) — your gift goes twice as far.`;
+    } else {
+      match.hidden = true;
+      match.innerHTML = "";
+    }
+  }
 }
 
 
