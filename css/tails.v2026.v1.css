@@ -767,12 +767,14 @@ body.is-map-fullscreen {
 }
 
 .fund-title {
-  color: #1a1a1a;
-  font-size: 1.05rem !important;
-  font-weight: 700;
-  text-align: left !important;
-  margin: 0 0 10px !important;
-  letter-spacing: 0 !important;
+  display: none !important;   /* hidden on TAILS page — title is set by surrounding Squarespace content */
+}
+
+/* Hide the hardcoded static "Thank you everyone…" div that lives
+   inside the .fund-bar HTML blocks. Targets any unstyled <div>
+   that is a direct child of .fund-bar (i.e. not .meter or .fund-msg). */
+.fund-bar > div:not(.meter):not(.fund-msg) {
+  display: none !important;
 }
 
 .meter {
