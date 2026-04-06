@@ -58,6 +58,13 @@
   pointer-events: none;
 }
 
+/* Hide any static hardcoded divs inside a fund bar (e.g. old "Thank you everyone…"
+   copy-paste content). Real messaging is rendered by donations.v1.js.
+   Targets direct-child <div>s that are not .meter or .fund-msg. */
+.fund-bar > div:not(.meter):not(.fund-msg) {
+  display: none;
+}
+
 /* --- Status / messaging --- */
 .fund-msg {
   font-size: 0.9rem;
