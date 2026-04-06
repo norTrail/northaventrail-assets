@@ -185,7 +185,13 @@
                 if (!candidateUrls.length) return; // manifest malformed — keep existing UI
 
                 const cached = loadCache(group.cacheKey);
-                if (cached && currentUrl && cached._manifestCurrent === currentUrl) return; // unchanged
+                if (cached && currentUrl && cached._manifestCurrent === currentUrl) {
+                  group.bars.forEach(({ root, goalAttr, raisedAttr }) => {
+                    renderBar(root, cached, { goalAttr, raisedAttr });
+                  });
+                  group.lastFetchedAt = Date.now();
+                  return;
+                }
 
                 let chain = Promise.reject();
                 candidateUrls.forEach((candidateUrl) => {
