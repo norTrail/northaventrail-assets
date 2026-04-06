@@ -16,13 +16,22 @@
     } else { init(); }
 
     function init() {
-      const bars = Array.from(document.querySelectorAll('.fund-bar'));
+      injectTailsDonationBar();
+
+      const bars = Array.from(document.querySelectorAll('.fund-bar:not([hidden])'));
       if (!bars.length) return;
+
+      bars.forEach((root) => {
+        const hasCustomProgressRow = Array.from(root.children).some((child) => child.classList?.contains('fund-progress-row'));
+        if (!hasCustomProgressRow && !root.hasAttribute('data-hide-legacy-copy')) {
+          root.setAttribute('data-hide-legacy-copy', 'true');
+        }
+      });
 
       // ====== CONFIG ======
       const REFRESH_MS     = 5 * 60 * 1000;   // poll every 5 minutes
       const CACHE_TTL_MS   = 10 * 60 * 1000;  // treat cache stale after 10 minutes
-      const FOCUS_STALE_MS = 60 * 1000;        // refresh if stale > 60s on refocus
+      const FOCUS_STALE_MS = 60 * 1000;       // refresh if stale > 60s on refocus
       // ====================
 
       // Number helpers — tolerate "$", commas, spaces
@@ -48,45 +57,55 @@
       const loadCache = (k) => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch { return null; } };
       const saveCache = (k, data) => { try { localStorage.setItem(k, JSON.stringify({ ...data, _cachedAt: Date.now() })); } catch {} };
 
-      // Update all .fund-match elements on the page
-      function updateMatchLines(payload) {
-        if (!payload) return;
+      function renderMatchLine(root, payload) {
+        const matchLine = root.querySelector('.fund-match');
+        if (!matchLine) return;
+
         const cap       = sanitizeNum(payload.matchingFunds);
         const remaining = sanitizeNum(payload.remainingFunds);
-        if (!Number.isFinite(cap) || !Number.isFinite(remaining)) return;
-        const html = (remaining <= 0)
-          ? ''
-          : `Double the baa-ng for your buck! Every $1 donated is matched.<br>${fmtMoney(cap)} in Matching Funds (${fmtMoney(Math.max(0, remaining))} remaining) — your gift goes twice as far.`;
-        document.querySelectorAll('.fund-match').forEach(el => {
-          if (remaining <= 0) {
-            el.hidden = true;
-            el.innerHTML = '';
-          } else {
-            el.hidden = false;
-            if (el.innerHTML !== html) el.innerHTML = html;
-          }
-        });
+        const hasMatch  = Number.isFinite(cap) && Number.isFinite(remaining) && remaining > 0;
+
+        if (!hasMatch) {
+          matchLine.hidden = true;
+          matchLine.innerHTML = '';
+          return;
+        }
+
+        const html = `Double the baa-ng for your buck! Every $1 donated is matched.<br>${fmtMoney(cap)} in Matching Funds (${fmtMoney(Math.max(0, remaining))} remaining) — your gift goes twice as far.`;
+        matchLine.hidden = false;
+        if (matchLine.innerHTML !== html) matchLine.innerHTML = html;
       }
 
       // Render one bar (progress bar + status text)
       function renderBar(root, payload, fallbacks) {
-        const raised  = num(payload.raised,  fallbacks.raisedAttr);
-        const goal    = num(payload.goal,    fallbacks.goalAttr);
+        const raised  = num(payload.raised, fallbacks.raisedAttr);
+        const goal    = num(payload.goal, fallbacks.goalAttr);
         const updated = payload.updated || null;
         const greenbar    = root.querySelector('.greenbar');
         const progressLbl = root.querySelector('.progress');
         const statusLine  = root.querySelector('.statusLine');
         const pct = goal > 0 ? clamp((raised / goal) * 100, 0, 100) : 0;
-        if (greenbar)    greenbar.style.width = pct + '%';
+
+        if (greenbar) {
+          greenbar.style.width = pct + '%';
+          greenbar.setAttribute('aria-hidden', pct <= 0 ? 'true' : 'false');
+        }
         if (progressLbl) progressLbl.textContent = Math.round(pct) + '%';
         if (statusLine) {
-          // data-thankyou on the .fund-bar element customises the suffix;
-          // falls back to "Thank you!" if the attribute is absent.
           const thankyou = (root.getAttribute('data-thankyou') || 'Thank you!').trim();
           const baseText = `We have raised ${fmtMoney(raised)} of our ${fmtMoney(goal)} goal so far.` +
                            (thankyou ? ` ${thankyou}` : '');
           statusLine.innerHTML = `${baseText}<br><span class="updatedLine">${updated ? fmtUpdated(updated) : 'Updated —'}</span>`;
         }
+
+        const meter = root.querySelector('.meter');
+        if (meter) {
+          const pctRounded = Math.round(pct);
+          meter.setAttribute('aria-valuenow', String(pctRounded));
+          meter.setAttribute('aria-valuetext', `${pctRounded}% of goal raised`);
+        }
+
+        renderMatchLine(root, payload);
       }
 
       // Group bars by unique data-json URL
@@ -104,7 +123,6 @@
               ? { raised: raisedAttr, goal: goalAttr, updated: null }
               : cached;
             renderBar(root, paintForBars, { goalAttr, raisedAttr });
-            updateMatchLines(cached);
           } else {
             renderBar(root, { raised: raisedAttr, goal: goalAttr, updated: null }, { goalAttr, raisedAttr });
           }
@@ -154,7 +172,6 @@
               group.bars.forEach(({ root, goalAttr, raisedAttr }) => {
                 renderBar(root, payload, { goalAttr, raisedAttr });
               });
-              updateMatchLines(payload);
               saveCache(group.cacheKey, { ...payload, _manifestCurrent: dataUrl });
               group.lastFetchedAt = Date.now();
             });
@@ -216,6 +233,52 @@
       injectFundBarDonateButtons();
     }
 
+    function injectTailsDonationBar() {
+      const appRoot = document.getElementById('tails-app');
+      if (!appRoot || document.getElementById('nt-tails-donate-bar')) return;
+
+      const bar = document.createElement('section');
+      bar.id = 'nt-tails-donate-bar';
+      bar.className = 'fund-bar fund-bar--tails';
+      bar.setAttribute('data-json', 'https://assets.northaventrail.org/json/tails-donations.v2026.latest.json');
+      bar.setAttribute('data-thankyou', 'Thank you!');
+      bar.innerHTML = `
+        <p class="fund-title">🐑 Support the TAILS Grazing Project</p>
+        <div class="fund-progress-row">
+          <div class="meter"
+               role="progressbar"
+               aria-valuemin="0"
+               aria-valuemax="100"
+               aria-valuenow="0"
+               aria-label="Donation progress">
+            <div class="greenbar"></div>
+          </div>
+          <span class="progress">0%</span>
+        </div>
+        <div class="fund-msg">
+          <span class="statusLine">We have raised $0 of our $0 goal so far. Thank you!<br><span class="updatedLine">Updated —</span></span>
+        </div>
+        <p class="fund-match" hidden></p>
+      `;
+
+      const oldFundBlock = document.getElementById('block-43e60a69556693902014');
+      const iconBlock = document.getElementById('block-63b26464c986557ea752');
+      const mapSqsBlock = appRoot.closest('.sqs-block');
+
+      if (oldFundBlock?.parentNode) {
+        oldFundBlock.parentNode.insertBefore(bar, oldFundBlock);
+        oldFundBlock.hidden = true;
+        oldFundBlock.setAttribute('data-nt-legacy-donation-hidden', 'true');
+      } else if (iconBlock?.parentNode) {
+        iconBlock.parentNode.insertBefore(bar, iconBlock);
+      } else if (mapSqsBlock?.parentNode) {
+        mapSqsBlock.parentNode.insertBefore(bar, mapSqsBlock);
+      } else {
+        const adaInfo = document.getElementById('ada-info');
+        adaInfo ? appRoot.insertBefore(bar, adaInfo) : appRoot.prepend(bar);
+      }
+    }
+
     // Inject a donate button into every .fund-bar that doesn't already have one.
     // Button label is read from the page's .sqs-donate-button (if present) so it
     // automatically picks up whatever text the Squarespace editor set (e.g. "#GiveToTheGraze").
@@ -227,7 +290,8 @@
       const btnText = sqsBtn?.textContent?.trim() || 'Donate →';
       const ariaLbl = sqsBtn ? `Donate — ${btnText}` : 'Donate now';
 
-      document.querySelectorAll('.fund-bar').forEach(bar => {
+      document.querySelectorAll('.fund-bar:not([hidden])').forEach(bar => {
+        if (bar.getAttribute('data-donate-button') === 'false') return;
         if (bar.querySelector('.fund-donate-btn')) return; // already injected
 
         const btn = document.createElement('button');

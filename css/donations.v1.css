@@ -25,6 +25,10 @@
   letter-spacing: .02em;
 }
 
+.fund-bar[data-hide-title="true"] .fund-title {
+  display: none !important;
+}
+
 /* --- Progress bar track --- */
 .meter {
   position: relative;
@@ -58,10 +62,8 @@
   pointer-events: none;
 }
 
-/* Hide any static hardcoded divs inside a fund bar (e.g. old "Thank you everyone…"
-   copy-paste content). Real messaging is rendered by donations.v1.js.
-   Targets direct-child <div>s that are not .meter or .fund-msg. */
-.fund-bar > div:not(.meter):not(.fund-msg) {
+/* Hide legacy copy only when a bar explicitly opts in. */
+.fund-bar[data-hide-legacy-copy="true"] > div:not(.meter):not(.fund-msg) {
   display: none;
 }
 
@@ -89,6 +91,54 @@
   font-weight: 600;
   color: #0a5a3d;
   line-height: 1.5em;
+}
+
+.fund-bar--tails {
+  margin-bottom: 16px;
+}
+
+.fund-bar--tails .fund-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 10px;
+}
+
+.fund-bar--tails .fund-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.fund-bar--tails .meter {
+  flex: 1;
+  height: 12px;
+  border-radius: 6px;
+  margin-bottom: 0;
+}
+
+.fund-bar--tails .greenbar {
+  border-radius: 6px;
+}
+
+.fund-bar--tails .progress {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #2f6f4e;
+  white-space: nowrap;
+  min-width: 3ch;
+  text-align: right;
+}
+
+.fund-bar--tails .statusLine {
+  line-height: 1.4;
+}
+
+.fund-bar--tails .fund-match {
+  margin-top: 4px;
+  font-size: 0.85rem;
+  color: #1B6F8A;
 }
 
 /* --- Donate button injected by donations.v1.js --- */
@@ -122,6 +172,33 @@
   outline-offset: 3px;
 }
 
+/* Squarespace native donate button */
+.sqs-donate-button {
+  background-color: #2f6f4e !important;
+  color: #ffffff !important;
+  font-size: 1.2rem !important;
+  font-weight: 700 !important;
+  padding: 14px 40px !important;
+  border-radius: 8px !important;
+  min-height: 54px !important;
+  letter-spacing: 0.02em !important;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2) !important;
+  transition: background-color 0.15s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+}
+
+.sqs-donate-button:hover {
+  background-color: #245a3e !important;
+}
+
+.sqs-donate-button:focus-visible {
+  outline: 3px solid #2f6f4e !important;
+  outline-offset: 3px !important;
+}
+
 /* --- Reduced motion --- */
 @media (prefers-reduced-motion: reduce) {
   .greenbar { transition: none !important; }
@@ -131,4 +208,6 @@
 @media (max-width: 767px) {
   .fund-bar       { padding: 12px 14px; }
   .fund-donate-btn { width: 100%; }
+  .fund-bar--tails .fund-title { font-size: 1rem; }
+  .fund-bar--tails .fund-match { font-size: 0.8rem; }
 }

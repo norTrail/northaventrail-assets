@@ -128,7 +128,6 @@ async function bootstrapTailsApp() {
     }
   }
 
-  injectDonateCta();
   loadSvgSpriteOnce();  // load shared icon sprite from assets.northaventrail.org
   initMap(mapEl);
   wireUIControls();
@@ -142,129 +141,6 @@ async function bootstrapTailsApp() {
       a.removeAttribute('aria-label');
     }
   });
-}
-
-
-/* ----------------------------
-   Donation CTA bar
-   Injected into the Squarespace page flow in place of the original .fund-bar
-   code block (block-43e60a...), which sits above the icon instructions and map.
-   Injection priority:
-     1. Before block-43e60a... (the old dark fund bar) — hides it automatically
-     2. Before block-63b26464... (icon instructions block) — if old bar deleted
-     3. Before the .sqs-block wrapping #tails-app — last in-page-flow fallback
-     4. Inside #tails-app above #ada-info — original fallback
-   ---------------------------- */
-
-function injectDonateCta() {
-  if (document.getElementById("tl-donate-bar")) return;
-
-  const bar = document.createElement("div");
-  bar.id = "tl-donate-bar";
-  bar.className = "tl-donate-bar";
-  bar.innerHTML = `
-    <p class="tl-donate-headline">🐑 Support the TAILS Grazing Project</p>
-    <div class="tl-donate-progress-row">
-      <div class="tl-donate-track"
-           role="progressbar" aria-valuemin="0" aria-valuemax="100"
-           aria-valuenow="0" aria-label="Donation progress" id="tl-donate-track">
-        <div class="tl-donate-fill" id="tl-donate-fill"></div>
-      </div>
-      <span class="tl-donate-pct" id="tl-donate-pct" aria-hidden="true">—</span>
-    </div>
-    <p class="tl-donate-status" id="tl-donate-status"></p>
-    <p class="tl-donate-match" id="tl-donate-match"></p>
-  `;
-
-  const oldFundBlock = document.getElementById("block-43e60a69556693902014");
-  const iconBlock    = document.getElementById("block-63b26464c986557ea752");
-  const appRoot      = document.getElementById("tails-app");
-  const mapSqsBlock  = appRoot?.closest(".sqs-block");
-
-  if (oldFundBlock?.parentNode) {
-    // Slot in where the old dark fund bar lives, then hide the old one
-    oldFundBlock.parentNode.insertBefore(bar, oldFundBlock);
-    oldFundBlock.hidden = true;
-  } else if (iconBlock?.parentNode) {
-    // Old block already removed by user — go before icon instructions
-    iconBlock.parentNode.insertBefore(bar, iconBlock);
-  } else if (mapSqsBlock?.parentNode) {
-    // No icon block either — go just before the map section
-    mapSqsBlock.parentNode.insertBefore(bar, mapSqsBlock);
-  } else if (appRoot) {
-    // Last resort: inside #tails-app above the ADA bar
-    const adaInfo = document.getElementById("ada-info");
-    adaInfo ? appRoot.insertBefore(bar, adaInfo) : appRoot.prepend(bar);
-  }
-
-  fetchAndRenderDonations();
-
-  // Refresh every 5 minutes (mirrors donations.v1.js interval)
-  setInterval(fetchAndRenderDonations, 5 * 60 * 1000);
-}
-
-const DONATION_MANIFEST = "https://assets.northaventrail.org/json/tails-donations.v2026.latest.json";
-
-async function fetchAndRenderDonations() {
-  try {
-    const manifest = await fetch(DONATION_MANIFEST, { cache: "no-store" }).then(r => r.json());
-    const dataUrl = (manifest.current || manifest.fallback || "").trim();
-    if (!dataUrl) return;
-    const data = await fetch(dataUrl, { cache: "no-store" }).then(r => r.json());
-    renderDonateCta(data);
-  } catch (err) {
-    // Keep existing UI on error; don't log — donation data is non-critical
-  }
-}
-
-function renderDonateCta(data) {
-  const sanitize = (v) => {
-    if (v === "" || v == null) return NaN;
-    if (typeof v === "number") return v;
-    const s = String(v).replace(/[^0-9.\-]/g, "");
-    return s ? parseFloat(s) : NaN;
-  };
-  const fmt = (n) => new Intl.NumberFormat(undefined, {
-    style: "currency", currency: "USD", maximumFractionDigits: 0
-  }).format(n);
-
-  const raised    = sanitize(data.raised);
-  const goal      = sanitize(data.goal);
-  const matching  = sanitize(data.matchingFunds);
-  const remaining = sanitize(data.remainingFunds ?? data.remainingFundsCell);
-
-  const fill    = document.getElementById("tl-donate-fill");
-  const track   = document.getElementById("tl-donate-track");
-  const pct     = document.getElementById("tl-donate-pct");
-  const status  = document.getElementById("tl-donate-status");
-  const match   = document.getElementById("tl-donate-match");
-  if (!fill) return;
-
-  const pctVal = (goal > 0 && Number.isFinite(raised))
-    ? Math.min(Math.round((raised / goal) * 100), 100) : 0;
-
-  fill.style.width = pctVal + "%";
-  if (track) {
-    track.setAttribute("aria-valuenow", String(pctVal));
-    track.setAttribute("aria-valuetext", `${pctVal}% of goal raised`);
-  }
-  if (pct) pct.textContent = pctVal + "%";
-
-  if (status && Number.isFinite(raised) && Number.isFinite(goal)) {
-    status.textContent = `We have raised ${fmt(raised)} of our ${fmt(goal)} goal so far. Thank you!`;
-  }
-
-  if (match) {
-    if (Number.isFinite(remaining) && remaining > 0 && Number.isFinite(matching)) {
-      match.hidden = false;
-      match.innerHTML =
-        `Double the baa-ng for your buck! Every $1 donated is matched.<br>` +
-        `${fmt(matching)} in Matching Funds (${fmt(Math.max(0, remaining))} remaining) — your gift goes twice as far.`;
-    } else {
-      match.hidden = true;
-      match.innerHTML = "";
-    }
-  }
 }
 
 

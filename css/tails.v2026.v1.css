@@ -751,16 +751,6 @@ body.is-map-fullscreen {
 }
 
 /* ----------------------------
-   Fund bar — TAILS-specific overrides only
-   Base styles live in donations.v1.css.
-   ---------------------------- */
-
-/* Title is set by the surrounding Squarespace content — hide the bar's own */
-.fund-title {
-  display: none !important;
-}
-
-/* ----------------------------
    Pill quick-nav links
    Used in the "Plan Your Visit" section.
    Apply .tl-pill-nav to the <nav> wrapper and .tl-pill-link to each <a>.
@@ -802,107 +792,6 @@ body.is-map-fullscreen {
   color: #fff !important;
 }
 
-/* ----------------------------
-   Donation CTA bar
-   Sits above #ada-info (order: -2 in the flex column).
-   Mirrors the Trail Captains .tc-header-bar pattern in TAILS colors.
-   ---------------------------- */
-#tl-donate-bar {
-  box-sizing: border-box;
-  width: 100%;
-  background: #eef6f0;
-  border: 1px solid #2f6f4e;
-  border-radius: 8px;
-  padding: 14px 20px;
-  margin-bottom: 16px;
-  overflow-wrap: anywhere;
-}
-
-.tl-donate-headline {
-  margin: 0 0 10px;
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: #1a1a1a;
-}
-
-.tl-donate-progress-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 6px;
-}
-
-.tl-donate-track {
-  flex: 1;
-  height: 12px;
-  background: #c8e6c8;
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-.tl-donate-fill {
-  height: 100%;
-  background: #2f6f4e;
-  border-radius: 6px;
-  width: 0%;
-  transition: width 0.6s ease;
-}
-
-.tl-donate-pct {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: #2f6f4e;
-  white-space: nowrap;
-  min-width: 3ch;
-  text-align: right;
-}
-
-.tl-donate-status {
-  margin: 0 0 4px;
-  font-size: 0.9rem;
-  color: #333;
-}
-
-.tl-donate-match {
-  margin: 4px 0 0;
-  font-size: 0.85rem;
-  color: #1B6F8A;
-  font-weight: 600;
-  line-height: 1.4;
-}
-
-/* ----------------------------
-   Squarespace native donation button
-   Confirm selector by inspecting the live page — common candidates below.
-   The !important overrides are intentional: Squarespace buttons are heavily
-   specificity-locked by the platform's own stylesheet.
-   ---------------------------- */
-.sqs-donate-button {
-  background-color: #2f6f4e !important;
-  color: #ffffff !important;
-  font-size: 1.2rem !important;
-  font-weight: 700 !important;
-  padding: 14px 40px !important;
-  border-radius: 8px !important;
-  min-height: 54px !important;
-  letter-spacing: 0.02em !important;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2) !important;
-  transition: background-color 0.15s ease !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  cursor: pointer !important;
-}
-
-.sqs-donate-button:hover {
-  background-color: #245a3e !important;
-}
-
-.sqs-donate-button:focus-visible {
-  outline: 3px solid #2f6f4e !important;
-  outline-offset: 3px !important;
-}
-
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   * {
@@ -915,19 +804,6 @@ body.is-map-fullscreen {
   /* Pill links */
   .tl-pill-link {
     width: 100%;
-  }
-
-  /* Donation CTA bar */
-  #tl-donate-bar {
-    padding: 12px 14px;
-  }
-
-  .tl-donate-headline {
-    font-size: 1rem;
-  }
-
-  .tl-donate-match {
-    font-size: 0.8rem;
   }
 
   /* Controls menu: bottom sheet instead of floating panel */
