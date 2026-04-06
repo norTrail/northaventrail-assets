@@ -676,7 +676,7 @@ if ('scrollRestoration' in history) {
 
           rowModels.forEach((rowModel) => {
             const { poi, id, urlmapping, gUrl, aUrl } = rowModel;
-            const titleLink = `<a href="${escHtml(urlmapping)}" class="poi-name__link">${escHtml(poi.title)}</a>`;
+            const titleText = escHtml(poi.title);
             const menuHtml = buildMapsMenuHtml_(id, urlmapping, gUrl, aUrl, poi.title, poi.typeLabel);
 
             const tr = document.createElement("tr");
@@ -686,7 +686,7 @@ if ('scrollRestoration' in history) {
             const desc = poi.descText || "";
             tr.innerHTML = `
               <td>
-                <div class="poi-name__title">${titleLink}</div>
+                <div class="poi-name__title">${titleText}</div>
                 ${poi.near ? `<div class="poi-near">${escHtml(poi.near)}</div>` : ""}
                 <div class="poi-links">${menuHtml}</div>
               </td>
@@ -797,7 +797,7 @@ if ('scrollRestoration' in history) {
 
   function buildRowForColumns_(rowModel, payload, pageTitle, tableClass, columns) {
     const { poi, id, urlmapping, gUrl, aUrl } = rowModel;
-    const titleLink = `<a href="${escHtml(urlmapping)}" class="poi-name__link">${escHtml(poi.title)}</a>`;
+    const titleText = escHtml(poi.title);
 
     const tr = document.createElement("tr");
     tr.dataset.featureId = id;
@@ -806,7 +806,7 @@ if ('scrollRestoration' in history) {
     const cellHtml = columns.map((col) => {
       const label = escHtml(columnToLabel_(col));
       if (col === "name") {
-        return `<td data-label="${label}"><div class="poi-name__title">${titleLink}</div></td>`;
+        return `<td data-label="${label}"><div class="poi-name__title">${titleText}</div></td>`;
       }
       if (col === "image") {
         return `<td data-label="${label}">${poi.imgUrl
