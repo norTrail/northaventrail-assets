@@ -96,13 +96,13 @@
 
   function renderHeader(headerEl, unclaimed, total) {
     var summaryHtml = unclaimed === 0
-      ? "All <strong>" + total + "</strong> gardens are currently maintained."
-      : "<strong>" + unclaimed + "</strong> of " + total + " gardens need adoption.";
+      ? "All <strong>" + total + "</strong> gardens are currently maintained. Email us if you would like to help with future garden care."
+      : "<strong>" + unclaimed + "</strong> " + (unclaimed === 1 ? "garden needs" : "gardens need") + " adoption. Pick a garden below or email us and we\u2019ll help match you.";
 
     headerEl.innerHTML =
       '<div class="ag-header-bar">' +
         '<p class="ag-summary-text">' + summaryHtml + "</p>" +
-        '<a class="ag-cta-btn" href="' + escHtml(buildMailtoHref()) + '">Adopt a Garden \u2192</a>' +
+        '<a class="ag-cta-btn" href="' + escHtml(buildMailtoHref()) + '">Email us to adopt \u2192</a>' +
       "</div>";
   }
 
