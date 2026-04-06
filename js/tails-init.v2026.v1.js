@@ -129,7 +129,6 @@ async function bootstrapTailsApp() {
   }
 
   injectDonateCta();
-  injectFundBarDonateButtons();
   loadSvgSpriteOnce();  // load shared icon sprite from assets.northaventrail.org
   initMap(mapEl);
   wireUIControls();
@@ -148,13 +147,17 @@ async function bootstrapTailsApp() {
 
 /* ----------------------------
    Donation CTA bar
-   Injected above #ada-info, always visible across all overlay states.
-   Fetches live raised/goal/matching data independently of donations.v1.js.
+   Injected into the Squarespace page flow in place of the original .fund-bar
+   code block (block-43e60a...), which sits above the icon instructions and map.
+   Injection priority:
+     1. Before block-43e60a... (the old dark fund bar) — hides it automatically
+     2. Before block-63b26464... (icon instructions block) — if old bar deleted
+     3. Before the .sqs-block wrapping #tails-app — last in-page-flow fallback
+     4. Inside #tails-app above #ada-info — original fallback
    ---------------------------- */
 
 function injectDonateCta() {
-  const appRoot = document.getElementById("tails-app");
-  if (!appRoot || document.getElementById("tl-donate-bar")) return;
+  if (document.getElementById("tl-donate-bar")) return;
 
   const bar = document.createElement("div");
   bar.id = "tl-donate-bar";
@@ -173,43 +176,31 @@ function injectDonateCta() {
     <p class="tl-donate-match" id="tl-donate-match"></p>
   `;
 
-  // Insert before #ada-info so it appears at the top of the flex column
-  const adaInfo = document.getElementById("ada-info");
-  if (adaInfo) {
-    appRoot.insertBefore(bar, adaInfo);
-  } else {
-    appRoot.prepend(bar);
+  const oldFundBlock = document.getElementById("block-43e60a69556693902014");
+  const iconBlock    = document.getElementById("block-63b26464c986557ea752");
+  const appRoot      = document.getElementById("tails-app");
+  const mapSqsBlock  = appRoot?.closest(".sqs-block");
+
+  if (oldFundBlock?.parentNode) {
+    // Slot in where the old dark fund bar lives, then hide the old one
+    oldFundBlock.parentNode.insertBefore(bar, oldFundBlock);
+    oldFundBlock.hidden = true;
+  } else if (iconBlock?.parentNode) {
+    // Old block already removed by user — go before icon instructions
+    iconBlock.parentNode.insertBefore(bar, iconBlock);
+  } else if (mapSqsBlock?.parentNode) {
+    // No icon block either — go just before the map section
+    mapSqsBlock.parentNode.insertBefore(bar, mapSqsBlock);
+  } else if (appRoot) {
+    // Last resort: inside #tails-app above the ADA bar
+    const adaInfo = document.getElementById("ada-info");
+    adaInfo ? appRoot.insertBefore(bar, adaInfo) : appRoot.prepend(bar);
   }
 
   fetchAndRenderDonations();
 
   // Refresh every 5 minutes (mirrors donations.v1.js interval)
   setInterval(fetchAndRenderDonations, 5 * 60 * 1000);
-}
-
-/* ----------------------------
-   Inject #GiveToTheGraze buttons into every .fund-bar on the page.
-   Each button triggers the Squarespace donation modal by programmatically
-   clicking the first .sqs-donate-button (all three on this page share the
-   same donate-page-id so any one opens the correct flow).
-   ---------------------------- */
-function injectFundBarDonateButtons() {
-  document.querySelectorAll('.fund-bar').forEach(bar => {
-    if (bar.querySelector('.tl-fund-donate-btn')) return; // already injected
-
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'tl-fund-donate-btn';
-    btn.textContent = '#GiveToTheGraze →';
-    btn.setAttribute('aria-label', 'Donate to the TAILS Grazing Project');
-
-    btn.addEventListener('click', () => {
-      const sqsBtn = document.querySelector('.sqs-donate-button');
-      if (sqsBtn) sqsBtn.click();
-    });
-
-    bar.appendChild(btn);
-  });
 }
 
 const DONATION_MANIFEST = "https://assets.northaventrail.org/json/tails-donations.v2026.latest.json";

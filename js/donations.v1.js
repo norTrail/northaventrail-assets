@@ -208,6 +208,37 @@
       for (const [url, group] of groups.entries()) {
         scheduleGroup(url, group);
       }
+
+      injectFundBarDonateButtons();
     }
+
+    // Inject a donate button into every .fund-bar that doesn't already have one.
+    // Button label is read from the page's .sqs-donate-button (if present) so it
+    // automatically picks up whatever text the Squarespace editor set (e.g. "#GiveToTheGraze").
+    // Falls back to "Donate →" when no native donation button is found.
+    // Clicking the injected button programmatically clicks .sqs-donate-button to
+    // open the Squarespace donation modal.
+    function injectFundBarDonateButtons() {
+      const sqsBtn  = document.querySelector('.sqs-donate-button');
+      const btnText = sqsBtn?.textContent?.trim() || 'Donate →';
+      const ariaLbl = sqsBtn ? `Donate — ${btnText}` : 'Donate now';
+
+      document.querySelectorAll('.fund-bar').forEach(bar => {
+        if (bar.querySelector('.fund-donate-btn')) return; // already injected
+
+        const btn = document.createElement('button');
+        btn.type      = 'button';
+        btn.className = 'fund-donate-btn';
+        btn.textContent = btnText;
+        btn.setAttribute('aria-label', ariaLbl);
+
+        btn.addEventListener('click', () => {
+          if (sqsBtn) sqsBtn.click();
+        });
+
+        bar.appendChild(btn);
+      });
+    }
+
   } catch (e) { console.warn('NT Fund bar error:', e); }
 })();

@@ -751,100 +751,19 @@ body.is-map-fullscreen {
 }
 
 /* ----------------------------
-   Fund bar overrides (TAILS page only)
-   Restyles the .fund-bar / .meter / .greenbar pattern from donations.v1.css
-   to match the TAILS brand and the #tl-donate-bar design above the map.
+   Fund bar — TAILS-specific overrides only
+   Base styles live in donations.v1.css.
    ---------------------------- */
-.fund-bar {
-  background: #eef6f0;
-  border: 1px solid #2f6f4e;
-  border-radius: 8px;
-  padding: 16px 20px;
-  text-align: left !important;
-  margin: 0 0 16px !important;
-  max-width: 100% !important;
-  box-sizing: border-box;
-}
 
+/* Title is set by the surrounding Squarespace content — hide the bar's own */
 .fund-title {
-  display: none !important;   /* hidden on TAILS page — title is set by surrounding Squarespace content */
-}
-
-/* Hide the hardcoded static "Thank you everyone…" div that lives
-   inside the .fund-bar HTML blocks. Targets any unstyled <div>
-   that is a direct child of .fund-bar (i.e. not .meter or .fund-msg). */
-.fund-bar > div:not(.meter):not(.fund-msg) {
   display: none !important;
 }
 
-.meter {
-  height: 22px !important;
-  background: #c8e6c8 !important;
-  border-radius: 10px !important;
-  max-width: 100% !important;
-  margin: 0 0 8px !important;
-}
-
-.greenbar {
-  background-color: #2f6f4e !important;
-  border-radius: 10px !important;
-  font-size: 0.78rem !important;
-  justify-content: flex-end !important;
-  padding-right: 8px !important;
-}
-
-.fund-msg {
-  font-size: 0.9rem !important;
-  color: #333;
-  margin-top: 4px !important;
-  text-align: left !important;
-}
-
-.statusLine {
-  display: block !important;
-  line-height: 1.5;
-}
-
-.updatedLine {
-  color: #666;
-}
-
-.fund-match {
-  text-align: left !important;
-  margin: 8px 0 0 !important;
-  color: #1B6F8A !important;
-  font-size: 0.88rem !important;
-}
-
-/* Donate button injected into fund bars */
-.tl-fund-donate-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 14px;
-  padding: 10px 24px;
-  min-height: 44px;
-  background: #2f6f4e;
-  color: #fff !important;
-  font-size: 1rem;
-  font-weight: 700;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  text-decoration: none !important;
-  white-space: normal;
-  text-align: center;
-  overflow-wrap: anywhere;
-  transition: background 0.15s ease;
-}
-
-.tl-fund-donate-btn:hover {
-  background: #245a3e;
-}
-
-.tl-fund-donate-btn:focus-visible {
-  outline: 2px solid #2f6f4e;
-  outline-offset: 3px;
+/* Hide the hardcoded static "Thank you everyone…" div that can appear
+   inside .fund-bar HTML blocks as an unstyled direct-child <div>. */
+.fund-bar > div:not(.meter):not(.fund-msg) {
+  display: none !important;
 }
 
 /* ----------------------------
@@ -895,12 +814,13 @@ body.is-map-fullscreen {
    Mirrors the Trail Captains .tc-header-bar pattern in TAILS colors.
    ---------------------------- */
 #tl-donate-bar {
-  order: -2;
   box-sizing: border-box;
   width: 100%;
   background: #eef6f0;
-  border-bottom: 2px solid #2f6f4e;
+  border: 1px solid #2f6f4e;
+  border-radius: 8px;
   padding: 14px 20px;
+  margin-bottom: 16px;
   overflow-wrap: anywhere;
 }
 
@@ -998,15 +918,6 @@ body.is-map-fullscreen {
 }
 
 @media (max-width: 767px) {
-  /* Fund bars */
-  .fund-bar {
-    padding: 12px 14px;
-  }
-
-  .tl-fund-donate-btn {
-    width: 100%;
-  }
-
   /* Pill links */
   .tl-pill-link {
     width: 100%;
