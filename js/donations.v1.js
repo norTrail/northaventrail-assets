@@ -80,7 +80,11 @@
         if (greenbar)    greenbar.style.width = pct + '%';
         if (progressLbl) progressLbl.textContent = Math.round(pct) + '%';
         if (statusLine) {
-          const baseText = `We have raised ${fmtMoney(raised)} of our ${fmtMoney(goal)} goal so far. Thank you!`;
+          // data-thankyou on the .fund-bar element customises the suffix;
+          // falls back to "Thank you!" if the attribute is absent.
+          const thankyou = (root.getAttribute('data-thankyou') || 'Thank you!').trim();
+          const baseText = `We have raised ${fmtMoney(raised)} of our ${fmtMoney(goal)} goal so far.` +
+                           (thankyou ? ` ${thankyou}` : '');
           statusLine.innerHTML = `${baseText}<br><span class="updatedLine">${updated ? fmtUpdated(updated) : 'Updated —'}</span>`;
         }
       }

@@ -760,12 +760,6 @@ body.is-map-fullscreen {
   display: none !important;
 }
 
-/* Hide the hardcoded static "Thank you everyone…" div that can appear
-   inside .fund-bar HTML blocks as an unstyled direct-child <div>. */
-.fund-bar > div:not(.meter):not(.fund-msg) {
-  display: none !important;
-}
-
 /* ----------------------------
    Pill quick-nav links
    Used in the "Plan Your Visit" section.
