@@ -1,0 +1,4507 @@
+{
+  "type": "FeatureCollection",
+  "name": "Markers",
+  "v": 2,
+  "defs": {
+    "types": {
+      "pl": {
+        "l": "Parking Lot",
+        "k": "Cars Wheelchair Handicap",
+        "u": "Parking_Icon.avif",
+        "i": "parking.svg"
+      },
+      "mi": {
+        "l": "Mile Marker",
+        "i": "monument.svg"
+      },
+      "df": {
+        "l": "Drinking Fountain",
+        "k": "Water Pet",
+        "u": "Drinking_Icon.png",
+        "i": "water.svg"
+      },
+      "ra": {
+        "l": "Rest Area",
+        "k": "Seat Sit",
+        "i": "highway-rest-area.svg"
+      },
+      "be": {
+        "l": "Bench",
+        "k": "Sit Seat",
+        "i": "bench.svg"
+      },
+      "wr": {
+        "l": "Wildlife Restoration Area",
+        "k": "Plant",
+        "i": "natural.svg"
+      },
+      "gc": {
+        "l": "Garden",
+        "k": "Flowers Plant Native",
+        "i": "garden.svg"
+      },
+      "gv": {
+        "l": "Garden",
+        "k": "Flowers Plant Native Adopt",
+        "d": "Come out to help us with this garden.",
+        "e": "Interested in adopting this garden at St. Michaels Dr?  Sign up here.",
+        "f": "/adoptgarden",
+        "m": "1UwacGgwVwILtZZSJj35-KYmKnSA5jcut"
+      },
+      "ki": {
+        "l": "Kiosk",
+        "k": "Signage",
+        "d": "Information about the trail and upcoming events are posted here.",
+        "u": "Information_Icon.png",
+        "i": "information.svg"
+      },
+      "bg": {
+        "l": "Bridge",
+        "i": "bridge.svg"
+      },
+      "mu": {
+        "l": "Mural",
+        "k": "Paint",
+        "i": "mural.svg"
+      },
+      "pt": {
+        "l": "Picnic Table",
+        "k": "Sit Seat Table",
+        "i": "picnic-site.svg"
+      },
+      "pc": {
+        "l": "Pet Waste Station",
+        "k": "Poop Bags Trash Can",
+        "i": "waste-basket.svg"
+      },
+      "pu": {
+        "l": "Pet Waste Station",
+        "k": "Poop Bags Trash Can",
+        "d": "No one has claimed this sign yet.",
+        "e": "Want to put your own message on this sign?",
+        "f": "trail-amenities/dog-waste-station",
+        "m": "1dPzbr3EXBXCNWOmwNUlf0b9KGFFZ6Zng"
+      },
+      "gp": {
+        "l": "Gratitude Point",
+        "i": "gift.svg"
+      },
+      "em": {
+        "l": "911 Sign",
+        "k": "Emergency",
+        "d": "911 Emergency Services Sign",
+        "i": "mobile-phone.svg"
+      },
+      "bk": {
+        "l": "Brick",
+        "d": "Donated Bricks from Trail Supporters",
+        "i": "bank.svg"
+      },
+      "pq": {
+        "l": "Plaque",
+        "i": "monument.svg"
+      },
+      "sp": {
+        "l": "Sponsor",
+        "k": "Donate",
+        "i": "restaurant.svg"
+      },
+      "bi": {
+        "l": "Bike Repair Station",
+        "k": "Tools",
+        "d": "Basic tools for repairing your bike including a pump for your tires.",
+        "u": "Bike_Icon.png",
+        "i": "bicycle.svg"
+      },
+      "gy": {
+        "l": "Gym",
+        "i": "fitness-centre.svg"
+      },
+      "pa": {
+        "l": "Park",
+        "i": "park.svg"
+      },
+      "po": {
+        "l": "Pool",
+        "k": "Swimming",
+        "i": "swimming.svg"
+      },
+      "rc": {
+        "l": "Church",
+        "k": "Church",
+        "i": "religious-christian.svg"
+      },
+      "ts": {
+        "l": "Synagogue",
+        "k": "Jewish",
+        "i": "religious-jewish.svg"
+      },
+      "sc": {
+        "l": "School",
+        "k": "Education",
+        "i": "school.svg"
+      },
+      "cr": {
+        "l": "Crossroad",
+        "k": "Crossing",
+        "i": "road.svg"
+      },
+      "hk": {
+        "l": "HAWK Light",
+        "k": "Traffic Crossing",
+        "d": "A quick response crossing light for pedestrians.",
+        "e": "Read more about how to use these pedestrian lights here",
+        "f": "/hawk-lights",
+        "i": "hawk-light.svg"
+      },
+      "tl": {
+        "l": "Traffic Light",
+        "k": "Crossing",
+        "d": "A traditional traffic light for pedestrians. ",
+        "i": "traffic-light.svg"
+      }
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "id": "5533188",
+      "properties": {
+        "n": "Orbiter Park",
+        "r": "Royal Lane",
+        "d": "A Dallas park with Tennis and Pickleball Courts",
+        "t": "pa",
+        "i": "park",
+        "c": "#000000",
+        "s": 70,
+        "b": "Park"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.76191,
+          32.89904
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "2777382",
+      "properties": {
+        "l": "Information Kiosk at Northaven Trail Bridge ",
+        "r": "US 75",
+        "t": "ki",
+        "i": "information",
+        "s": 25,
+        "b": "Kiosk"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.76963,
+          32.90152
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "8577654",
+      "properties": {
+        "l": "Parking Lot on West side of US&nbsp;75",
+        "r": "US 75",
+        "d": "Parking for the trail.  Located at Northaven Rd and US&nbsp;75 Service Road.",
+        "t": "pl",
+        "i": "parking",
+        "s": 5,
+        "b": "Parking Lot"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.76975,
+          32.90136
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "5191141",
+      "properties": {
+        "l": "Pet Waste Station by West Ramp of Northaven Trail Bridge",
+        "r": "US 75",
+        "t": "pu",
+        "i": "waste-basket",
+        "c": "#ff0000",
+        "s": 40,
+        "b": "Pet Waste Station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.76976,
+          32.90157
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "3802045",
+      "properties": {
+        "n": "Northaven Trail Central Bridge (West Ramp)",
+        "r": "US 75",
+        "t": "bg",
+        "i": "bridge",
+        "s": 25,
+        "b": "Bridge"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.76976,
+          32.90149
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "7519232",
+      "properties": {
+        "n": "Mural on Northaven Trail Bridge",
+        "r": "US 75",
+        "d": "Thank you to <a class=\"map-popup-link\" target=\"_donor\"  href=\"https://www.lydahillphilanthropies.org\">Lyda Hill</a> and all our donors for making this wonderful addition to the trail possible.",
+        "e": "Learn more about this wonderful mural.",
+        "f": "/mural-on-northaven-trail-bridge",
+        "t": "mu",
+        "m": "1lodBC1jNUDpz03GM3PJUA2fv0p8GhlQJ",
+        "i": "mural",
+        "s": 25,
+        "b": "Mural"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.77004,
+          32.90145
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "8872134",
+      "properties": {
+        "l": "Pet Waste Station by Valleydale Drive",
+        "r": "Valleydale Drive",
+        "d": "Donated by Park Royal Condominiums",
+        "t": "pc",
+        "m": "1M0jXoOrlQL2axSOeyIOeU2O_OJQ5EkPr",
+        "i": "waste-basket",
+        "s": 40,
+        "b": "Pet Waste Station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.77074,
+          32.89945
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "3628098",
+      "properties": {
+        "n": "Valleydale Drive",
+        "r": "Valleydale Drive",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.77153,
+          32.90043
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "3726866",
+      "properties": {
+        "n": "Aaron Family Jewish Community Center",
+        "r": "Valleydale Drive",
+        "t": "gy",
+        "k": "JCC",
+        "i": "fitness-centre",
+        "c": "#b37400",
+        "s": 70,
+        "b": "Gym"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.77201,
+          32.89947
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "3226446",
+      "properties": {
+        "l": "Pet Waste Station by JCC",
+        "r": "Valleydale Drive",
+        "t": "pu",
+        "k": "Aaron Family Jewish Community Center",
+        "i": "waste-basket",
+        "c": "#ff0000",
+        "s": 40,
+        "b": "Pet Waste Station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.77253,
+          32.89874
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "2586547",
+      "properties": {
+        "l": "Garden at Freda Stern Drive",
+        "r": "Freda Stern Drive",
+        "t": "gv",
+        "i": "garden",
+        "c": "#ff0000",
+        "s": 15,
+        "b": "Garden"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.77267,
+          32.89875
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "6700767",
+      "properties": {
+        "n": "Freda Stern Drive",
+        "r": "Freda Stern Drive",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.77424,
+          32.89823
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "1564685",
+      "properties": {
+        "l": "Drinking Fountain at Freda Stern Drive",
+        "r": "Freda Stern Drive",
+        "t": "df",
+        "i": "water",
+        "s": 10,
+        "b": "Drinking Fountain"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.77453,
+          32.89843
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "8584658",
+      "properties": {
+        "l": "Parking Lot on Freda Stern Drive",
+        "r": "Freda Stern Drive",
+        "d": "Parking for the trail.  Located at Freda Stern Drive.",
+        "t": "pl",
+        "i": "parking",
+        "s": 5,
+        "b": "Parking Lot"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.77455,
+          32.89859
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "4757560",
+      "properties": {
+        "l": "Pet Waste Station by Freda Stern Drive",
+        "r": "Freda Stern Drive",
+        "t": "pu",
+        "i": "waste-basket",
+        "c": "#ff0000",
+        "s": 40,
+        "b": "Pet Waste Station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.77459,
+          32.89852
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "3441882",
+      "properties": {
+        "n": "Pagewood Park",
+        "r": "St. Michaels Drive",
+        "t": "pa",
+        "i": "park",
+        "c": "#000000",
+        "s": 70,
+        "b": "Park"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.77862,
+          32.89331
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "7004900",
+      "properties": {
+        "n": "NT 114",
+        "r": "St. Michaels Drive",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.77868,
+          32.89694
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "4266272",
+      "properties": {
+        "l": "Information Kiosk by St. Michaels Drive",
+        "r": "St. Michaels Drive",
+        "t": "ki",
+        "i": "information",
+        "s": 25,
+        "b": "Kiosk"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.77913,
+          32.89669
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "9929780",
+      "properties": {
+        "l": "Pet Waste Station by St. Michaels Drive",
+        "r": "St. Michaels Drive",
+        "t": "pu",
+        "i": "waste-basket",
+        "c": "#ff0000",
+        "s": 40,
+        "b": "Pet Waste Station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.77927,
+          32.89665
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "3015981",
+      "properties": {
+        "l": "Respite / Rest Area at St. Michaels Drive",
+        "r": "St. Michaels Drive",
+        "t": "ra",
+        "i": "highway-rest-area",
+        "s": 10,
+        "b": "Rest Area"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.77933,
+          32.89661
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "2024368",
+      "properties": {
+        "l": "Drinking Fountain at St. Michaels Drive",
+        "r": "St. Michaels Drive",
+        "t": "df",
+        "i": "water",
+        "s": 10,
+        "b": "Drinking Fountain"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.77939,
+          32.89661
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "5052780",
+      "properties": {
+        "l": "Garden at St. Michaels Drive",
+        "r": "St. Michaels Drive",
+        "t": "gv",
+        "i": "garden",
+        "c": "#ff0000",
+        "s": 15,
+        "b": "Garden"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.77943,
+          32.89655
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "2617080",
+      "properties": {
+        "n": "St. Michaels Drive",
+        "r": "St. Michaels Drive",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.77955,
+          32.89647
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "1944917",
+      "properties": {
+        "n": "NT 115",
+        "r": "St. Michaels Drive",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.78067,
+          32.89632
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "4385385",
+      "properties": {
+        "l": "Pet Waste Station by Lavendale Avenue",
+        "r": "Lavendale Avenue",
+        "d": "Design Coming",
+        "t": "pc",
+        "m": "1dPzbr3EXBXCNWOmwNUlf0b9KGFFZ6Zng",
+        "i": "waste-basket",
+        "s": 40,
+        "b": "Pet Waste Station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.78153,
+          32.89636
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "9814785",
+      "properties": {
+        "n": "NT 116",
+        "r": "St. Judes Drive",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.78307,
+          32.89657
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "8331234",
+      "properties": {
+        "n": "Kramer Elementary",
+        "r": "St. Judes Drive",
+        "d": "DISD elementary school off of St. Judes Drive, north of the trail.",
+        "e": "Learn more.",
+        "f": "https://kramerelementary.org",
+        "t": "sc",
+        "i": "school",
+        "c": "#b37400",
+        "s": 70,
+        "b": "School"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.78339,
+          32.90143
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "8826639",
+      "properties": {
+        "n": "St. Judes Drive",
+        "r": "St. Judes Drive",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.78356,
+          32.89666
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "2389916",
+      "properties": {
+        "l": "Pet Waste Station by St. Jude Drive",
+        "r": "St. Judes Drive",
+        "d": "Design Coming",
+        "t": "pc",
+        "m": "1dPzbr3EXBXCNWOmwNUlf0b9KGFFZ6Zng",
+        "i": "waste-basket",
+        "s": 40,
+        "b": "Pet Waste Station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.78425,
+          32.89661
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "1999478",
+      "properties": {
+        "n": "NT 117",
+        "r": "St. Judes Drive",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.78483,
+          32.89655
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "2242334",
+      "properties": {
+        "n": "NT 118",
+        "r": "Hillcrest Road",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.78693,
+          32.89676
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "7840612",
+      "properties": {
+        "l": "Traffic Light at Hillcrest Road",
+        "r": "Hillcrest Road",
+        "t": "tl",
+        "i": "traffic-light",
+        "s": 80,
+        "b": "Traffic Light"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.78798,
+          32.89675
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "8292585",
+      "properties": {
+        "n": "Hillcrest Road",
+        "r": "Hillcrest Road",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.788,
+          32.89686
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "3807180",
+      "properties": {
+        "l": "Garden at Hillcrest Road",
+        "r": "Hillcrest Road",
+        "d": "Garden on the west side of Hillcrest maintained by the Gardening Club of St. Marks.",
+        "t": "gc",
+        "i": "garden",
+        "c": "#627a39",
+        "s": 15,
+        "b": "Garden"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.78857,
+          32.89673
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "8165841",
+      "properties": {
+        "l": "Pet Waste Station by Hillcrest Road",
+        "r": "Hillcrest Road",
+        "d": "In Honor Of <br>Nancy Perry",
+        "t": "pc",
+        "m": "1c1BYoEwVIWFgo_VOq-zqdSunOSOb2Ee6",
+        "i": "waste-basket",
+        "s": 40,
+        "b": "Pet Waste Station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.78876,
+          32.8968
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "7324215",
+      "properties": {
+        "n": "Tiferet Israel Synagogue",
+        "r": "Hillcrest Road",
+        "t": "ts",
+        "i": "religious-jewish",
+        "c": "#b37400",
+        "s": 70,
+        "b": "Synagogue"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.78883,
+          32.8963
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "1814267",
+      "properties": {
+        "n": "NT 119",
+        "r": "Hillcrest Road",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.78906,
+          32.89682
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "4861513",
+      "properties": {
+        "n": "NT 120",
+        "r": "Hillcrest Road",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.79114,
+          32.89677
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "1231773",
+      "properties": {
+        "n": "Dealey School",
+        "r": "Edgemere Road",
+        "t": "sc",
+        "k": "DISD",
+        "i": "school",
+        "c": "#b37400",
+        "s": 70,
+        "b": "School"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.79219,
+          32.8957
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "5547644",
+      "properties": {
+        "n": "Edgemere Road",
+        "r": "Edgemere Road",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.79308,
+          32.89668
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "6746382",
+      "properties": {
+        "l": "Information Kiosk at Edgemere Road ",
+        "r": "Edgemere Road",
+        "t": "ki",
+        "i": "information",
+        "s": 25,
+        "b": "Kiosk"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.79319,
+          32.89679
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "6210079",
+      "properties": {
+        "n": "NT 121",
+        "r": "Edgemere Road",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.79322,
+          32.89668
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "8907286",
+      "properties": {
+        "l": "Respite / Rest Area at Edgemere Road",
+        "r": "Edgemere Road",
+        "t": "ra",
+        "i": "highway-rest-area",
+        "s": 10,
+        "b": "Rest Area"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.79342,
+          32.89676
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "6221133",
+      "properties": {
+        "l": "Picnic Table at Edgemere",
+        "r": "Edgemere Road",
+        "d": "Enjoy a nice picnic in the shade along the trail!",
+        "t": "pt",
+        "i": "picnic-site",
+        "s": 10,
+        "b": "Picnic Table"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.79346,
+          32.89678
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "3674719",
+      "properties": {
+        "l": "Pet Waste Station by Edgemere Road",
+        "r": "Edgemere Road",
+        "t": "pu",
+        "i": "waste-basket",
+        "c": "#ff0000",
+        "s": 40,
+        "b": "Pet Waste Station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.79452,
+          32.89798
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "3568104",
+      "properties": {
+        "n": "NT 122",
+        "r": "Edgemere Road",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.79455,
+          32.89803
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "1498249",
+      "properties": {
+        "l": "Bricks west of Edgemere Road",
+        "r": "Edgemere Road",
+        "t": "bk",
+        "i": "bank",
+        "s": 65,
+        "b": "Brick"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.795,
+          32.89841
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "7112529",
+      "properties": {
+        "n": "Mile Marker One",
+        "r": "Ricks Circle",
+        "t": "mi",
+        "k": 1,
+        "i": "monument",
+        "s": 5,
+        "b": "Mile Marker"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.79579,
+          32.89902
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "4434069",
+      "properties": {
+        "n": "NT 123",
+        "r": "Ricks Circle",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.79607,
+          32.89927
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "1973259",
+      "properties": {
+        "n": "Ricks Circle",
+        "r": "Ricks Circle",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.79665,
+          32.89988
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "9902632",
+      "properties": {
+        "l": "Pet Waste Station by Ricks Circle",
+        "r": "Ricks Circle",
+        "d": "Donated by <br>Bev & Chuck Ginsburg",
+        "t": "pc",
+        "m": "14aP8mWtZzXjXdYN08MfxAr0SmoPjhpBn",
+        "i": "waste-basket",
+        "s": 40,
+        "b": "Pet Waste Station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.79682,
+          32.90001
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "8530388",
+      "properties": {
+        "n": "NT 124",
+        "r": "Ricks Circle",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.79743,
+          32.90066
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "1940072",
+      "properties": {
+        "l": "Pet Waste Station by Royalshire Drive Respite",
+        "r": "Royalshire Drive",
+        "t": "pu",
+        "i": "waste-basket",
+        "c": "#ff0000",
+        "s": 40,
+        "b": "Pet Waste Station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.79844,
+          32.90089
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "1803910",
+      "properties": {
+        "l": "Garden at Royalshire",
+        "r": "Royalshire Drive",
+        "d": "Thank you to the Founders Garden Club of Dallas for maintaining this pollinator garden.",
+        "e": "https://foundersgardenclub.org",
+        "f": "https://foundersgardenclub.org",
+        "t": "gc",
+        "m": "1XrNcgOe17FNuA-9zwiB6d5f5k1JKDJWw",
+        "i": "garden",
+        "c": "#627a39",
+        "s": 15,
+        "b": "Garden"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.79864,
+          32.90087
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "4064131",
+      "properties": {
+        "l": "Respite / Rest Area at Royalshire Drive",
+        "r": "Royalshire Drive",
+        "t": "ra",
+        "i": "highway-rest-area",
+        "s": 10,
+        "b": "Rest Area"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.79867,
+          32.90084
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "8245276",
+      "properties": {
+        "l": "Drinking Fountain at Royalshire Drive",
+        "r": "Royalshire Drive",
+        "t": "df",
+        "i": "water",
+        "s": 10,
+        "b": "Drinking Fountain"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.79873,
+          32.90085
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "1652125",
+      "properties": {
+        "n": "NT 125",
+        "r": "Royalshire Drive",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.79949,
+          32.90088
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "5193109",
+      "properties": {
+        "n": "Royalshire Drive",
+        "r": "Royalshire Drive",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.79994,
+          32.90082
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "8731122",
+      "properties": {
+        "n": "Leslie Baker Bench",
+        "r": "Royalshire Drive",
+        "d": "Dedicated to <strong>Leslie Baker</strong> who loved to run on the Northaven Trail.",
+        "t": "be",
+        "i": "bench",
+        "s": 10,
+        "b": "Bench"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.80037,
+          32.90088
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "4213952",
+      "properties": {
+        "l": "Pet Waste Station West of Royalshire Drive",
+        "r": "Royalshire Drive",
+        "d": "Donated by <br>Bev & Chuck Ginsburg",
+        "t": "pc",
+        "m": "14aP8mWtZzXjXdYN08MfxAr0SmoPjhpBn",
+        "i": "waste-basket",
+        "s": 40,
+        "b": "Pet Waste Station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.80046,
+          32.9009
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "1169541",
+      "properties": {
+        "n": "NT 126",
+        "r": "Royalshire Drive",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.80154,
+          32.90087
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "3074786",
+      "properties": {
+        "l": "Pet Waste Station East of Preston Road",
+        "r": "Preston Road",
+        "t": "pu",
+        "i": "waste-basket",
+        "c": "#ff0000",
+        "s": 40,
+        "b": "Pet Waste Station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.80251,
+          32.90091
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "1944803",
+      "properties": {
+        "n": "Mile Marker Two",
+        "r": "Preston Road",
+        "t": "mi",
+        "k": 2,
+        "i": "monument",
+        "s": 5,
+        "b": "Mile Marker"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.8035,
+          32.90084
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "5532969",
+      "properties": {
+        "n": "NT 127",
+        "r": "Preston Road",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.80356,
+          32.90084
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "5207571",
+      "properties": {
+        "n": "Preston Road",
+        "r": "Preston Road",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.80393,
+          32.90099
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "1051917",
+      "properties": {
+        "l": "HAWK Light at Preston Road",
+        "r": "Preston Road",
+        "t": "hk",
+        "i": "hawk-light",
+        "s": 80,
+        "b": "HAWK Light"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.80393,
+          32.9008
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "5757062",
+      "properties": {
+        "l": "Pet Waste Station West of Preston Road",
+        "r": "Preston Road",
+        "d": "Donated by <br>Lewis & Clark Ginsburg",
+        "t": "pc",
+        "m": "1390QXo7jbW7Ax3UStyQ1ifH8yuqE646b",
+        "i": "waste-basket",
+        "s": 40,
+        "b": "Pet Waste Station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.80427,
+          32.90081
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "8371676",
+      "properties": {
+        "n": "Northaven United Methodist Church",
+        "r": "Preston Road",
+        "d": "Northaven United Methodist Church regularly hosts trail events.  \"It is a progressive, inclusive faith community where questions are welcome.\" For more information, check out their website at",
+        "e": "http://northaven.org",
+        "f": "http://northaven.org",
+        "t": "rc",
+        "i": "religious-christian",
+        "c": "#b37400",
+        "s": 70,
+        "b": "Church"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.80451,
+          32.90142
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "5588998",
+      "properties": {
+        "n": "Fish City Grill (Trail Sponsor)",
+        "r": "Preston Road",
+        "t": "sp",
+        "i": "restaurant",
+        "s": 70,
+        "b": "Sponsor"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.80516,
+          32.89339
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "5923236",
+      "properties": {
+        "l": "Parking Lot off of Preston Road ",
+        "r": "Preston Road",
+        "d": "Parking for the trail.  Located on the west side of Preston Road.",
+        "t": "pl",
+        "i": "parking",
+        "s": 5,
+        "b": "Parking Lot"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.80543,
+          32.90088
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "7525735",
+      "properties": {
+        "l": "Respite / Rest Area at Northaven United Methodist",
+        "r": "Northaven United Methodist",
+        "t": "ra",
+        "i": "highway-rest-area",
+        "s": 10,
+        "b": "Rest Area"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.80552,
+          32.90111
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "8665124",
+      "properties": {
+        "n": "NT 128",
+        "r": "Jamestown Road",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.80616,
+          32.90085
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "5578962",
+      "properties": {
+        "n": "Jamestown Road",
+        "r": "Jamestown Road",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.8075,
+          32.90088
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "4384883",
+      "properties": {
+        "n": "NT 129",
+        "r": "Jamestown Road",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.80813,
+          32.90095
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "2450834",
+      "properties": {
+        "l": "Pet Waste Station by Jamestown Road",
+        "r": "Jamestown Road",
+        "d": "Thanks To <br>Willis Winters",
+        "t": "pc",
+        "m": "1TGTg-2DfFjYszF5BJEoFfN4f_h4HjZeW",
+        "i": "waste-basket",
+        "s": 40,
+        "b": "Pet Waste Station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.80815,
+          32.90094
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "9178050",
+      "properties": {
+        "n": "NT 130",
+        "r": "Quincy Lane",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.8102,
+          32.90076
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "2893499",
+      "properties": {
+        "n": "Claire's Day School",
+        "r": "Quincy Lane",
+        "t": "sc",
+        "i": "school",
+        "c": "#b37400",
+        "s": 70,
+        "b": "School"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.81105,
+          32.90138
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "2556708",
+      "properties": {
+        "n": "Quincy Lane",
+        "r": "Quincy Lane",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.8113,
+          32.9011
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "9235518",
+      "properties": {
+        "n": "NT 131",
+        "r": "Quincy Lane",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.8116,
+          32.90186
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "8612768",
+      "properties": {
+        "n": "Dallas North Tollway",
+        "r": "Dallas North Tollway",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.81199,
+          32.90225
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "9988236",
+      "properties": {
+        "n": "NT 132",
+        "r": "Dallas North Tollway",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.81262,
+          32.90272
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "8741823",
+      "properties": {
+        "n": "James Griffin Bench",
+        "r": "Dallas North Tollway",
+        "d": "In Honor of <br>James R. Griffin<br> On His 60th Birthday",
+        "t": "be",
+        "m": "1QbiJItJI76E6-YoamhsP9kMMYTd23UhL",
+        "i": "bench",
+        "s": 10,
+        "b": "Bench"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.8129,
+          32.90306
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "4368423",
+      "properties": {
+        "l": "Pet Waste Station by Tollway",
+        "r": "Dallas North Tollway",
+        "d": "In Honor Of <br>Rosie, Rooi & Riffy",
+        "t": "pc",
+        "m": "1eg5kkrtIl4VDEvGo1sgJ-zH-pf5G0ZpB",
+        "i": "waste-basket",
+        "s": 40,
+        "b": "Pet Waste Station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.81294,
+          32.9031
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "8290004",
+      "properties": {
+        "n": "NT 133",
+        "r": "Dallas North Tollway",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.81457,
+          32.90311
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "8428535",
+      "properties": {
+        "n": "NT 134",
+        "r": "Inwood Road",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.81685,
+          32.9031
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "9256884",
+      "properties": {
+        "n": "Grace Bible Church and School",
+        "r": "Inwood Road",
+        "t": "rc",
+        "i": "religious-christian",
+        "c": "#b37400",
+        "s": 70,
+        "b": "Church"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.81707,
+          32.90286
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "5631174",
+      "properties": {
+        "n": "Garden at Grace Bible Church",
+        "r": "Inwood Road",
+        "d": "Garden on the north side of the Grace Bible Church along the trail.",
+        "t": "gv",
+        "i": "garden",
+        "c": "#ff0000",
+        "s": 15,
+        "b": "Garden"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.81726,
+          32.90309
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "3128365",
+      "properties": {
+        "l": "HAWK Light at Inwood Road",
+        "r": "Inwood Road",
+        "t": "hk",
+        "i": "hawk-light",
+        "s": 80,
+        "b": "HAWK Light"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.81849,
+          32.90307
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "6468895",
+      "properties": {
+        "n": "Inwood Road",
+        "r": "Inwood Road",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.8185,
+          32.90319
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "6600266",
+      "properties": {
+        "l": "Parking Lot off of Inwood Road ",
+        "r": "Inwood Road",
+        "d": "Parking for the trail.  Located on the west side of Inwood Road.",
+        "t": "pl",
+        "i": "parking",
+        "s": 5,
+        "b": "Parking Lot"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.81893,
+          32.90308
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "8646700",
+      "properties": {
+        "n": "NT 135",
+        "r": "Inwood Road",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.81976,
+          32.90316
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "1261424",
+      "properties": {
+        "l": "Pet Waste Station by Inwood Road",
+        "r": "Inwood Road",
+        "d": "For <br>Max & His 4-Legged Friends",
+        "t": "pc",
+        "m": "1AzDRKFufCtPJ6jZbJEksp6PZrsvJfhnW",
+        "i": "waste-basket",
+        "s": 40,
+        "b": "Pet Waste Station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.81987,
+          32.90315
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "6434415",
+      "properties": {
+        "n": "NT 136",
+        "r": "Inwood Road",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.8221,
+          32.90316
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "2334111",
+      "properties": {
+        "n": "Mural on Bachman Bridge",
+        "r": "Strait Lane",
+        "d": "This mural was painted by a local high school student in 2023.  It is a AI generated image representing local plants you find natively along the trail.",
+        "t": "mu",
+        "m": "16ijEW7UVJhA7EgCICXIiq8RamaFedJMD",
+        "i": "mural",
+        "s": 25,
+        "b": "Mural"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.82223,
+          32.90317
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "9025405",
+      "properties": {
+        "n": "Bachman Creek Bridge",
+        "r": "Strait Lane",
+        "t": "bg",
+        "i": "bridge",
+        "s": 25,
+        "b": "Bridge"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.82228,
+          32.90317
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "6248398",
+      "properties": {
+        "n": "Bachman Branch Prairie Restoration Area",
+        "r": "Strait Lane",
+        "d": "Our goal with this restoration project is to create an area of Blackland prairie similar to the original landscape.",
+        "e": "Learn more here",
+        "f": "/bachman-rewilding-project",
+        "t": "wr",
+        "m": "1mN8tiyfOHHbvkIFxB63KERQbuoCthNHL",
+        "i": "natural",
+        "c": "#627a39",
+        "s": 15,
+        "b": "Wildlife Restoration Area"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.82266,
+          32.90312
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "9571057",
+      "properties": {
+        "n": "NT 137",
+        "r": "Strait Lane",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.82358,
+          32.90314
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "8854277",
+      "properties": {
+        "l": "Pet Waste Station by Bachman Creek Bridge",
+        "r": "Bachman Creek Bridge",
+        "d": "Donated by",
+        "e": "Hockaday Neighborhood Association",
+        "f": "https://myhna.org",
+        "t": "pc",
+        "m": "1kn9c2jNdIYAemiS6PzcIITg-uv50Bhsb",
+        "i": "waste-basket",
+        "s": 40,
+        "b": "Pet Waste Station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.82368,
+          32.90313
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "6631442",
+      "properties": {
+        "n": "Strait Lane",
+        "r": "Strait Lane",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.82458,
+          32.90315
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "5088096",
+      "properties": {
+        "l": "Pet Waste Station West of Strait Lane",
+        "r": "Strait Lane",
+        "d": "Donated by",
+        "e": "Hockaday Neighborhood Association",
+        "f": "https://myhna.org",
+        "t": "pc",
+        "m": "1kn9c2jNdIYAemiS6PzcIITg-uv50Bhsb",
+        "i": "waste-basket",
+        "s": 40,
+        "b": "Pet Waste Station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.82541,
+          32.90314
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "9027874",
+      "properties": {
+        "n": "NT 138",
+        "r": "Strait Lane",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.8256,
+          32.90321
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "6184701",
+      "properties": {
+        "n": "NT 139",
+        "r": "Welch Road",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.82801,
+          32.90306
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "1365375",
+      "properties": {
+        "l": "Pet Waste Station East of Welch Road",
+        "r": "Welch Road",
+        "d": "Donated by",
+        "e": "Hockaday Neighborhood Association",
+        "f": "https://myhna.org",
+        "t": "pc",
+        "m": "1kn9c2jNdIYAemiS6PzcIITg-uv50Bhsb",
+        "i": "waste-basket",
+        "s": 40,
+        "b": "Pet Waste Station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.82863,
+          32.90299
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "2193127",
+      "properties": {
+        "n": "Welch Road",
+        "r": "Welch Road",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.82967,
+          32.90308
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "9225384",
+      "properties": {
+        "l": "Pet Waste Station by Welch Road Respite",
+        "r": "Welch Road",
+        "d": "Donated by <br>Troop 1390 Girl Scouts of Northeast Texas",
+        "t": "pc",
+        "m": "1ylzQkKZIKpBMKuQtxYBQyRo7j4AUn6Fz",
+        "i": "waste-basket",
+        "s": 40,
+        "b": "Pet Waste Station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.82978,
+          32.90292
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "9538345",
+      "properties": {
+        "l": "Respite / Rest Area at Welch Road",
+        "r": "Welch Road",
+        "t": "ra",
+        "i": "highway-rest-area",
+        "s": 10,
+        "b": "Rest Area"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.82985,
+          32.9029
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "2162789",
+      "properties": {
+        "l": "Garden at Welch",
+        "r": "Welch Road",
+        "t": "gv",
+        "i": "garden",
+        "c": "#ff0000",
+        "s": 15,
+        "b": "Garden"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.82987,
+          32.90311
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "1641997",
+      "properties": {
+        "l": "Drinking Fountain at Welch Road",
+        "r": "Welch Road",
+        "t": "df",
+        "i": "water",
+        "s": 10,
+        "b": "Drinking Fountain"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.82989,
+          32.90286
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "6423115",
+      "properties": {
+        "l": "Picnic Table at Welch",
+        "r": "Welch Road",
+        "d": "Come enjoy the shade and have a nice picnic along the trail. There is a drinking found for both humans and pets at this location.  <br><br>Donated by\nTroop 1390 Girl Scouts of Northeast Texas",
+        "t": "pt",
+        "i": "picnic-site",
+        "s": 10,
+        "b": "Picnic Table"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.82995,
+          32.90299
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "4356615",
+      "properties": {
+        "n": "NT 140",
+        "r": "Welch Road",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.83008,
+          32.90307
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "9232725",
+      "properties": {
+        "n": "NT 141",
+        "r": "College Park Drive",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.83177,
+          32.90291
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "7534971",
+      "properties": {
+        "l": "Pet Waste Station by College Park",
+        "r": "College Park Drive",
+        "d": "Donated by",
+        "e": "Hockaday Neighborhood Association",
+        "f": "https://myhna.org",
+        "t": "pc",
+        "m": "1kn9c2jNdIYAemiS6PzcIITg-uv50Bhsb",
+        "i": "waste-basket",
+        "s": 40,
+        "b": "Pet Waste Station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.83254,
+          32.90293
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "7872442",
+      "properties": {
+        "n": "College Park Drive",
+        "r": "College Park Drive",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.83336,
+          32.90293
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "8134098",
+      "properties": {
+        "n": "NT 142",
+        "r": "College Park Drive",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.83375,
+          32.90241
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "1883113",
+      "properties": {
+        "n": "Mural on Storage Container",
+        "r": "College Park Drive",
+        "d": "This mural covers our storage container and was painted by a group of wonderful trail volunteers.  It depicts the trail with native plants, pollinators, and dogs playing.",
+        "t": "mu",
+        "m": "1uC9Q2tRwub7EeJKJL3V5ZmvBAt_Rd6KI",
+        "i": "mural",
+        "s": 25,
+        "b": "Mural"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.83377,
+          32.90287
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "7999478",
+      "properties": {
+        "l": "Parking Lot North of YMCA",
+        "r": "College Park Drive",
+        "d": "Parking for the trail.  Located on Northaven Road just north of the Semones YMCA.",
+        "t": "pl",
+        "i": "parking",
+        "s": 5,
+        "b": "Parking Lot"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.83391,
+          32.9026
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "9513664",
+      "properties": {
+        "n": "Northaven Road",
+        "r": "Northaven Road",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.83402,
+          32.90222
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "3977201",
+      "properties": {
+        "l": "Information Kiosk by YMCA",
+        "r": "Semones YMCA",
+        "t": "ki",
+        "i": "information",
+        "s": 25,
+        "b": "Kiosk"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.83414,
+          32.90205
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "8008756",
+      "properties": {
+        "l": "Pet Waste Station by YMCA",
+        "r": "Semones YMCA",
+        "d": "Donated by",
+        "e": "Hockaday Neighborhood Association",
+        "f": "https://myhna.org",
+        "t": "pc",
+        "m": "1kn9c2jNdIYAemiS6PzcIITg-uv50Bhsb",
+        "i": "waste-basket",
+        "s": 40,
+        "b": "Pet Waste Station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.83414,
+          32.90192
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "7693133",
+      "properties": {
+        "n": "NT 143",
+        "r": "Northaven Road",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.83487,
+          32.90087
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "8655514",
+      "properties": {
+        "n": "Semones Family YMCA",
+        "r": "Northaven Road",
+        "d": "A wonderful trail partner.  Find more information about the YMCA",
+        "e": "here.",
+        "f": "https://www.ymcadallas.org/locations/town_north",
+        "t": "gy",
+        "k": "Town North",
+        "i": "fitness-centre",
+        "c": "#b37400",
+        "s": 70,
+        "b": "Gym"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.83524,
+          32.90175
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "9006655",
+      "properties": {
+        "n": "NT 144",
+        "r": "Midway Road",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.83608,
+          32.8997
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "1356906",
+      "properties": {
+        "n": "Good Shepherd Episcopal School",
+        "r": "Midway Road",
+        "t": "sc",
+        "i": "school",
+        "c": "#b37400",
+        "s": 70,
+        "b": "School"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.83728,
+          32.90034
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "1793789",
+      "properties": {
+        "n": "Midway Road",
+        "r": "Midway Road",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.83828,
+          32.89981
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "1836805",
+      "properties": {
+        "l": "HAWK Light at Midway Road",
+        "r": "Midway Road",
+        "t": "hk",
+        "i": "hawk-light",
+        "s": 80,
+        "b": "HAWK Light"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.83829,
+          32.89969
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "7195785",
+      "properties": {
+        "n": "NT 145",
+        "r": "Midway Road",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.83883,
+          32.8997
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "6175296",
+      "properties": {
+        "n": "Cinderella Lane",
+        "r": "Cinderella Lane",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.83963,
+          32.8997
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "6451523",
+      "properties": {
+        "l": "Gratitude Point at Cinderella ",
+        "r": "Cinderella Lane",
+        "d": "'The more grateful I am, the more beauty I see.' - Mary Davis",
+        "t": "gp",
+        "m": "1x_gmW7-EMEE7zx_NRUxZeYu1VUvk4yjO",
+        "i": "gift",
+        "s": 50,
+        "b": "Gratitude Point"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.84005,
+          32.89964
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "1057164",
+      "properties": {
+        "n": "NT 146",
+        "r": "Pinocchio Drive",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.84059,
+          32.89969
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "1454733",
+      "properties": {
+        "l": "Pet Waste Station by Pinocchio Drive",
+        "r": "Pinocchio Drive",
+        "d": "Donated by",
+        "e": "Northaven Park Neighborhood Association",
+        "f": "https://www.npna.org",
+        "t": "pc",
+        "m": "127DzxJjVMapFKvUnRA1gfnV7IY3wm7Fw",
+        "i": "waste-basket",
+        "s": 40,
+        "b": "Pet Waste Station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.84071,
+          32.89971
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "5997005",
+      "properties": {
+        "n": "Pinocchio Drive",
+        "r": "Pinocchio Drive",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.84103,
+          32.89972
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "1206347",
+      "properties": {
+        "n": "NT 147",
+        "r": "Snow White Drive",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.84251,
+          32.8997
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "2530701",
+      "properties": {
+        "n": "Snow White Drive",
+        "r": "Snow White Drive",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.84296,
+          32.89976
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "4348194",
+      "properties": {
+        "n": "NT 148",
+        "r": "Wonderland Trail",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.84434,
+          32.8997
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "1982511",
+      "properties": {
+        "n": "Wonderland Trail",
+        "r": "Wonderland Trail",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.84477,
+          32.89971
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "6903832",
+      "properties": {
+        "l": "Pet Waste Station by Wonderland Trail",
+        "r": "Wonderland Trail",
+        "d": "Donated by",
+        "e": "Northaven Park Neighborhood Association",
+        "f": "https://www.npna.org",
+        "t": "pc",
+        "m": "127DzxJjVMapFKvUnRA1gfnV7IY3wm7Fw",
+        "i": "waste-basket",
+        "s": 40,
+        "b": "Pet Waste Station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.84489,
+          32.89978
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "2200532",
+      "properties": {
+        "n": "Candlelight Lane",
+        "r": "Candlelight Lane",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.84592,
+          32.89971
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "8744123",
+      "properties": {
+        "n": "Harry C. Withers Elementary School",
+        "r": "Cinderella Lane",
+        "d": "DISD elementary school on Northaven Road, just north of the trail.",
+        "e": "Learn more.",
+        "f": "https://withers.dallasisd.org",
+        "t": "sc",
+        "i": "school",
+        "c": "#b37400",
+        "s": 70,
+        "b": "School"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.84605,
+          32.90245
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "4662228",
+      "properties": {
+        "n": "NT 149",
+        "r": "Candlelight Lane",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.84636,
+          32.89968
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "7258019",
+      "properties": {
+        "n": "Rosser Road",
+        "r": "Rosser Road",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.8475,
+          32.89972
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "2589957",
+      "properties": {
+        "n": "Northaven Park & Greenbelt",
+        "r": "Rosser Road",
+        "d": "Relaxed park for kids and adults featuring baseball and tennis courts, plus a playground.",
+        "t": "pa",
+        "i": "park",
+        "c": "#000000",
+        "s": 70,
+        "b": "Park"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.84783,
+          32.90344
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "6665571",
+      "properties": {
+        "n": "Ed Bright Bench",
+        "r": "Rosser Road",
+        "d": "Northaven Park Neighborhood Association <br>Honoring <br>Ed Bright",
+        "t": "be",
+        "m": "1L0vn3gWe_tTaseXKRyPr852Nxcw-by2j",
+        "i": "bench",
+        "s": 10,
+        "b": "Bench"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.84799,
+          32.8997
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "4875461",
+      "properties": {
+        "l": "Pet Waste Station by Rosser Road",
+        "r": "Rosser Road",
+        "d": "In Honor Of <br>Godiva & Guiness Morrice",
+        "t": "pc",
+        "m": "1S2wTzNHJ_z4fWyPyaww9EyV8vnSAvqIk",
+        "i": "waste-basket",
+        "s": 40,
+        "b": "Pet Waste Station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.84826,
+          32.8997
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "8238154",
+      "properties": {
+        "n": "Joes Creek Bridge",
+        "r": "Rosser Road",
+        "t": "bg",
+        "i": "bridge",
+        "s": 25,
+        "b": "Bridge"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.84864,
+          32.89983
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "4234154",
+      "properties": {
+        "n": "Commemorative Plaque 2B and 2c",
+        "r": "Rosser Road",
+        "d": "Northaven Trail <br>Phases 2B and 2C <br>Dedicated  June 2019",
+        "t": "pq",
+        "m": "1H-DtOw1rIvex5_BVdvBrNc0-59jtuCxR",
+        "i": "monument",
+        "s": 65,
+        "b": "Plaque"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.84888,
+          32.89986
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "7655541",
+      "properties": {
+        "n": "Joes Creek Bench",
+        "r": "Rosser Road",
+        "t": "be",
+        "i": "bench",
+        "s": 10,
+        "b": "Bench"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.84891,
+          32.89987
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "6121031",
+      "properties": {
+        "n": "NT 150",
+        "r": "Vinecrest Drive",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.84893,
+          32.89987
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "3467317",
+      "properties": {
+        "n": "Vinecrest Drive",
+        "r": "Vinecrest Drive",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.84943,
+          32.89987
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "1223887",
+      "properties": {
+        "n": "Cox Lane Park",
+        "r": "Royalshire Drive",
+        "d": "Neighborhood park with a playground and seating.",
+        "e": "Learn more.",
+        "f": "https://www.dallasparks.org/Facilities/Facility/Details/Cox-Lane-452",
+        "t": "pa",
+        "i": "park",
+        "c": "#000000",
+        "s": 70,
+        "b": "Park"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.8502,
+          32.89585
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "6769512",
+      "properties": {
+        "l": "Pet Waste Station East of Cox Lane",
+        "r": "Cox Lane",
+        "d": "In Honor of Him.  Happy Trails. To You.",
+        "t": "pc",
+        "m": "1QjM0Djnr5vFYf9xOMQkYUPAcJ6AT2IST",
+        "i": "waste-basket",
+        "s": 40,
+        "b": "Pet Waste Station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.85089,
+          32.89973
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "8406519",
+      "properties": {
+        "n": "NT 151",
+        "r": "Cox Lane",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.85116,
+          32.8997
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "1613853",
+      "properties": {
+        "n": "Cox Lane",
+        "r": "Cox Lane",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.85146,
+          32.8998
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "4319882",
+      "properties": {
+        "n": "Peter Pan Park",
+        "r": "Cox Lane",
+        "d": "Neighborhood park with a playground and seating.",
+        "e": "Read more.",
+        "f": "https://www.dallasparks.org/Facilities/Facility/Details/Peter-Pan-Park-621",
+        "t": "pa",
+        "i": "park",
+        "c": "#000000",
+        "s": 70,
+        "b": "Park"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.85235,
+          32.89172
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "9113519",
+      "properties": {
+        "n": "NT 152",
+        "r": "Cox Lane",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.85322,
+          32.89966
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "3828781",
+      "properties": {
+        "l": "Pet Waste Station West of Cox Lane",
+        "r": "Cox Lane",
+        "d": "Donated by",
+        "e": "Northaven Park Neighborhood Association",
+        "f": "https://www.npna.org",
+        "t": "pc",
+        "m": "127DzxJjVMapFKvUnRA1gfnV7IY3wm7Fw",
+        "i": "waste-basket",
+        "s": 40,
+        "b": "Pet Waste Station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.85404,
+          32.89976
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "7743924",
+      "properties": {
+        "n": "NT 153",
+        "r": "Marsh Lane",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.855,
+          32.89966
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "2239130",
+      "properties": {
+        "l": "HAWK Light at Marsh Lane",
+        "r": "Marsh Lane",
+        "t": "hk",
+        "i": "hawk-light",
+        "s": 80,
+        "b": "HAWK Light"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.85619,
+          32.89979
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "9695946",
+      "properties": {
+        "n": "Marsh Lane",
+        "r": "Marsh Lane",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.8562,
+          32.89996
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "1624986",
+      "properties": {
+        "n": "NT 154",
+        "r": "Marsh Lane",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.85697,
+          32.89991
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "1024974",
+      "properties": {
+        "l": "Pet Waste Station by Marsh Lane",
+        "r": "Marsh Lane",
+        "d": "Enjoy your trail. We did.",
+        "t": "pc",
+        "m": "1EI7IoMl8ptXf294qEQS8de9C9TmRD_hT",
+        "i": "waste-basket",
+        "s": 40,
+        "b": "Pet Waste Station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.85788,
+          32.89981
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "1656573",
+      "properties": {
+        "n": "NT 155",
+        "r": "Marsh Lane",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.8589,
+          32.89991
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "6634259",
+      "properties": {
+        "n": "NT 156",
+        "r": "Cromwell Drive",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.861,
+          32.89994
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "3112347",
+      "properties": {
+        "n": "Everette L. DeGolyer",
+        "r": "Cromwell Drive",
+        "d": "DISD elementary school off of Cromwell Road, north of the trail.",
+        "e": "Learn more.",
+        "f": "https://degolyer.dallasisd.org",
+        "t": "sc",
+        "i": "school",
+        "c": "#b37400",
+        "s": 70,
+        "b": "School"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.86167,
+          32.90337
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "2549305",
+      "properties": {
+        "n": "Cromwell Drive",
+        "r": "Cromwell Drive",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.86228,
+          32.89978
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "1639936",
+      "properties": {
+        "n": "NT 157",
+        "r": "Cromwell Drive",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.8629,
+          32.89985
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "3260122",
+      "properties": {
+        "n": "NT 158",
+        "r": "Townsend Drive",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.86299,
+          32.89816
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "5491370",
+      "properties": {
+        "n": "Townsend Drive",
+        "r": "Townsend Drive",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.863,
+          32.89915
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "4594190",
+      "properties": {
+        "n": "NT 159",
+        "r": "Royalshire Drive",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.86301,
+          32.8965
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "9884123",
+      "properties": {
+        "l": "Pet Waste Station at Townsend",
+        "r": "Townsend Drive",
+        "d": "Eagle Service Project By Oliver Wooldridge",
+        "t": "pc",
+        "m": "1F_xcR1hoTccApuSTuRN-MY5Tak8aeuaE",
+        "i": "waste-basket",
+        "s": 40,
+        "b": "Pet Waste Station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.86304,
+          32.89931
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "2492249",
+      "properties": {
+        "l": "Bricks in Royal Park",
+        "r": "Royal Lane",
+        "t": "bk",
+        "i": "bank",
+        "s": 65,
+        "b": "Brick"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.86304,
+          32.8967
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "8492404",
+      "properties": {
+        "l": "Pet Waste Station by Princess Lane",
+        "r": "Princess Lane",
+        "d": "Thanks to Henley, Beloved Shih Tzu",
+        "t": "pc",
+        "m": "1J1I5AGpDA5aRLaPne2X1ncyJ8b0ABGOv",
+        "i": "waste-basket",
+        "s": 40,
+        "b": "Pet Waste Station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.86305,
+          32.89156
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "7311391",
+      "properties": {
+        "l": "Garden at Royal Park",
+        "r": "Townsend Drive",
+        "t": "gv",
+        "i": "garden",
+        "c": "#ff0000",
+        "s": 15,
+        "b": "Garden"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.86309,
+          32.89935
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "7909458",
+      "properties": {
+        "l": "Pet Waste Station at Royal Park",
+        "r": "Royal Park",
+        "d": "In Honor Of <br>\"Fergie\" Ferguson Bartsch-Collen",
+        "t": "pc",
+        "m": "1jU60QFNcBGhSFdZM41mSo4CPcFxt0yNn",
+        "i": "waste-basket",
+        "s": 40,
+        "b": "Pet Waste Station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.8631,
+          32.89693
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "7798483",
+      "properties": {
+        "n": "Royal Park",
+        "r": "Royal Lane",
+        "t": "pa",
+        "i": "park",
+        "c": "#000000",
+        "s": 70,
+        "b": "Park"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.86311,
+          32.89753
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "4687412",
+      "properties": {
+        "l": "Information Kiosk at Royal Park ",
+        "r": "Royal Lane",
+        "t": "ki",
+        "i": "information",
+        "s": 25,
+        "b": "Kiosk"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.86311,
+          32.89529
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "3765258",
+      "properties": {
+        "n": "NT 161",
+        "r": "Princess Lane",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.86311,
+          32.8928
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "2905930",
+      "properties": {
+        "n": "Princess Lane",
+        "r": "Princess Lane",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.86313,
+          32.89242
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "3310272",
+      "properties": {
+        "n": "Norcross Lane",
+        "r": "Norcross Lane",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.86314,
+          32.8898
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "2669130",
+      "properties": {
+        "l": "HAWK Light at Royal Lane",
+        "r": "Royal Lane",
+        "t": "hk",
+        "i": "hawk-light",
+        "s": 80,
+        "b": "HAWK Light"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.86319,
+          32.89516
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "2917096",
+      "properties": {
+        "n": "NT 163",
+        "r": "Dallas North Tollway",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.86323,
+          32.8893
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "6167814",
+      "properties": {
+        "l": "Royal Park Parking Lot North",
+        "r": "Townsend Drive",
+        "d": "Parking for the trail.  Located at Townsend Drive near Royal Park.",
+        "t": "pl",
+        "i": "parking",
+        "s": 5,
+        "b": "Parking Lot"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.86324,
+          32.89886
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "7233484",
+      "properties": {
+        "l": "Royal Park Parking Lot South",
+        "r": "Royal Lane",
+        "d": "Parking for the trail.  Located at Royal Lane at Royal Park.",
+        "t": "pl",
+        "i": "parking",
+        "s": 5,
+        "b": "Parking Lot"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.86324,
+          32.89554
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "5568853",
+      "properties": {
+        "n": "NT 160",
+        "r": "Royal Lane",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.86324,
+          32.89463
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "9995062",
+      "properties": {
+        "n": "NT 164",
+        "r": "Merrell Road",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.86328,
+          32.8873
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "4162548",
+      "properties": {
+        "l": "Drinking Fountain at Royal Park",
+        "r": "Royal Lane",
+        "t": "df",
+        "i": "water",
+        "s": 10,
+        "b": "Drinking Fountain"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.86329,
+          32.89826
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "7766662",
+      "properties": {
+        "n": "NT 162",
+        "r": "Norcross Lane",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.86329,
+          32.89111
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "9406295",
+      "properties": {
+        "n": "Merrell Road",
+        "r": "Merrell Road",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.8633,
+          32.88753
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "3817779",
+      "properties": {
+        "n": "NT 165",
+        "r": "Merrell Road",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.86339,
+          32.88569
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "2276747",
+      "properties": {
+        "l": "Bike Repair Station at Royal Park",
+        "r": "Royal Lane",
+        "t": "bi",
+        "i": "bicycle",
+        "s": 70,
+        "b": "Bike Repair Station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.86344,
+          32.89721
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "7797538",
+      "properties": {
+        "n": "Royal Lane",
+        "r": "Royal Lane",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.86344,
+          32.89523
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "7238421",
+      "properties": {
+        "n": "Club Royal Pool",
+        "r": "Townsend Drive",
+        "t": "po",
+        "i": "swimming",
+        "c": "#b37400",
+        "s": 70,
+        "b": "Pool"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.86345,
+          32.89943
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "9262581",
+      "properties": {
+        "l": "Pet Waste Station by Webb Chapel Road",
+        "r": "Webb Chapel Road",
+        "d": "Delila (Henley's Cousin)",
+        "t": "pc",
+        "m": "1wlrQg_lTkz6aBCsWUVywCOHivJHMiDH1",
+        "i": "waste-basket",
+        "s": 40,
+        "b": "Pet Waste Station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.8649,
+          32.88554
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "8222762",
+      "properties": {
+        "n": "NT 166",
+        "r": "Webb Chapel Road",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.86549,
+          32.88564
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "1330923",
+      "properties": {
+        "l": "HAWK Light at Webb Chapel Road",
+        "r": "Webb Chapel Road",
+        "t": "hk",
+        "i": "hawk-light",
+        "s": 80,
+        "b": "HAWK Light"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.86636,
+          32.88543
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "2455677",
+      "properties": {
+        "n": "Webb Chapel Road",
+        "r": "Webb Chapel Road",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.86644,
+          32.88555
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "6028694",
+      "properties": {
+        "n": "NT 167",
+        "r": "Webb Chapel Road",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.86776,
+          32.88539
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "9148512",
+      "properties": {
+        "n": "NT 168",
+        "r": "Webb Chapel Road",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.86981,
+          32.88517
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "6755182",
+      "properties": {
+        "n": "Monarch Way",
+        "r": "Webb Chapel Road",
+        "d": "A native prairie and pollinator restoration initiative along Northaven Trail in North Dallas. This project is transforming underutilized greenspace into a thriving corridor of native plants that support monarch butterflies, pollinators, wildlife, and the broader Blackland Prairie ecosystem — all within an urban setting.",
+        "e": "Read more about the exciting project.",
+        "f": "/monarch-way",
+        "t": "wr",
+        "i": "natural",
+        "c": "#627a39",
+        "s": 15,
+        "b": "Wildlife Restoration Area"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.87019,
+          32.88511
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "2017481",
+      "properties": {
+        "n": "NT 169",
+        "r": "Pensive Drive",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.87182,
+          32.88499
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "1606249",
+      "properties": {
+        "l": "Information Kiosk at Pensive Drive",
+        "r": "Pensive Drive",
+        "t": "ki",
+        "i": "information",
+        "s": 25,
+        "b": "Kiosk"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.87274,
+          32.8851
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "7869980",
+      "properties": {
+        "l": "Respite / Rest Area at Pensive Drive",
+        "r": "Pensive Drive",
+        "t": "ra",
+        "i": "highway-rest-area",
+        "s": 10,
+        "b": "Rest Area"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.87284,
+          32.88512
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "2236798",
+      "properties": {
+        "l": "Bike Repair Station at Pensive Drive",
+        "r": "Pensive Drive",
+        "t": "bi",
+        "i": "bicycle",
+        "s": 70,
+        "b": "Bike Repair Station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.87286,
+          32.88518
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "1394413",
+      "properties": {
+        "l": "Pet Waste Station by Pensive Drive",
+        "r": "Pensive Drive",
+        "t": "pu",
+        "i": "waste-basket",
+        "c": "#ff0000",
+        "s": 40,
+        "b": "Pet Waste Station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.87287,
+          32.88511
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "7159382",
+      "properties": {
+        "l": "Drinking Fountain at Pensive Drive",
+        "r": "Pensive Drive",
+        "t": "df",
+        "i": "water",
+        "s": 10,
+        "b": "Drinking Fountain"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.87289,
+          32.88519
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "8076569",
+      "properties": {
+        "l": "Parking Lot off of Pensive Drive",
+        "r": "Pensive Drive",
+        "d": "Parking for the trail.  Located at Pensive Drive.",
+        "t": "pl",
+        "i": "parking",
+        "s": 5,
+        "b": "Parking Lot"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.8732,
+          32.88506
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "3221992",
+      "properties": {
+        "l": "Garden at Pensive",
+        "r": "Pensive Drive",
+        "t": "gv",
+        "i": "garden",
+        "c": "#ff0000",
+        "s": 15,
+        "b": "Garden"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.87331,
+          32.8851
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "7943888",
+      "properties": {
+        "n": "Pensive Drive",
+        "r": "Pensive Drive",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.87359,
+          32.8849
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "9451117",
+      "properties": {
+        "n": "NT 170",
+        "r": "Pensive Drive",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.87406,
+          32.88498
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "3412238",
+      "properties": {
+        "n": "F. P. Caillet Elementary School",
+        "r": "Merrell Road",
+        "d": "DISD elementary school on Merrell Road, just north of the trail.",
+        "e": "Learn more.",
+        "f": "https://caillet.dallasisd.org",
+        "t": "sc",
+        "i": "school",
+        "c": "#b37400",
+        "s": 70,
+        "b": "School"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.87419,
+          32.88823
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "4631845",
+      "properties": {
+        "n": "Goodyear Drive",
+        "r": "Goodyear Drive",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.87602,
+          32.8849
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "3290015",
+      "properties": {
+        "n": "NT 171",
+        "r": "Goodyear Drive",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.87632,
+          32.88492
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "4673265",
+      "properties": {
+        "n": "Brockbank Drive",
+        "r": "Brockbank Drive",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.87706,
+          32.885
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "2371353",
+      "properties": {
+        "n": "NT 172",
+        "r": "Monroe Drive",
+        "t": "em",
+        "i": "mobile-phone",
+        "c": "#ff0000",
+        "s": 65,
+        "b": "911 Sign"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.87837,
+          32.88489
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "9150934",
+      "properties": {
+        "n": "Monroe Drive",
+        "r": "Monroe Drive",
+        "t": "cr",
+        "i": "road",
+        "c": "#000000",
+        "s": 80,
+        "b": "Crossroad"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.87871,
+          32.88498
+        ]
+      }
+    }
+  ]
+}
