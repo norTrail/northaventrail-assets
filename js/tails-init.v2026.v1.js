@@ -149,15 +149,9 @@ function initMap(container) {
     attributionControl: true
   });
 
-  // Report Mapbox tile / style load errors to the remote logger
-  map.on("error", (e) => {
-    const msg = e?.error?.message || e?.message || "Mapbox map error";
-    // Suppress noisy tile 403/404s to avoid flooding the log
-    if (/\b(403|404)\b/.test(msg)) return;
-    logClientError("mapbox.error", msg, {
-      stack: e?.error?.stack || null,
-      type: e?.type || null
-    });
+  window.TrailmapError?.attachErrorLogging?.(map, {
+    appName: "tails-2026",
+    endpoint: window.TRAILMAP_ERROR_ENDPOINT || ""
   });
 
   map.addControl(new mapboxgl.NavigationControl(), "top-right");
@@ -540,27 +534,20 @@ function getMapInstance() {
    Logging of Client Side Errors
    ---------------------------- */
 
-
-   function logClientError(fn, message, details) {
-     try {
-       const params = new URLSearchParams({
-         action: "logClientError",
-         fn,
-         message,
-         details: typeof details === "string"
-           ? details
-           : JSON.stringify(details)
-       });
-
-       // fire-and-forget
-       fetch(`${WEBAPP_URL}?${params.toString()}`, {
-         method: "GET",
-         keepalive: true
-       });
-     } catch (_) {
-       // never throw from logging
-     }
-   }
+function logClientError(fn, message, details = {}) {
+  try {
+    window.TrailmapError?.logClientEvent?.({
+      kind: "tails_client_error",
+      app: "tails-2026",
+      phase: fn,
+      message: String(message || ""),
+      stack: details?.stack || null,
+      details
+    });
+  } catch (_) {
+    // never throw from logging
+  }
+}
 
 function logCaughtError(fn, err, extra = {}) {
   logClientError(fn, err?.message || String(err), {
@@ -568,32 +555,6 @@ function logCaughtError(fn, err, extra = {}) {
     ...extra
   });
 }
-
-
-window.addEventListener("error", (event) => {
-  if (String(event.message).includes("logClientError")) return;
-  logClientError(
-    "window.onerror",
-    event.message,
-    {
-      source: event.filename,
-      line: event.lineno,
-      column: event.colno,
-      stack: event.error?.stack || null
-    }
-  );
-});
-
-window.addEventListener("unhandledrejection", (event) => {
-  if (String(event.reason).includes("logClientError")) return;
-  logClientError(
-    "unhandledrejection",
-    event.reason?.message || String(event.reason),
-    {
-      stack: event.reason?.stack || null
-    }
-  );
-});
 
 // Expose minimal globals intentionally
 window.TAILS = {

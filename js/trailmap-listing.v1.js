@@ -27,6 +27,16 @@ if ('scrollRestoration' in history) {
   // ---------------------------
 
   const safeOnReady = (fn) => window.NorthavenUtils.onReady(fn);
+  const logClientEvent = (kind, err, details) => {
+    window.TrailmapError?.logClientEvent?.({
+      kind,
+      app: "trailmap-listing",
+      message: String(err?.message || err || ""),
+      stack: err?.stack || null,
+      ...details
+    });
+  };
+
   function escHtml(s) {
     if (window.NorthavenUtils?.escapeHtml) return window.NorthavenUtils.escapeHtml(s);
     let str = String(s ?? "");
@@ -705,6 +715,10 @@ if ('scrollRestoration' in history) {
           if (locId) highlightFeature_(locId, tableClass);
         })
         .catch((err) => {
+          logClientEvent("trailmap_listing_load_error", err, {
+            phase: "listing_load",
+            dataUrl: dataUrl || DEFAULTS.dataUrl
+          });
           console.error("Listing load error:", err);
           container.innerHTML = `<p>${escHtml(errorMessage)}</p>`;
         });
@@ -1263,6 +1277,10 @@ if ('scrollRestoration' in history) {
           tryScrollToHash();
         })
         .catch((e) => {
+          logClientEvent("trailmap_listing_hydrate_error", e, {
+            phase: "poi_table_hydrate",
+            dataUrl
+          });
           console.error("POI hydrate error:", e);
           wraps.forEach((wrap) => {
             const loading = wrap.querySelector("[data-poi-loading]");

@@ -38,7 +38,9 @@
     function loadSvgSpriteOnce() {
         window.NorthavenUtils.loadSvgSpriteOnce({
             onError: (err) => {
-                window.logClientErrorToServer?.({ kind: "svg_load_failed", error: err?.message, stack: err?.stack });
+                logClientEvent("issue_tracker_svg_load_failed", err, {
+                    phase: "svg_sprite_load"
+                });
             }
         });
     }
@@ -46,6 +48,16 @@
     // -------------------------
     // Utilities & Helpers
     // -------------------------
+    function logClientEvent(kind, err, details = {}) {
+        window.TrailmapError?.logClientEvent?.({
+            kind,
+            app: "report-trail-issue",
+            message: String(err?.message || err || ""),
+            stack: err?.stack || null,
+            ...details
+        });
+    }
+
     async function fetchWithTimeout(resource, options = {}, timeout = 10000) {
         const { signal, ...fetchOptions } = options;
         const controller = new AbortController();
@@ -262,14 +274,14 @@
         } catch (e) {
             if (!isExit) {
                 console.error("GAS Call Failed:", e);
-                if (typeof TrailmapError !== 'undefined' && TrailmapError.logClientErrorToServer) {
-                    TrailmapError.logClientErrorToServer({
-                        kind: "issue_tracker_post_error",
-                        message: e.message,
-                        stack: e.stack,
-                        data: { params }
-                    });
-                }
+                logClientEvent("issue_tracker_post_error", e, {
+                    phase: "worker_submit",
+                    data: {
+                        page: params?.page,
+                        fieldNames: Object.keys(params || {}),
+                        imageCount: imageList.length
+                    }
+                });
             }
             throw e;
         }
@@ -300,6 +312,11 @@
             return { status: 'submitted' };
         } catch (e) {
             console.error("Upload failed", e);
+            logClientEvent("issue_tracker_upload_error", e, {
+                phase: "image_upload",
+                fileName,
+                sizeBytes: base64Data ? String(base64Data).length : 0
+            });
             throw e;
         }
     }
@@ -1154,6 +1171,10 @@
                     renderPOIResult_(_poiSearchIndex.slice(0, MAX_SEARCH_RESULTS));
                 } catch (e) {
                     console.error("Failed to load POIs", e);
+                    logClientEvent("issue_tracker_poi_fetch_error", e, {
+                        phase: "poi_search_fetch",
+                        manifestUrl: POI_MANIFEST_URL
+                    });
                 }
             })();
 
@@ -1218,6 +1239,11 @@
                     throw new Error(res.message);
                 }
             } catch (err) {
+                logClientEvent("issue_tracker_submit_error", err, {
+                    phase: "form_submit",
+                    imageCount: imageList.length,
+                    hasCoordinates: Boolean(latitudeInput.value && longitudeInput.value)
+                });
                 alert("Submission failed: " + err.message);
                 hideSpinner();
                 document.getElementById('saving').classList.add('hidden');

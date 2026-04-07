@@ -27,6 +27,15 @@
   const escHtml     = (s) => window.NorthavenUtils.escapeHtml(s);
   const safeOnReady = (fn) => window.NorthavenUtils.onReady(fn);
   const fetchJson   = (url, mode, sig) => window.NorthavenUtils.fetchJson(url, { cache: mode, signal: sig });
+  const logClientEvent = (kind, err, details) => {
+    window.TrailmapError?.logClientEvent?.({
+      kind,
+      app: "adoptgarden",
+      message: String(err?.message || err || ""),
+      stack: err?.stack || null,
+      ...details
+    });
+  };
 
   function setStatus(el, msg, isError) {
     el.innerHTML =
@@ -241,11 +250,19 @@
       .catch(function (err) {
         clearTimeout(timeoutId);
         if (err.name === "AbortError") {
+          logClientEvent("adopt_garden_fetch_timeout", err, {
+            phase: "garden_data_fetch",
+            manifestUrl: MANIFEST_URL
+          });
           containers.forEach(function (el) {
             setStatus(el, "Garden information took too long to load. Please refresh the page to try again.", true);
           });
           return;
         }
+        logClientEvent("adopt_garden_fetch_error", err, {
+          phase: "garden_data_fetch",
+          manifestUrl: MANIFEST_URL
+        });
         console.error("[adopt-garden]", err);
         containers.forEach(function (el) {
           if (el.querySelector(".ag-loading")) {

@@ -256,7 +256,11 @@ async function fetchSheepData() {
       renderAllHerds(result.data, mapRef);
     }
   } catch (err) {
-    logCaughtError("fetchSheepData", err, { phase: "sheep fetch" });
+    logCaughtError("fetchSheepData", err, {
+      phase: "sheep fetch",
+      feed: "sheep",
+      manifestUrl: MANIFEST_SHEEP
+    });
     scheduleRetry("sheep", fetchSheepData);
   }
 }
@@ -276,7 +280,11 @@ async function fetchNoMowZones() {
       updateNoMowLayers(mapRef, result.data);
     }
   } catch (err) {
-    logCaughtError("fetchNoMowZones", err, { phase: "no mow zone fetch" });
+    logCaughtError("fetchNoMowZones", err, {
+      phase: "no mow zone fetch",
+      feed: "no-mow",
+      manifestUrl: MANIFEST_NO_MOW
+    });
     console.warn("No-mow fetch failed:", err.message);
   }
 }
@@ -315,7 +323,11 @@ async function fetchOverlayState(isInitial = false) {
     }
 
   } catch (err) {
-    logCaughtError("fetchOverlayState", err, { phase: "overlay fetch" });
+    logCaughtError("fetchOverlayState", err, {
+      phase: "overlay fetch",
+      feed: "overlay",
+      manifestUrl: MANIFEST_OVERLAY
+    });
     scheduleRetry("overlay", fetchOverlayState);
   }
 }

@@ -178,7 +178,7 @@ function loadWindow() {
     `;
 
     mapEl.appendChild(wrapper);
-    window.TrailmapError?.logClientErrorToServer?.({
+    window.TrailmapError?.logClientEvent?.({
       kind: "map_fallback_rendered",
       app: getAppNameFromUrl({ fallback: "northaven-trail" }),
       reason
@@ -194,7 +194,7 @@ function loadWindow() {
     const el = document.getElementById("map");
     if (!(el instanceof HTMLElement)) {
       window.__trailCrumbs?.add("buildMap:no_container");
-      window.TrailmapError?.logClientErrorToServer?.({
+      window.TrailmapError?.logClientEvent?.({
         kind: "buildMap_no_container",
         message: "Map container missing"
       });
@@ -215,7 +215,7 @@ function loadWindow() {
         minTileCacheSize: isMobile ? 20 : 100
       });
     } catch (err) {
-      window.TrailmapError?.logClientErrorToServer?.({
+      window.TrailmapError?.logClientEvent?.({
         kind: "buildMap_failed",
         app: getAppNameFromUrl({ fallback: "northaven-trail" }),
         message: err?.message || String(err),
@@ -331,7 +331,7 @@ function loadWindow() {
       });
     } catch (e) {
       window.__trailCrumbs?.add("reinit:fail", { msg: e?.message });
-      window.TrailmapError?.logClientErrorToServer?.({
+      window.TrailmapError?.logClientEvent?.({
         kind: "reinit_error",
         message: String(e?.message || e),
         stack: e?.stack,
@@ -682,7 +682,7 @@ function _fetchAndApplyMarkerData(reqId, mapAtStart, dataUrls, index = 0) {
       }
       console.error("Marker fetch failed:", err);
       window.__trailCrumbs?.add("markers:fetch_fail", { msg: err?.message });
-      window.TrailmapError?.logClientErrorToServer?.({
+      window.TrailmapError?.logClientEvent?.({
         kind: "marker_fetch_error",
         message: String(err?.message || err),
         stack: err?.stack,

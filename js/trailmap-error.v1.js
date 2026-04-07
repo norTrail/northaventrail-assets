@@ -167,6 +167,219 @@ function createRateLimiter({ maxPerMinute = 12 } = {}) {
   };
 }
 
+function getAppNameFromUrl_(fallback = "unknown") {
+  try {
+    const clean = String(window.location?.pathname || "").replace(/^\/+|\/+$/g, "");
+    const segment = clean ? clean.split("/").pop() : "";
+    return segment
+      ? segment.toLowerCase().replace(/[^a-z0-9-_]/g, "") || fallback
+      : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+const __trailErrorState = window.__trailErrorState || {
+  crumbs: createBreadcrumbs(BREADCRUMB_LIMIT),
+  allow: createRateLimiter({ maxPerMinute: 12 }),
+  map: null,
+  appName: window.APP_NAME || getAppNameFromUrl_("unknown"),
+  endpoint: window.TRAILMAP_ERROR_ENDPOINT || "",
+  send: null
+};
+window.__trailErrorState = __trailErrorState;
+window.__trailCrumbs = __trailErrorState.crumbs;
+
+function buildBasePayload_(kind) {
+  const state = __trailErrorState;
+  const base = {
+    kind,
+    app: state.appName || window.APP_NAME || getAppNameFromUrl_("unknown"),
+    ts: new Date().toISOString(),
+    page: normalizeUrl(location.href),
+    ref: normalizeUrl(document.referrer || ""),
+    ua: navigator.userAgent,
+    lang: navigator.language,
+    vp: { w: window.innerWidth, h: window.innerHeight, dpr: window.devicePixelRatio },
+    online: navigator.onLine,
+    visibility: document.visibilityState,
+    crumbs: state.crumbs.list()
+  };
+
+  // Map state (best effort). Non-map pages simply omit this field.
+  try {
+    const map = state.map;
+    if (map && typeof map.getCenter === "function") {
+      const c = map.getCenter();
+      base.map = {
+        center: [Number(c.lng.toFixed(6)), Number(c.lat.toFixed(6))],
+        zoom: Number(map.getZoom().toFixed(2)),
+        bearing: Number(map.getBearing().toFixed(2)),
+        pitch: Number(map.getPitch().toFixed(2)),
+        loaded: !!map.loaded?.(),
+        styleLoaded: !!map.isStyleLoaded?.()
+      };
+    }
+  } catch (e) {
+    base.map = { note: "map state unavailable" };
+  }
+
+  return base;
+}
+
+async function defaultSend_(payload, endpointOverride) {
+  const endpoint = endpointOverride || __trailErrorState.endpoint || window.TRAILMAP_ERROR_ENDPOINT;
+  if (!endpoint) return;
+
+  const context = { kind: payload.kind, app: payload.app, page: payload.page };
+  const json = safeJson(payload, 20000, context);
+
+  try {
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon(endpoint, new Blob([json], { type: "text/plain" }));
+      return;
+    }
+    const resp = await fetch(endpoint, {
+      method: "POST",
+      cache: "no-store",
+      keepalive: true,
+      body: json,
+      headers: { "Content-Type": "text/plain" }
+    });
+    if (!resp.ok) {
+      console.warn(`log send failed (${resp.status})`);
+    }
+  } catch (e) {
+    // last resort: don't throw
+    console.warn("log send failed", e);
+  }
+}
+
+function emitPayload_(payload, { endpointOverride, send } = {}) {
+  if (isSquarespaceHost_()) return;
+  if (isLikelyAutomatedClient_()) return;
+  if (!__trailErrorState.allow()) return;
+
+  try {
+    const sender = send || __trailErrorState.send;
+    const p = sender
+      ? sender(payload)
+      : defaultSend_(payload, endpointOverride);
+    if (p && typeof p.then === "function") p.catch(() => { });
+    return p;
+  } catch (_) { }
+}
+
+function logClientEvent(payloadObj = {}, endpointOverride) {
+  const kind = String(payloadObj.kind || "client_event");
+  const payload = {
+    ...buildBasePayload_(kind),
+    ...payloadObj,
+    kind,
+    ts: payloadObj.ts || new Date().toISOString()
+  };
+
+  return emitPayload_(payload, { endpointOverride });
+}
+
+function installGlobalHandlersOnce_() {
+  if (window.__trailGlobalHandlersInstalled) return;
+  window.__trailGlobalHandlersInstalled = true;
+
+  // JS runtime errors
+  window.addEventListener("error", (e) => {
+    // Skip resource load errors — the second handler below captures those
+    if (e.target && e.target !== window) return;
+    // Skip cross-origin "Script error." noise (CORS masked)
+    // Note: some browsers (e.g. Brave) populate e.filename even for cross-origin errors,
+    // so we filter on message alone rather than requiring !e.filename
+    if (e.message === "Script error.") return;
+    if (isIgnorableWindowError_(e)) return;
+
+    __trailErrorState.crumbs.add("window:error", {
+      message: e.message,
+      filename: e.filename,
+      lineno: e.lineno,
+      colno: e.colno
+    });
+
+    logClientEvent({
+      kind: "window_error",
+      err: {
+        message: e.message,
+        filename: e.filename,
+        lineno: e.lineno,
+        colno: e.colno,
+        stack: e.error?.stack
+      }
+    });
+  });
+
+  // Resource load errors (script/css/img)
+  window.addEventListener("error", (e) => {
+    const el = e.target;
+    const isRes =
+      el &&
+      (el.tagName === "SCRIPT" ||
+        el.tagName === "LINK" ||
+        el.tagName === "IMG");
+
+    if (!isRes) return;
+
+    // ---- FILTER KNOWN TRACKER BLOCKS ----
+    const url = el.src || el.href || "";
+    const ignore = [
+      "connect.facebook.net/",
+      "www.googletagmanager.com/",
+      "www.google-analytics.com/"
+    ];
+
+    if (ignore.some(s => url.includes(s))) return;
+    // ------------------------------------
+
+    logClientEvent({
+      kind: "resource_error",
+      err: {
+        tag: el.tagName,
+        url
+      }
+    });
+  }, true);
+
+  // Unhandled promise rejections
+  window.addEventListener("unhandledrejection", (e) => {
+    const detail = describeRejectionReason_(e.reason);
+
+    __trailErrorState.crumbs.add("promise:rejection", {
+      name: detail.name,
+      message: String(detail.message || "").slice(0, 200)
+    });
+
+    logClientEvent({
+      kind: "unhandled_rejection",
+      err: {
+        message: "Unhandled rejection",
+        reason: detail
+      }
+    });
+
+    // Optional: reduce console noise if you’re confident your logger works
+    // e.preventDefault();
+  });
+
+  document.addEventListener("visibilitychange", () => {
+    __trailErrorState.crumbs.add("visibility", { state: document.visibilityState });
+  });
+  window.addEventListener("online", () => {
+    __trailErrorState.crumbs.add("net", { online: true });
+  });
+  window.addEventListener("offline", () => {
+    __trailErrorState.crumbs.add("net", { online: false });
+  });
+}
+
+installGlobalHandlersOnce_();
+
 /**
  * Attach error logging to a Mapbox map instance.
  * @param {mapboxgl.Map} map
@@ -182,222 +395,42 @@ function attachErrorLogging(map, opts = {}) {
     send = null
   } = opts;
 
-  const crumbs = createBreadcrumbs(BREADCRUMB_LIMIT);
-  const allow = createRateLimiter({ maxPerMinute: 12 });
+  __trailErrorState.map = map || null;
+  __trailErrorState.appName = appName || __trailErrorState.appName;
+  __trailErrorState.endpoint = endpoint || __trailErrorState.endpoint || window.TRAILMAP_ERROR_ENDPOINT;
+  __trailErrorState.send = send || null;
 
   // Make breadcrumbs easy to add elsewhere in your code
-  window.__trailCrumbs = crumbs;
-
-  function buildBasePayload(kind) {
-    const base = {
-      kind,
-      app: appName,
-      ts: new Date().toISOString(),
-      page: normalizeUrl(location.href),
-      ref: normalizeUrl(document.referrer || ""),
-      ua: navigator.userAgent,
-      lang: navigator.language,
-      vp: { w: window.innerWidth, h: window.innerHeight, dpr: window.devicePixelRatio },
-      online: navigator.onLine,
-      visibility: document.visibilityState,
-      crumbs: crumbs.list()
-    };
-
-    // Map state (best effort)
-    try {
-      if (map && typeof map.getCenter === "function") {
-        const c = map.getCenter();
-        base.map = {
-          center: [Number(c.lng.toFixed(6)), Number(c.lat.toFixed(6))],
-          zoom: Number(map.getZoom().toFixed(2)),
-          bearing: Number(map.getBearing().toFixed(2)),
-          pitch: Number(map.getPitch().toFixed(2)),
-          loaded: !!map.loaded?.(),
-          styleLoaded: !!map.isStyleLoaded?.()
-        };
-      }
-    } catch (e) {
-      base.map = { note: "map state unavailable" };
-    }
-    return base;
-  }
-
-  async function defaultSend(payload) {
-    if (!endpoint) return;
-
-    const context = { kind: payload.kind, app: payload.app, page: payload.page };
-    const json = safeJson(payload, 20000, context);
-
-    try {
-      if (navigator.sendBeacon) {
-        navigator.sendBeacon(endpoint, new Blob([json], { type: "text/plain" }));
-        return;
-      }
-      const resp = await fetch(endpoint, {
-        method: "POST",
-        cache: "no-store",
-        keepalive: true,
-        body: json,
-        headers: { "Content-Type": "text/plain" }
-      });
-      if (!resp.ok) {
-        console.warn(`log send failed (${resp.status})`);
-      }
-    } catch (e) {
-      // last resort: don't throw
-      console.warn("log send failed", e);
-    }
-  }
-
-  function emit(payload) {
-    // Skip server logging entirely on Squarespace editor/preview hosts
-    if (isSquarespaceHost_()) return;
-    if (isLikelyAutomatedClient_()) return;
-
-    if (!allow()) return;
-
-    try {
-      const p = (send ? send(payload) : defaultSend(payload));
-      if (p && typeof p.then === "function") p.catch(() => { });
-    } catch (_) { }
-  }
+  window.__trailCrumbs = __trailErrorState.crumbs;
 
   // Make the latest map/crumbs/emitter available to global handlers
   window.__trailErrorContext = {
-    crumbs,
-    buildBasePayload,
-    emit
+    crumbs: __trailErrorState.crumbs,
+    buildBasePayload: buildBasePayload_,
+    emit: (payload) => emitPayload_(payload)
   };
 
   // ---- Mapbox error event
   if (map && typeof map.on === "function") {
     map.on("error", (e) => {
       console.log("MAPBOX_ERROR", e?.error?.message || e);
-      crumbs.add("mapbox:error", {
+      __trailErrorState.crumbs.add("mapbox:error", {
         sourceId: e?.sourceId,
         tile: e?.tile,
         message: e?.error?.message
       });
 
-      const payload = buildBasePayload("mapbox_error");
-      payload.err = {
-        message: e?.error?.message || "Mapbox error",
-        stack: e?.error?.stack,
-        sourceId: e?.sourceId,
-        tile: e?.tile
-      };
-      emit(payload);
+      logClientEvent({
+        kind: "mapbox_error",
+        err: {
+          message: e?.error?.message || "Mapbox error",
+          stack: e?.error?.stack,
+          sourceId: e?.sourceId,
+          tile: e?.tile
+        }
+      });
     });
   }
-
-  function installGlobalHandlersOnce_() {
-    if (window.__trailGlobalHandlersInstalled) return;
-    window.__trailGlobalHandlersInstalled = true;
-
-    // JS runtime errors
-    window.addEventListener("error", (e) => {
-      // Skip resource load errors — the second handler below captures those
-      if (e.target && e.target !== window) return;
-      // Skip cross-origin "Script error." noise (CORS masked)
-      // Note: some browsers (e.g. Brave) populate e.filename even for cross-origin errors,
-      // so we filter on message alone rather than requiring !e.filename
-      if (e.message === "Script error.") return;
-      if (isIgnorableWindowError_(e)) return;
-
-      const ctx = window.__trailErrorContext;
-      if (!ctx) return;
-
-      ctx.crumbs.add("window:error", {
-        message: e.message,
-        filename: e.filename,
-        lineno: e.lineno,
-        colno: e.colno
-      });
-
-      const payload = ctx.buildBasePayload("window_error");
-      payload.err = {
-        message: e.message,
-        filename: e.filename,
-        lineno: e.lineno,
-        colno: e.colno,
-        stack: e.error?.stack
-      };
-      ctx.emit(payload);
-    });
-
-    // Resource load errors (script/css/img)
-    window.addEventListener("error", (e) => {
-      const ctx = window.__trailErrorContext;
-      if (!ctx) return;
-
-      const el = e.target;
-      const isRes =
-        el &&
-        (el.tagName === "SCRIPT" ||
-          el.tagName === "LINK" ||
-          el.tagName === "IMG");
-
-      if (!isRes) return;
-
-      // ---- FILTER KNOWN TRACKER BLOCKS ----
-      const url = el.src || el.href || "";
-      const ignore = [
-        "connect.facebook.net/",
-        "www.googletagmanager.com/",
-        "www.google-analytics.com/"
-      ];
-
-      if (ignore.some(s => url.includes(s))) return;
-      // ------------------------------------
-
-      const payload = ctx.buildBasePayload("resource_error");
-      payload.err = {
-        tag: el.tagName,
-        url
-      };
-
-      ctx.emit(payload);
-    }, true);
-
-    // Unhandled promise rejections
-    window.addEventListener("unhandledrejection", (e) => {
-      const ctx = window.__trailErrorContext;
-      if (!ctx) return;
-
-      const detail = describeRejectionReason_(e.reason);
-
-      ctx.crumbs.add("promise:rejection", {
-        name: detail.name,
-        message: String(detail.message || "").slice(0, 200)
-      });
-
-      const payload = ctx.buildBasePayload("unhandled_rejection");
-      payload.err = {
-        message: "Unhandled rejection",
-        reason: detail
-      };
-
-      ctx.emit(payload);
-
-      // Optional: reduce console noise if you’re confident your logger works
-      // e.preventDefault();
-    });
-
-    document.addEventListener("visibilitychange", () => {
-      const ctx = window.__trailErrorContext;
-      ctx?.crumbs?.add("visibility", { state: document.visibilityState });
-    });
-    window.addEventListener("online", () => {
-      const ctx = window.__trailErrorContext;
-      ctx?.crumbs?.add("net", { online: true });
-    });
-    window.addEventListener("offline", () => {
-      const ctx = window.__trailErrorContext;
-      ctx?.crumbs?.add("net", { online: false });
-    });
-  }
-
-  installGlobalHandlersOnce_();
 
   // ---- WebGL context loss / restore
   try {
@@ -407,19 +440,21 @@ function attachErrorLogging(map, opts = {}) {
       canvas.addEventListener("webglcontextlost", (e) => {
         // Prevent default so the browser can attempt restore
         e.preventDefault();
-        crumbs.add("webgl:lost");
+        __trailErrorState.crumbs.add("webgl:lost");
 
-        const payload = buildBasePayload("webgl_context_lost");
-        payload.err = { message: "WebGL context lost" };
-        emit(payload);
+        logClientEvent({
+          kind: "webgl_context_lost",
+          err: { message: "WebGL context lost" }
+        });
       });
 
       canvas.addEventListener("webglcontextrestored", () => {
-        crumbs.add("webgl:restored");
+        __trailErrorState.crumbs.add("webgl:restored");
 
-        const payload = buildBasePayload("webgl_context_restored");
-        payload.err = { message: "WebGL context restored" };
-        emit(payload);
+        logClientEvent({
+          kind: "webgl_context_restored",
+          err: { message: "WebGL context restored" }
+        });
       });
     }
   } catch (e) {
@@ -427,12 +462,12 @@ function attachErrorLogging(map, opts = {}) {
   }
 
   // Helpful breadcrumbs you can sprinkle in your app:
-  crumbs.add("logger:attached");
+  __trailErrorState.crumbs.add("logger:attached");
 
   // Remove
   //console.log("Error logging loaded")
 
-  return { crumbs };
+  return { crumbs: __trailErrorState.crumbs };
 }
 
 /* ============================================================
@@ -446,32 +481,7 @@ function attachErrorLogging(map, opts = {}) {
    ============================================================ */
 
 function logClientErrorToServer(payloadObj, endpointOverride) {
-  if (isSquarespaceHost_()) return; // don't log editor errors
-  if (isLikelyAutomatedClient_()) return;
-  const endpoint = endpointOverride || window.TRAILMAP_ERROR_ENDPOINT;
-  if (!endpoint) return;
-
-  const finalPayload = {
-    app: window.APP_NAME || "unknown",
-    page: normalizeUrl(location.href),
-    ua: navigator.userAgent,
-    ts: new Date().toISOString(),
-    ...payloadObj
-  };
-
-  const context = { kind: finalPayload.kind, app: finalPayload.app, page: finalPayload.page };
-  const json = safeJson(finalPayload, 20000, context);
-
-  return fetch(endpoint, {
-    method: "POST",
-    cache: "no-store",
-    keepalive: true,
-    body: json,
-    headers: { "Content-Type": "text/plain" }
-  }).then(r => {
-    if (!r.ok) console.warn(`logClientError send failed (${r.status})`);
-    return r;
-  }).catch(() => { });
+  return logClientEvent(payloadObj, endpointOverride);
 }
 
 /* ============================================================
@@ -743,5 +753,6 @@ function addDebugButtons_({ onRebuild, onKeepAlive } = {}) {
 window.TrailmapError = {
   attachErrorLogging,
   installWebglAutoRecovery,
+  logClientEvent,
   logClientErrorToServer
 };

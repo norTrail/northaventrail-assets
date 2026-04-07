@@ -26,6 +26,15 @@
   const escHtml     = (s) => window.NorthavenUtils.escapeHtml(s);
   const safeOnReady = (fn) => window.NorthavenUtils.onReady(fn);
   const fetchJson   = (url, mode, sig) => window.NorthavenUtils.fetchJson(url, { cache: mode, signal: sig });
+  const logClientEvent = (kind, err, details) => {
+    window.TrailmapError?.logClientEvent?.({
+      kind,
+      app: "trail-captains",
+      message: String(err?.message || err || ""),
+      stack: err?.stack || null,
+      ...details
+    });
+  };
 
   function setStatus(el, msg, isError) {
     el.innerHTML =
@@ -275,11 +284,19 @@
       .catch(function (err) {
         clearTimeout(timeoutId);
         if (err.name === "AbortError") {
+          logClientEvent("trail_captains_fetch_timeout", err, {
+            phase: "trail_captains_data_fetch",
+            manifestUrl: MANIFEST_URL
+          });
           containers.forEach(function (el) {
             setStatus(el, "Trail captain information took too long to load. Please refresh the page to try again.", true);
           });
           return;
         }
+        logClientEvent("trail_captains_fetch_error", err, {
+          phase: "trail_captains_data_fetch",
+          manifestUrl: MANIFEST_URL
+        });
         console.error("[trail-captains]", err);
         containers.forEach(function (el) {
           if (el.querySelector(".tc-loading")) {

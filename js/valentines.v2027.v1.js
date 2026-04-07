@@ -38,6 +38,16 @@ let zoomEndTimeout = null;
 const ZOOM_DEBOUNCE_MS = 50;
 let maxZoomRequired = 0;
 
+function logClientEvent(kind, err, details = {}) {
+  window.TrailmapError?.logClientEvent?.({
+    kind,
+    app: 'valentines-map',
+    message: String(err?.message || err || ''),
+    stack: err?.stack || null,
+    ...details
+  });
+}
+
 // -------------------- GeoJSON state --------------------
 let currentClingGeojson = null;                // last loaded FeatureCollection
 let currentClingByLocationID = new Map();      // locationID -> feature
@@ -1098,10 +1108,22 @@ function updateStatusUI(fc) {
 function startClingRefresh() {
   if (document.visibilityState !== 'visible' || refreshInterval !== null) return;
 
-  refreshClingData().catch((err) => console.error('Fetch Error during refresh:', err));
+  refreshClingData().catch((err) => {
+    logClientEvent('valentines_cling_refresh_error', err, {
+      phase: 'cling_refresh',
+      manifestUrl: CLING_MANIFEST_URL
+    });
+    console.error('Fetch Error during refresh:', err);
+  });
 
   refreshInterval = setInterval(() => {
-    refreshClingData().catch((err) => console.error('Fetch Error during refresh:', err));
+    refreshClingData().catch((err) => {
+      logClientEvent('valentines_cling_refresh_error', err, {
+        phase: 'cling_refresh',
+        manifestUrl: CLING_MANIFEST_URL
+      });
+      console.error('Fetch Error during refresh:', err);
+    });
   }, REFRESH_INTERVAL_MS);
 }
 
