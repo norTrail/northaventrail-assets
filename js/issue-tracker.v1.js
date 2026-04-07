@@ -563,6 +563,12 @@
                 uploadButton.textContent = "Add Other Image";
             }
         }
+
+        // Keep the photo-count hint current (e.g. "2 of 3 added")
+        const hint = document.getElementById('upload-hint');
+        if (hint) {
+            hint.textContent = count === 0 ? 'Up to 3 photos' : `${count} of 3 added`;
+        }
     }
 
     function updateUploadStatus() {
@@ -635,6 +641,17 @@
         previewContainer = document.getElementById('image-preview-container');
         errorMessage = document.getElementById('error-message');
         uploadButton = document.getElementById('upload-button');
+
+        // Inject persistent photo-count hint beneath the upload button
+        if (uploadButton && !document.getElementById('upload-hint')) {
+            const hint = document.createElement('small');
+            hint.id = 'upload-hint';
+            hint.setAttribute('aria-live', 'polite');
+            hint.textContent = 'Up to 3 photos';
+            hint.style.cssText = 'display:block;font-size:0.8rem;color:#555;margin-top:4px;';
+            uploadButton.parentNode.insertBefore(hint, uploadButton.nextSibling);
+        }
+
         usePhotoGPSButton = document.getElementById('photoGPSMessageButton');
         hiddenImageNames = document.getElementById('imageNames');
         shortDescription = document.getElementById('short-description');

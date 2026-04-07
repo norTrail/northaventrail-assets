@@ -529,6 +529,10 @@ if ('scrollRestoration' in history) {
   function getPoiData_(dataUrl) {
     const url = String(dataUrl || "").trim() || DEFAULTS.dataUrl;
 
+    // 15-second timeout covers the full manifest + data fetch chain.
+    const controller = new AbortController();
+    const timeoutId  = setTimeout(() => controller.abort(), 15000);
+
     const fetchData = (resolvedUrl) => {
       const sourceUrl = String(resolvedUrl || "").trim();
       const cached = getPoiCache_();
@@ -536,7 +540,7 @@ if ('scrollRestoration' in history) {
         return Promise.resolve(cached.data);
       }
 
-      return fetch(sourceUrl)
+      return fetch(sourceUrl, { signal: controller.signal })
         .then((r) => {
           if (!r.ok) throw new Error(`Network ${r.status}`);
           return r.json();
@@ -547,9 +551,11 @@ if ('scrollRestoration' in history) {
     // If the URL is a manifest (*.latest.json), resolve it to one or more versioned files first.
     const isManifest = url.endsWith(".latest.json");
 
-    if (!isManifest) return fetchData(url);
+    if (!isManifest) {
+      return fetchData(url).finally(() => clearTimeout(timeoutId));
+    }
 
-    return fetch(url)
+    return fetch(url, { cache: "no-store", signal: controller.signal })
       .then((r) => {
         if (!r.ok) throw new Error(`Manifest HTTP ${r.status}`);
         return r.json();
@@ -571,10 +577,13 @@ if ('scrollRestoration' in history) {
         return chain;
       })
       .catch((err) => {
+        // Don't fall back to stale cache on timeout — surface the AbortError to callers
+        if (err.name === "AbortError") throw err;
         const cached = getPoiCache_();
         if (cached) return cached.data;
         throw err;
-      });
+      })
+      .finally(() => clearTimeout(timeoutId));
   }
 
   function buildRowModel_(feature, payload) {
@@ -887,8 +896,10 @@ if ('scrollRestoration' in history) {
 
   // Push each section's H2 and thead down to sit flush below the site nav
   // (H2 sticks at nav bottom; thead sticks at nav bottom + H2 height).
+  // Also writes --nt-nav-height so CSS can reference the measured value.
   function adjustStickyOffsets_() {
     const navHeight = getSiteNavHeight_();
+    document.documentElement.style.setProperty("--nt-nav-height", navHeight + "px");
     document.querySelectorAll(".poi-section").forEach((section) => {
       const h2 = section.querySelector("h2");
       const ths = section.querySelectorAll("thead th");

@@ -20,7 +20,7 @@
 
 .poi-table-wrap thead th {
   position: sticky;
-  top: 40px;
+  top: var(--nt-nav-height, 40px); /* JS writes --nt-nav-height via adjustStickyOffsets_() */
   z-index: 80;
   background: rgb(16, 132, 82);
   color: white;
@@ -55,7 +55,7 @@
 
 .poi-section h2 {
   position: sticky;
-  top: 40px;
+  top: var(--nt-nav-height, 40px); /* JS writes --nt-nav-height via adjustStickyOffsets_() */
   background: white;
   z-index: 90;
   padding: 10px 10px 10px 0px;

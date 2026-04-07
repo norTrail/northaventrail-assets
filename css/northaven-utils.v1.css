@@ -1,0 +1,78 @@
+/* ============================================================
+   northaven-utils.v1.css
+   Shared utility classes used across Northaven Trail pages.
+   Load this stylesheet BEFORE any component-specific CSS
+   (trail-captains.v1.css, adopt-garden.v1.css, etc.).
+
+   Pages that use this file:
+     northaventrail.org/trail-captains
+     northaventrail.org/adoptgarden
+
+   Add to Squarespace header injection or first Code Block:
+     <link rel="stylesheet"
+           href="https://assets.northaventrail.org/css/northaven-utils.v1.css">
+   ============================================================ */
+
+/* ---- Screen-reader only utility ---- */
+/* Single authoritative implementation — do not duplicate in component CSS. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---- Shared CTA button ---- */
+/* Used by trail-captains (.tc-header-bar) and adopt-garden (.ag-header-bar).   */
+/* Component JS emits class="nt-cta-btn" — do not add component-prefixed        */
+/* duplicates in component CSS files.                                           */
+.nt-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(16, 132, 82);
+  color: #fff;
+  text-decoration: none;
+  padding: 8px 18px;
+  min-height: 44px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  white-space: normal;
+  text-align: center;
+  transition: background-color 0.15s ease-in-out;
+  box-sizing: border-box;
+}
+
+.nt-cta-btn:hover {
+  background: #0a6640;
+  color: #fff;
+}
+
+.nt-cta-btn:focus-visible {
+  background: #0a6640;
+  color: #fff;
+  outline: 2px solid rgb(16, 132, 82);
+  outline-offset: 3px;
+}
+
+/* ---- Squarespace overflow fix (required for sticky table headers) ---- */
+/* Applied globally here so every component gets it without duplication.  */
+.sqs-block-content {
+  overflow: visible !important;
+}
+
+/* ---- Mobile: full-width CTA button ---- */
+@media (max-width: 767px) {
+  .nt-cta-btn {
+    display: block;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+  }
+}

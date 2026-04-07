@@ -2,6 +2,9 @@
    trail-captains.v1.css
    Styles for the Trail Captains directory tables.
    Used on: northaventrail.org/trail-captains
+
+   Depends on: northaven-utils.v1.css (must load first)
+     Provides: .sr-only, .nt-cta-btn, .sqs-block-content fix
    ============================================================ */
 
 /* ---- Global box-sizing reset for all tc-* components ---- */
@@ -32,35 +35,7 @@
   overflow-wrap: anywhere;
 }
 
-.tc-cta-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: rgb(16, 132, 82);
-  color: #fff;
-  text-decoration: none;
-  padding: 8px 18px;
-  min-height: 44px;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 0.95rem;
-  white-space: normal;
-  text-align: center;
-  transition: background-color 0.15s ease-in-out;
-  box-sizing: border-box;
-}
-
-.tc-cta-btn:hover {
-  background: #0a6640;
-  color: #fff;
-}
-
-.tc-cta-btn:focus-visible {
-  background: #0a6640;
-  color: #fff;
-  outline: 2px solid rgb(16, 132, 82);
-  outline-offset: 3px;
-}
+/* .nt-cta-btn — defined in northaven-utils.v1.css */
 
 /* ---- Section jump nav ---- */
 .tc-section-nav {
@@ -133,18 +108,7 @@
   display: block;
 }
 
-/* ---- Screen-reader only utility ---- */
-.tc-sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
+/* .sr-only — defined in northaven-utils.v1.css */
 
 /* ---- Section wrapper ---- */
 .tc-section {
@@ -168,9 +132,7 @@
   overflow: visible !important;
 }
 
-.sqs-block-content {
-  overflow: visible !important;
-}
+/* .sqs-block-content overflow fix — defined in northaven-utils.v1.css */
 
 /* ---- Base table ---- */
 .tc-table {
@@ -380,12 +342,7 @@
     box-sizing: border-box;
   }
 
-  .tc-cta-btn {
-    display: block;
-    width: 100%;
-    text-align: center;
-    box-sizing: border-box;
-  }
+  /* .nt-cta-btn mobile — defined in northaven-utils.v1.css */
 
   .tc-signup-link {
     width: 100%;
