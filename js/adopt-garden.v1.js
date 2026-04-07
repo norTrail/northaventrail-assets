@@ -27,6 +27,7 @@
   const escHtml     = (s) => window.NorthavenUtils.escapeHtml(s);
   const safeOnReady = (fn) => window.NorthavenUtils.onReady(fn);
   const fetchJson   = (url, mode, sig) => window.NorthavenUtils.fetchJson(url, { cache: mode, signal: sig });
+  const normalizeAbsUrl = (url) => window.NorthavenUtils.normalizeAbsUrl(url);
   const logClientEvent = (kind, err, details) => {
     window.TrailmapError?.logClientEvent?.({
       kind,
@@ -166,9 +167,11 @@
       const roadHtml = g.road ? "<span class='ag-garden-road'>" + escHtml(g.road) + "</span>" : "";
 
       let statusHtml;
-      if (g.desc && g.link) {
+      const safeLink = normalizeAbsUrl(g.link);
+
+      if (g.desc && safeLink) {
         statusHtml =
-          '<a href="' + escHtml(g.link) + '" target="_blank" rel="noopener">' +
+          '<a href="' + escHtml(safeLink) + '" target="_blank" rel="noopener">' +
           escHtml(g.desc) +
           "</a>";
       } else if (g.desc) {

@@ -404,6 +404,25 @@ function setTextSafe(el, text) {
   el.textContent = text ?? '';
 }
 
+function escapeHtml(value) {
+  return window.NorthavenUtils.escapeHtml(value);
+}
+
+function escapeHtmlAttr(value) {
+  return window.NorthavenUtils.escapeHtmlAttr(value);
+}
+
+function sanitizeImageUrl(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  try {
+    const parsed = new URL(raw, window.location.href);
+    return ['http:', 'https:'].includes(parsed.protocol) ? parsed.toString() : '';
+  } catch {
+    return '';
+  }
+}
+
 async function fetchJson(url) {
   const res = await fetch(url, { method: 'GET', credentials: 'omit', redirect: 'follow' });
   if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
@@ -446,9 +465,9 @@ function buildCarouselItemsFromGeojson(fc) {
   if (!fc || !Array.isArray(fc.features)) return [];
   return fc.features
     .map(f => f && f.properties ? f.properties : null)
-    .filter(p => p && p.imageURL)
+    .filter(p => p && sanitizeImageUrl(p.imageURL))
     .map(p => ({
-      large: p.imageURL,
+      large: sanitizeImageUrl(p.imageURL),
       alt: decodeClingTextSafe(p.clingText || "")
     }));
 }
@@ -595,7 +614,7 @@ function buildPopupHTMLFromProps(props) {
   const locId = String(props.locationID || '').trim();
 
   //const smallURL = String(props.smallImageURL || '').trim();
-  const bigURL   = String(props.imageURL || '').trim();
+  const bigURL   = sanitizeImageUrl(props.imageURL);
   const clingText = decodeClingTextSafe(props.clingText || '');
 
   const hasImage = !!bigURL;
@@ -610,11 +629,11 @@ function buildPopupHTMLFromProps(props) {
           Valentine Cling Location
         </div>
         <div class="tooltip">
-          <a onclick="copyID('${locId}')" onmouseout="outFunc()">
-            <span class="locationID">#${locId}</span>
+          <button type="button" class="copyLocationButton" data-copy-id="${escapeHtmlAttr(locId)}" onmouseout="outFunc()">
+            <span class="locationID">#${escapeHtml(locId)}</span>
             <span class="tooltiptext" id="myTooltip">Click to Copy Location #</span>
             <svg class="copyIcon"><use href="#copy-icon"></use></svg>
-          </a>
+          </button>
         </div>
       </div>
     `;
@@ -629,11 +648,10 @@ function buildPopupHTMLFromProps(props) {
       return `
         <div class="popupWrapper">
           <img
-            alt="${clingText}"
+            alt="${escapeHtmlAttr(clingText)}"
             class="popUpClingImage"
-            src="${bigURL}"
-            src_large="${bigURL}"
-            onclick="showModal(this)">
+            src="${escapeHtmlAttr(bigURL)}"
+            src_large="${escapeHtmlAttr(bigURL)}">
         </div>
       `;
     }
@@ -1692,16 +1710,31 @@ window.addEventListener('popstate', () => {
   goToParamFeature();
 }, { passive: true });
 
+document.addEventListener('click', (event) => {
+  const copyButton = event.target?.closest?.('.copyLocationButton');
+  if (copyButton) {
+    event.preventDefault();
+    copyID(copyButton.dataset.copyId || '');
+    return;
+  }
+
+  const popupImage = event.target?.closest?.('.popUpClingImage');
+  if (popupImage) {
+    event.preventDefault();
+    showModal(popupImage);
+  }
+});
+
 // Clipboard tooltip helpers (unchanged)
 function copyID(copyID) {
   navigator.clipboard.writeText(copyID);
   const tooltip = document.getElementById('myTooltip');
-  if (tooltip) tooltip.innerHTML = 'Copied: ' + copyID;
+  if (tooltip) tooltip.textContent = 'Copied: ' + copyID;
 }
 
 function outFunc() {
   const tooltip = document.getElementById('myTooltip');
-  if (tooltip) tooltip.innerHTML = 'Click to Copy Location #';
+  if (tooltip) tooltip.textContent = 'Click to Copy Location #';
 }
 
 function loadSvgSpriteOnce() {

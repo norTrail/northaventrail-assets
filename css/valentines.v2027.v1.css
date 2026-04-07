@@ -397,6 +397,15 @@
   display: inline-block;
 }
 
+.copyLocationButton {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+}
+
 .tooltip .tooltiptext {
   visibility: hidden;
   width: 140px;

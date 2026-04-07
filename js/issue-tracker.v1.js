@@ -928,6 +928,10 @@
             return txt.value;
         }
 
+        function escapeHtml_(str) {
+            return window.NorthavenUtils.escapeHtml(str);
+        }
+
         function selectPOIOption_(item) {
             if (!item) return;
             moveMarker(item.coords[1], item.coords[0], item.name);
@@ -937,7 +941,7 @@
             if (map) {
                 new mapboxgl.Popup({ offset: 35 })
                     .setLngLat([item.coords[0], item.coords[1]])
-                    .setHTML(`<strong>${item.name}</strong>`)
+                    .setHTML(`<strong>${escapeHtml_(item.name)}</strong>`)
                     .addTo(map);
             }
         }

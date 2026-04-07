@@ -36,9 +36,11 @@
     const value = String(url || "").trim();
     if (!value) return "";
     try {
-      return new URL(value, window.location.href).toString();
+      const parsedUrl = new URL(value, window.location.href);
+      const allowedProtocols = new Set(["http:", "https:", "mailto:", "tel:"]);
+      return allowedProtocols.has(parsedUrl.protocol) ? parsedUrl.toString() : "";
     } catch {
-      return value;
+      return "";
     }
   }
 
@@ -337,4 +339,3 @@
     clickShare
   });
 })(window, document);
-

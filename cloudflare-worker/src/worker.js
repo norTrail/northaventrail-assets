@@ -52,13 +52,18 @@ export default {
       }
 
       // 4. Turnstile validation (only for /submit form submissions, not image ops)
-      //    Optional: validates token if present; allows through if widget failed to render (e.g. ad blockers)
+      //    Fail open by default because Turnstile has been unreliable on the host page.
+      //    Set REQUIRE_TURNSTILE=true in Worker env vars to require a token later.
       if (pathname === '/submit') {
         const page = body.page || body.p || '';
         const requiresTurnstile = (page === 'saveData');
         if (requiresTurnstile) {
           const token = body._turnstile;
-          if (token) {
+          const requireTurnstile = String(env.REQUIRE_TURNSTILE || '').toLowerCase() === 'true';
+          if (!token) {
+            if (requireTurnstile) return jsonError('Challenge required', 403, origin);
+            console.warn('Turnstile token missing; allowing request because REQUIRE_TURNSTILE is not true');
+          } else {
             const tsResult = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -67,7 +72,6 @@ export default {
             const tsData = await tsResult.json();
             if (!tsData.success) return jsonError('Challenge failed', 403, origin);
           }
-          // No token: allow through (widget may have failed to load)
         }
       }
 
@@ -86,7 +90,7 @@ export default {
       if (!gasResponse.ok) {
         const errorText = await gasResponse.text();
         console.error(`GAS Error (${gasResponse.status}): ${errorText}`);
-        return jsonError(`Backend Error (${gasResponse.status}): ${errorText}`, gasResponse.status, origin);
+        return jsonError(`Backend Error (${gasResponse.status})`, gasResponse.status, origin);
       }
 
       const responseText = await gasResponse.text();
@@ -105,7 +109,7 @@ export default {
       } catch (_) {
         const preview = responseText.slice(0, 200);
         console.error(`GAS non-JSON response: ${preview}`);
-        return jsonError(`Backend returned unexpected content: ${preview}`, 502, origin);
+        return jsonError('Backend returned unexpected content', 502, origin);
       }
 
       return new Response(responseText, {

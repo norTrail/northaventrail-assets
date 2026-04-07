@@ -308,7 +308,7 @@ function wireCustomSearchUI_() {
           data-idx="${i}"
           ${selected}
         >
-          <span class="label">${String(r.label).trim()}</span>
+          <span class="label">${escapeHtml(String(r.label).trim())}</span>
         </div>`;
     }).join("");
 
@@ -566,6 +566,7 @@ function flyToMarker(currentFeature, zoomLevel, coords) {
   });
 }
 
+function normalizeSquarespaceAssetUrl_(u) {
   return normalizeSquarespaceAssetUrl(u);
 }
 
