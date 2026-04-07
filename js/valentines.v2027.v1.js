@@ -97,14 +97,6 @@ const CLING_INCLUDE_LOCATION_IDS = new Set([
 // =====================================================
 
 // ========= Helper functions ==========================
-function hideById(id) {
-  const el = document.getElementById(id);
-  if (el) el.style.display = "none";
-}
-function showById(id) {
-  const el = document.getElementById(id);
-  if (el) el.style.display = "";
-}
 // =====================================================
 
 const BASE_PAGE_TITLE = document.title;
@@ -122,7 +114,6 @@ function clearUrlSelection() {
   try { document.title = BASE_PAGE_TITLE; } catch {}
 }
 
-// Check for mobile
 const USE_BOTTOM_SHEET_ON_MOBILE = true;
 const MOBILE_BREAKPOINT_PX = 768;
 function isMobileUI() {
@@ -424,12 +415,6 @@ function sanitizeImageUrl(value) {
   }
 }
 
-async function fetchJson(url) {
-  const res = await fetch(url, { method: 'GET', credentials: 'omit', redirect: 'follow' });
-  if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
-  return await res.json();
-}
-
 function getManifestDataUrls(manifest) {
   return [...new Set(
     [manifest?.current, manifest?.fallback, manifest?.previous]
@@ -558,15 +543,12 @@ function initCarouselUIOnce() {
 function filterFeatureCollectionForCarousel(fc) {
   if (!fc || !Array.isArray(fc.features)) return fc;
 
-  const includeList = Array.from(CLING_INCLUDE_LOCATION_IDS);
-  const excludeList = Array.from(CLING_EXCLUDE_LOCATION_IDS);
-
   const out = fc.features.filter(f => {
     const id = f?.properties?.locationID;
     if (!id) return true;
 
-    if (CLING_FILTER_MODE === "include" && includeList.length) return includeList.includes(id);
-    if (CLING_FILTER_MODE === "exclude" && excludeList.length) return !excludeList.includes(id);
+    if (CLING_FILTER_MODE === "include" && CLING_INCLUDE_LOCATION_IDS.size) return CLING_INCLUDE_LOCATION_IDS.has(id);
+    if (CLING_FILTER_MODE === "exclude" && CLING_EXCLUDE_LOCATION_IDS.size) return !CLING_EXCLUDE_LOCATION_IDS.has(id);
     return true;
   });
 
@@ -590,12 +572,12 @@ function updateCarouselFromGeojson(fc) {
     mount.innerHTML = "";
     carouselState.inited = false;
 
-    hideById(CAROUSEL_SECTION_ID);
+    hideEl(document.getElementById(CAROUSEL_SECTION_ID));
     return;
   }
 
   // Has images → show section + render carousel
-  showById(CAROUSEL_SECTION_ID);
+  showEl(document.getElementById(CAROUSEL_SECTION_ID));
 
   initCarouselUIOnce();       // your existing UI builder for the carousel controls/img
   carouselState.items = newItems;
@@ -924,7 +906,6 @@ function openPopupForFeature(feature, lngLat, verboseFlag) {
     return;
   }
 
-  // Close open popups
   closeActivePopup();
 
   // Nudge the map do deal with the controls
@@ -1078,7 +1059,7 @@ function goToParamFeature() {
 // → update source + carousel + indexes
 // ---------------------------------------------------------------------
 async function refreshClingData() {
-  const manifest = await fetchJson(CLING_MANIFEST_URL);
+  const manifest = await window.NorthavenUtils.fetchJson(CLING_MANIFEST_URL);
   const currentUrl = String(manifest?.current || '').trim();
   const candidateUrls = getManifestDataUrls(manifest);
   if (!candidateUrls.length) {
@@ -1092,7 +1073,7 @@ async function refreshClingData() {
   let lastError = null;
   for (const candidateUrl of candidateUrls) {
     try {
-      fc = normalizeFeatureCollection(await fetchJson(candidateUrl));
+      fc = normalizeFeatureCollection(await window.NorthavenUtils.fetchJson(candidateUrl));
       selectedUrl = candidateUrl;
       break;
     } catch (err) {
@@ -1101,7 +1082,7 @@ async function refreshClingData() {
   }
   if (!fc || !selectedUrl) throw lastError || new Error('Unable to load cling data');
 
-  __clingManifestCurrent = selectedUrl;
+  __clingManifestCurrent = currentUrl;
   currentClingGeojson = fc;
   indexFeatures(fc);
 
@@ -1129,25 +1110,21 @@ function updateStatusUI(fc) {
   updateLegendCounts(counts);
 }
 
+function onRefreshError(err) {
+  logClientEvent('valentines_cling_refresh_error', err, {
+    phase: 'cling_refresh',
+    manifestUrl: CLING_MANIFEST_URL
+  });
+  console.error('Fetch Error during refresh:', err);
+}
+
 function startClingRefresh() {
   if (document.visibilityState !== 'visible' || refreshInterval !== null) return;
 
-  refreshClingData().catch((err) => {
-    logClientEvent('valentines_cling_refresh_error', err, {
-      phase: 'cling_refresh',
-      manifestUrl: CLING_MANIFEST_URL
-    });
-    console.error('Fetch Error during refresh:', err);
-  });
+  refreshClingData().catch(onRefreshError);
 
   refreshInterval = setInterval(() => {
-    refreshClingData().catch((err) => {
-      logClientEvent('valentines_cling_refresh_error', err, {
-        phase: 'cling_refresh',
-        manifestUrl: CLING_MANIFEST_URL
-      });
-      console.error('Fetch Error during refresh:', err);
-    });
+    refreshClingData().catch(onRefreshError);
   }, REFRESH_INTERVAL_MS);
 }
 
@@ -1166,9 +1143,9 @@ function handleVisibilityChange() {
 // Share button (native)
 // ---------------------------------------------------------------------
 function setShareButton(title, text, url){
-  if (!title || title ===''){ title = "Northaven Trail Valentines Clings"};
-  if (!text || text ===''){ text = "Northaven Trail Valentines Clings"};
-  if (!url || url === ''){ url = window.location.href};
+  if (!title) { title = "Northaven Trail Valentines Clings"; }
+  if (!text) { text = "Northaven Trail Valentines Clings"; }
+  if (!url) { url = window.location.href; }
   const shareBtn = getElementById('share-button');
   setAttrSafe(shareBtn, 'share-title', title);
   setAttrSafe(shareBtn, 'share-text', text);
@@ -1484,12 +1461,6 @@ function loadWindow() {
 
   if (navigator.share && shareBtn) {
     shareBtn.addEventListener('click', () => {
-      if (!navigator.share) {
-        hideEl(shareButtonWrapper);
-        hideEl(shareContainer);
-        return;
-      }
-
       const title = shareBtn.getAttribute('share-title') || '';
       const text = shareBtn.getAttribute('share-text') || '';
       const url = shareBtn.getAttribute('share-url') || window.location.href;
@@ -1506,7 +1477,7 @@ function loadWindow() {
     hideEl(shareButtonWrapper);
   }
 
-  loadSvgSpriteOnce();
+  window.NorthavenUtils.loadSvgSpriteOnce({ url: '/s/icons.svg' });
 
   setShareButton();
 
@@ -1625,6 +1596,16 @@ function syncHamburgerCheckboxes() {
   }
 }
 
+function haversineKm(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 function injectFindNearestButton() {
   const mapEl = document.getElementById('map');
   if (!mapEl) return;
@@ -1663,21 +1644,11 @@ function injectFindNearestButton() {
           return;
         }
 
-        function haversine(lat1, lon1, lat2, lon2) {
-          const R = 6371;
-          const dLat = (lat2 - lat1) * Math.PI / 180;
-          const dLon = (lon2 - lon1) * Math.PI / 180;
-          const a = Math.sin(dLat / 2) ** 2 +
-            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-            Math.sin(dLon / 2) ** 2;
-          return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        }
-
         const sorted = features
           .filter(f => f.geometry?.type === 'Point')
           .map(f => ({
             f,
-            dist: haversine(userLat, userLng, f.geometry.coordinates[1], f.geometry.coordinates[0])
+            dist: haversineKm(userLat, userLng, f.geometry.coordinates[1], f.geometry.coordinates[0])
           }))
           .sort((a, b) => a.dist - b.dist)
           .slice(0, 5);
@@ -1743,11 +1714,5 @@ function outFunc() {
   if (tooltip) tooltip.textContent = 'Click to Copy Location #';
 }
 
-function loadSvgSpriteOnce() {
-  window.NorthavenUtils.loadSvgSpriteOnce({ url: "/s/icons.svg" });
-}
-
-// Filters for legend
 loadLegendVisibilityFromStorage();
-// Boot
 loadWindow();

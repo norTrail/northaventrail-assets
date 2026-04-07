@@ -92,7 +92,7 @@ function initGestureControl(mapboxMap) {
   });
 
   // ------------------------------------------------------------
-  // Adjustment #3: Blur cleanup (prevents timers / states lingering)
+  // Blur cleanup: prevents timers / states lingering after tab switch
   // ------------------------------------------------------------
   const onWindowBlur = () => {
     clearTimeout(wheelLockTimer);
@@ -118,7 +118,6 @@ function initGestureControl(mapboxMap) {
 
     dragIntent = true;
 
-    // Adjustment #2: if Ctrl/⌘ already held, unlock immediately (no tip)
     if (e.ctrlKey || e.metaKey) {
       hideTip();
       mapboxMap.dragPan.enable();
@@ -160,7 +159,6 @@ function initGestureControl(mapboxMap) {
     if (!(e.ctrlKey || e.metaKey) && !ctrlUnlocked) {
       mapboxMap.dragPan.disable();
 
-      // Adjustment #1: re-lock scrollZoom for consistent embedded behavior
       mapboxMap.scrollZoom.disable();
     }
   };
@@ -256,15 +254,15 @@ function initGestureControl(mapboxMap) {
     clearTimeout(wheelLockTimer);
     hideTip();
     removeCtrlDragUnlock?.();
-    window.removeEventListener("blur", onWindowBlur, { passive: true });
+    window.removeEventListener("blur", onWindowBlur);
     window.removeEventListener("mouseup", onMouseUp);
-    canvas.removeEventListener("mousedown", onMouseDown, { passive: true });
-    canvas.removeEventListener("mousemove", onMouseMove, { passive: true });
-    canvas.removeEventListener("touchmove", onTouchMove, { passive: false });
-    canvas.removeEventListener("wheel", onWheelPreventDefault, { passive: false });
-    canvas.removeEventListener("wheel", onWheel, { passive: true });
-    canvas.removeEventListener("touchstart", onTouchStart, { passive: true });
-    canvas.removeEventListener("touchend", onTouchEnd, { passive: true });
+    canvas.removeEventListener("mousedown", onMouseDown);
+    canvas.removeEventListener("mousemove", onMouseMove);
+    canvas.removeEventListener("touchmove", onTouchMove);
+    canvas.removeEventListener("wheel", onWheelPreventDefault);
+    canvas.removeEventListener("wheel", onWheel);
+    canvas.removeEventListener("touchstart", onTouchStart);
+    canvas.removeEventListener("touchend", onTouchEnd);
     mapboxMap.__gestureControlInitialized = false;
     mapboxMap.__gestureControlDestroy = null;
   }
@@ -304,8 +302,8 @@ function wireCtrlDragUnlock_(mapboxMap, isFullscreenRef, onStateChange) {
   window.addEventListener("blur", onBlur, { passive: true });
 
   return function removeCtrlDragUnlock() {
-    window.removeEventListener("keydown", updateFromKeys_, { passive: true });
-    window.removeEventListener("keyup", updateFromKeys_, { passive: true });
-    window.removeEventListener("blur", onBlur, { passive: true });
+    window.removeEventListener("keydown", updateFromKeys_);
+    window.removeEventListener("keyup", updateFromKeys_);
+    window.removeEventListener("blur", onBlur);
   };
 }
