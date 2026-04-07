@@ -411,7 +411,7 @@ input[type="checkbox"] {
     vertical-align: middle;
     height: 20px;
     width: 12px;
-    background-image: url('https://northaventrail.org/s/red_marker.png');
+    background-image: url('https://assets.northaventrail.org/img/red_marker_orig.png');
     background-size: contain;
     background-repeat: no-repeat;
 }
@@ -419,7 +419,7 @@ input[type="checkbox"] {
 .issueMarker.map {
     width: 30px;
     height: 48px;
-    background-image: url('https://northaventrail.org/s/red_marker.png');
+    background-image: url('https://assets.northaventrail.org/img/red_marker_orig.png');
     background-size: contain;
     background-repeat: no-repeat;
     cursor: pointer;
