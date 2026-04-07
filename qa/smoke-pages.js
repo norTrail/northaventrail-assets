@@ -14,6 +14,7 @@ const PAGES = [
   "https://northaventrail.org/hawk-lights",
   "https://northaventrail.org/report-trail-issue",
   "https://northaventrail.org/tails-2026",
+  "https://northaventrail.org/trail-captains",
   "https://northaventrail.org/valentine-cling-map-2027"
 ];
 

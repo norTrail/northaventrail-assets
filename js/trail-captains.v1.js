@@ -23,9 +23,10 @@
   // Helpers
   // ------------------------------------------------------------------
 
-  const escHtml     = (s) => window.NorthavenUtils.escapeHtml(s);
-  const safeOnReady = (fn) => window.NorthavenUtils.onReady(fn);
-  const fetchJson   = (url, mode, sig) => window.NorthavenUtils.fetchJson(url, { cache: mode, signal: sig });
+  const escHtml     = (s) => window.NorthavenUtils?.escapeHtml(s) ?? s;
+  const safeOnReady = (fn) => window.NorthavenUtils?.onReady(fn) ?? document.addEventListener("DOMContentLoaded", fn);
+  const fetchJson   = (url, mode, sig) => window.NorthavenUtils?.fetchJson(url, { cache: mode, signal: sig });
+
   const logClientEvent = (kind, err, details) => {
     window.TrailmapError?.logClientEvent?.({
       kind,
