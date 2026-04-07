@@ -383,6 +383,9 @@ if ('scrollRestoration' in history) {
       // Close menu when Tab moves focus outside
       menuFocusOut_ = (e) => {
         if (!menu.contains(e.relatedTarget)) {
+          // If focus moved to the button that opened this menu, the click
+          // event will handle the toggle — don't race it with a focusout close.
+          if (e.relatedTarget === openBtn) return;
           setTimeout(() => {
             if (openBtn && !menu.contains(document.activeElement)) {
               closeMenu_(false, "menu focusout");
