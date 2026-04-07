@@ -180,6 +180,7 @@ function loadWindow() {
     mapEl.appendChild(wrapper);
     window.TrailmapError?.logClientErrorToServer?.({
       kind: "map_fallback_rendered",
+      app: getAppNameFromUrl({ fallback: "northaven-trail" }),
       reason
     });
   }
@@ -216,6 +217,7 @@ function loadWindow() {
     } catch (err) {
       window.TrailmapError?.logClientErrorToServer?.({
         kind: "buildMap_failed",
+        app: getAppNameFromUrl({ fallback: "northaven-trail" }),
         message: err?.message || String(err),
         stack: err?.stack || null
       });

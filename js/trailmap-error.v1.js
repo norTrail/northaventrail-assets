@@ -16,6 +16,23 @@ function isSquarespaceHost_() {
   return host.endsWith(".squarespace.com");
 }
 
+function isLikelyAutomatedClient_(ua = navigator.userAgent || "") {
+  return /bot|crawler|spider|ahrefs|bingpreview|storebot|facebookexternalhit|meta-externalads|slurp|duckduckbot|yandex|semrush|headless/i.test(ua);
+}
+
+function isIgnorableWindowError_(e) {
+  const message = String(e?.message || "");
+  const ua = String(navigator.userAgent || "");
+
+  // Nextdoor's in-app browser appears to inject a first-line `nd...` snippet
+  // before our scripts run. It is outside our code and is not actionable here.
+  if (/^ReferenceError:\s*Can't find variable:\s*nd$/i.test(message) && /Nextdoor/i.test(ua)) {
+    return true;
+  }
+
+  return false;
+}
+
 function createBreadcrumbs(limit = 30) {
   const items = [];
   return {
@@ -235,6 +252,7 @@ function attachErrorLogging(map, opts = {}) {
   function emit(payload) {
     // Skip server logging entirely on Squarespace editor/preview hosts
     if (isSquarespaceHost_()) return;
+    if (isLikelyAutomatedClient_()) return;
 
     if (!allow()) return;
 
@@ -284,6 +302,7 @@ function attachErrorLogging(map, opts = {}) {
       // Note: some browsers (e.g. Brave) populate e.filename even for cross-origin errors,
       // so we filter on message alone rather than requiring !e.filename
       if (e.message === "Script error.") return;
+      if (isIgnorableWindowError_(e)) return;
 
       const ctx = window.__trailErrorContext;
       if (!ctx) return;
@@ -428,6 +447,7 @@ function attachErrorLogging(map, opts = {}) {
 
 function logClientErrorToServer(payloadObj, endpointOverride) {
   if (isSquarespaceHost_()) return; // don't log editor errors
+  if (isLikelyAutomatedClient_()) return;
   const endpoint = endpointOverride || window.TRAILMAP_ERROR_ENDPOINT;
   if (!endpoint) return;
 
