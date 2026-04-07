@@ -96,6 +96,8 @@
         .setHTML(renderMonarchPopup({ title, body }))
         .addTo(map);
 
+      window.NorthavenUtils?.focusFirstPopupElement?.(activeMonarchPopup);
+
       return activeMonarchPopup;
     }
 

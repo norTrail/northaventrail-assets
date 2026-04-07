@@ -314,6 +314,64 @@
     });
   }
 
+  const focusModality = {
+    keyboardAt: 0,
+    pointerAt: 0
+  };
+
+  document.addEventListener("keydown", (event) => {
+    if (event.metaKey || event.altKey || event.ctrlKey) return;
+    const navigationKeys = new Set([
+      "Tab",
+      "Enter",
+      " ",
+      "Spacebar",
+      "ArrowUp",
+      "ArrowRight",
+      "ArrowDown",
+      "ArrowLeft"
+    ]);
+    if (navigationKeys.has(event.key)) focusModality.keyboardAt = Date.now();
+  }, true);
+
+  ["pointerdown", "mousedown", "touchstart"].forEach((eventName) => {
+    document.addEventListener(eventName, () => {
+      focusModality.pointerAt = Date.now();
+    }, true);
+  });
+
+  function shouldFocusPopupForA11y(options = {}) {
+    const {
+      pointerGraceMs = 700,
+      keyboardGraceMs = 5000
+    } = options;
+    const now = Date.now();
+
+    if (focusModality.keyboardAt > focusModality.pointerAt) {
+      return now - focusModality.keyboardAt <= keyboardGraceMs;
+    }
+
+    return now - focusModality.pointerAt > pointerGraceMs;
+  }
+
+  function focusFirstPopupElement(popupOrElement, options = {}) {
+    const {
+      selector = ".mapboxgl-popup-close-button, a[href], button:not([disabled]), [tabindex]:not([tabindex='-1'])",
+      preventScroll = true,
+      delay = 50
+    } = options;
+
+    if (!shouldFocusPopupForA11y(options)) return;
+
+    window.setTimeout(() => {
+      const popupEl = typeof popupOrElement?.getElement === "function"
+        ? popupOrElement.getElement()
+        : popupOrElement;
+      const focusTarget = popupEl?.querySelector?.(selector);
+      focusTarget?.focus?.({ preventScroll });
+    }, delay);
+  }
+
   window.NorthavenUtils = Object.assign(window.NorthavenUtils || {}, {
     onReady,
     escapeHtml,
@@ -336,6 +394,8 @@
     formatDateISOLong,
     to12Hour,
     amPm,
-    clickShare
+    clickShare,
+    shouldFocusPopupForA11y,
+    focusFirstPopupElement
   });
 })(window, document);

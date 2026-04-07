@@ -221,22 +221,19 @@ function updateMarker(herdCode, herdObj, map) {
     <p>${escapeHtml(sheepInfo)}</p>
     ${buildPopupNavIcons(lat, lng, shareText)}
   `;
-    const popup = new mapboxgl.Popup({ offset: [0, -76] })
+    const popup = new mapboxgl.Popup({ offset: [0, -76], focusAfterOpen: false })
       .setLngLat([lng, lat])
       .setHTML(popupHTML)
       .addTo(map);
     wirePopupShare(popup);
-    // Move focus into popup for keyboard/screen-reader users
-    setTimeout(() => {
-      const popupEl = popup.getElement();
-      const focusTarget = popupEl?.querySelector(".mapboxgl-popup-close-button, a[href], button");
-      if (focusTarget) focusTarget.focus();
-    }, 50);
+    window.NorthavenUtils?.focusFirstPopupElement?.(popup);
     openPopups.push(popup);
     popup.on("close", () => {
       el.setAttribute("aria-pressed", "false"); // reset toggle state when popup closes
       el.setAttribute("aria-expanded", "false");
-      el.focus();                                // return focus to the marker button
+      if (window.NorthavenUtils?.shouldFocusPopupForA11y?.()) {
+        el.focus();                              // return focus to the marker button for keyboard/screen-reader users
+      }
       const i = openPopups.indexOf(popup);
       if (i !== -1) openPopups.splice(i, 1);
     });
@@ -418,6 +415,7 @@ function openNoMowZonePopup_(zoneCode, markerEl) {
   const popup = new mapboxgl.Popup({
     closeButton: true,
     closeOnClick: true,
+    focusAfterOpen: false,
     offset: 15,
     className: props.popupClass || "custom-popup-brown"
   })
@@ -427,6 +425,7 @@ function openNoMowZonePopup_(zoneCode, markerEl) {
 
   markerEl.setAttribute("aria-expanded", "true");
   wirePopupShare(popup);
+  window.NorthavenUtils?.focusFirstPopupElement?.(popup);
   popup.on("close", () => {
     selectedZoneCode = null;
     markerEl.setAttribute("aria-expanded", "false");

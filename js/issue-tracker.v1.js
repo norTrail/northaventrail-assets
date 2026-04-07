@@ -939,10 +939,11 @@
             hideDropdown_();
             clearSearch.classList.remove('hidden');
             if (map) {
-                new mapboxgl.Popup({ offset: 35 })
+                const popup = new mapboxgl.Popup({ offset: 35, focusAfterOpen: false })
                     .setLngLat([item.coords[0], item.coords[1]])
                     .setHTML(`<strong>${escapeHtml_(item.name)}</strong>`)
                     .addTo(map);
+                window.NorthavenUtils?.focusFirstPopupElement?.(popup);
             }
         }
 

@@ -744,6 +744,7 @@ function createPopUp(currentFeature) {
 
   const popup = new mapboxgl.Popup({
     closeOnClick: false,
+    focusAfterOpen: false,
     offset: POP_UP_OFFSET,
     maxWidth: POP_UP_MAX_WIDTH
   });
@@ -759,6 +760,8 @@ function createPopUp(currentFeature) {
 
     const popupEl = popup.getElement();
     if (!popupEl) return;
+
+    window.NorthavenUtils?.focusFirstPopupElement?.(popup);
 
     // prevent double-binding if something weird re-triggers open
     if (popupEl.dataset.shareWired === "1") return;

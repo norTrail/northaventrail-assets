@@ -949,11 +949,15 @@ function openPopupForFeature(feature, lngLat, verboseFlag) {
       maxWidth: POP_UP_MAX_WIDTH,
       offset: 8,          // tiny spacing above the pin tip
       closeButton: true,
-      closeOnClick: true
+      closeOnClick: true,
+      focusAfterOpen: false
     })
     .setLngLat(center)
     .setHTML(html)
     .addTo(map)
+    .on('open', () => {
+      window.NorthavenUtils?.focusFirstPopupElement?.(activePopup);
+    })
     .on('close', () => {
       try { clearActiveFeatureState(); } catch {}
       try { setHighlightFeature?.(null); } catch {}
