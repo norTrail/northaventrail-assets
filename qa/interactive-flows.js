@@ -128,6 +128,20 @@ async function listingMapsMenuFlow(browser) {
       "Maps menu Apple Maps item should open in a new tab"
     );
 
+    await page.$eval(".mapsBtn", (el) => el.click());
+    await page.waitForFunction(() => {
+      const btn = document.querySelector(".mapsBtn");
+      const menu = document.querySelector(".mapsMenu");
+      return btn?.getAttribute("aria-expanded") === "false" && !!menu?.hidden;
+    }, { timeout: 10000 });
+
+    await page.$eval(".mapsBtn", (el) => el.click());
+    await page.waitForFunction(() => {
+      const btn = document.querySelector(".mapsBtn");
+      const menu = document.querySelector(".mapsMenu");
+      return btn?.getAttribute("aria-expanded") === "true" && menu && !menu.hidden;
+    }, { timeout: 10000 });
+
     await page.keyboard.press("Escape");
     await page.waitForFunction(() => {
       const btn = document.querySelector(".mapsBtn");

@@ -360,6 +360,15 @@ if ('scrollRestoration' in history) {
       const cancel = e.target.closest?.(".mapsMenuCancel");
       const closeBtn = e.target.closest?.(".mapsMenuTitle__close");
       const menuLink = e.target.closest?.(".mapsMenu a.mapsMenuItem");
+      const menuChrome = e.target.closest?.(".mapsMenu");
+      const openPoiMaps = openBtn?.closest?.(".poiMaps") || null;
+      const clickedOpenMenuChrome =
+        !!openBtn &&
+        !!menuChrome &&
+        inMaps === openPoiMaps &&
+        !menuLink &&
+        !cancel &&
+        !closeBtn;
 
       // Button toggles
       if (btn) {
@@ -383,6 +392,15 @@ if ('scrollRestoration' in history) {
         // Let the link navigate; just close and stop row click
         e.stopPropagation();
         closeMenu_();
+        return;
+      }
+
+      // If the open menu overlaps the trigger area, clicking back into that
+      // menu chrome should still behave like a close/toggle.
+      if (clickedOpenMenuChrome) {
+        e.preventDefault();
+        e.stopPropagation();
+        closeMenu_(true);
         return;
       }
 
