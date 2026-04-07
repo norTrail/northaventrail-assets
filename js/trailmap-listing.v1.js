@@ -269,6 +269,7 @@ if ('scrollRestoration' in history) {
       if (!btn) return;
       setActiveRowFromMapsButton_(btn);
       const expanded = btn.getAttribute("aria-expanded") === "true";
+      console.log("toggleMenuFromButton_ expanded:", expanded);
       expanded ? closeMenu_(restoreFocusOnClose) : openMenu_(btn);
     }
 
