@@ -15,6 +15,7 @@ let __clingManifestCurrent = null;
 // POPUP
 
 let scrollYModal;
+const POP_UP_MAX_WIDTH = '320px';
 
 // Map bounds
 const MAP_BOUNDS = [
