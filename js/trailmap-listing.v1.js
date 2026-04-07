@@ -287,7 +287,7 @@ if ('scrollRestoration' in history) {
       const menu = getMenu_(openBtn);
       const btnToRestore = openBtn;
       openBtn.setAttribute("aria-expanded", "false");
-      console.log("closeMenu_ set aria-expanded=false:", {
+      console.log(`closeMenu_ set aria-expanded=false [reason=${reason}]`, {
         id: openBtn?.id || null,
         menuId: openBtn?.dataset?.menuId || null,
         restoreFocus,
