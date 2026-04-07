@@ -278,6 +278,11 @@ if ('scrollRestoration' in history) {
       const menu = getMenu_(openBtn);
       const btnToRestore = openBtn;
       openBtn.setAttribute("aria-expanded", "false");
+      console.log("closeMenu_ set aria-expanded=false:", {
+        id: openBtn?.id || null,
+        menuId: openBtn?.dataset?.menuId || null,
+        restoreFocus
+      });
       if (menu) {
         menu.hidden = true;
         if (menuFocusOut_) menu.removeEventListener("focusout", menuFocusOut_);
@@ -296,6 +301,10 @@ if ('scrollRestoration' in history) {
       if (!menu) return;
       openBtn = btn;
       btn.setAttribute("aria-expanded", "true");
+      console.log("openMenu_ set aria-expanded=true:", {
+        id: btn?.id || null,
+        menuId: btn?.dataset?.menuId || null
+      });
       menu.hidden = false;
 
       // 1. Reset any previous "drop-up" logic before measuring
