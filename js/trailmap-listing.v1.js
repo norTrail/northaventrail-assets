@@ -270,15 +270,6 @@ if ('scrollRestoration' in history) {
       setActiveRowFromMapsButton_(btn);
       const rawExpanded = btn.getAttribute("aria-expanded");
       const expanded = rawExpanded === "true";
-      console.log("toggleMenuFromButton_:", {
-        rawExpanded,
-        expanded,
-        id: btn?.id || null,
-        menuId: btn?.dataset?.menuId || null,
-        openBtnId: openBtn?.id || null,
-        openBtnMenuId: openBtn?.dataset?.menuId || null,
-        sameButton: btn === openBtn
-      });
       expanded ? closeMenu_(restoreFocusOnClose, "toggle button") : openMenu_(btn);
     }
 
@@ -287,12 +278,6 @@ if ('scrollRestoration' in history) {
       const menu = getMenu_(openBtn);
       const btnToRestore = openBtn;
       openBtn.setAttribute("aria-expanded", "false");
-      console.log(`closeMenu_ set aria-expanded=false [reason=${reason}]`, {
-        id: openBtn?.id || null,
-        menuId: openBtn?.dataset?.menuId || null,
-        restoreFocus,
-        reason
-      });
       if (menu) {
         menu.hidden = true;
         if (menuFocusOut_) menu.removeEventListener("focusout", menuFocusOut_);
@@ -311,10 +296,6 @@ if ('scrollRestoration' in history) {
       if (!menu) return;
       openBtn = btn;
       btn.setAttribute("aria-expanded", "true");
-      console.log("openMenu_ set aria-expanded=true:", {
-        id: btn?.id || null,
-        menuId: btn?.dataset?.menuId || null
-      });
       menu.hidden = false;
 
       // 1. Reset any previous "drop-up" logic before measuring
