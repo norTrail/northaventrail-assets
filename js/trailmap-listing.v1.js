@@ -264,6 +264,14 @@ if ('scrollRestoration' in history) {
       return id ? document.getElementById(id) : null;
     }
 
+    function toggleMenuFromButton_(btn, options = {}) {
+      const { restoreFocusOnClose = false } = options;
+      if (!btn) return;
+      setActiveRowFromMapsButton_(btn);
+      const expanded = btn.getAttribute("aria-expanded") === "true";
+      expanded ? closeMenu_(restoreFocusOnClose) : openMenu_(btn);
+    }
+
     function closeMenu_(restoreFocus = false) {
       if (!openBtn) return;
       const menu = getMenu_(openBtn);
@@ -385,9 +393,7 @@ if ('scrollRestoration' in history) {
       if (btn) {
         e.preventDefault();
         e.stopPropagation(); // don't trigger row click
-        setActiveRowFromMapsButton_(btn);
-        const expanded = btn.getAttribute("aria-expanded") === "true";
-        expanded ? closeMenu_(false) : openMenu_(btn);
+        toggleMenuFromButton_(btn, { restoreFocusOnClose: false });
         return;
       }
 
@@ -421,6 +427,21 @@ if ('scrollRestoration' in history) {
     });
 
     document.addEventListener("keydown", (e) => {
+      const btn = e.target.closest?.(".mapsBtn");
+      if (btn) {
+        if (e.key === "Enter" || e.key === " " || e.key === "Spacebar" || e.key === "ArrowDown") {
+          e.preventDefault();
+          e.stopPropagation();
+          toggleMenuFromButton_(btn, { restoreFocusOnClose: true });
+          return;
+        }
+        if (e.key === "Escape" && btn.getAttribute("aria-expanded") === "true") {
+          e.preventDefault();
+          e.stopPropagation();
+          closeMenu_(true);
+          return;
+        }
+      }
       if (e.key === "Escape") closeMenu_(true);
     });
   }

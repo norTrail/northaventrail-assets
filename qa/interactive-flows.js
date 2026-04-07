@@ -25,6 +25,106 @@ function launchBrowser() {
   });
 }
 
+async function assertMapsMenuToggle(page, options = {}) {
+  const {
+    buttonSelector = ".mapsBtn",
+    menuSelector = ".mapsMenu",
+    label = "Maps menu"
+  } = options;
+
+  await page.waitForSelector(buttonSelector, { visible: true, timeout: 30000 });
+  await page.$eval(buttonSelector, (el) => {
+    el.scrollIntoView({ block: "center" });
+    el.click();
+  });
+
+  await page.waitForFunction((btnSel, menuSel) => {
+    const btn = document.querySelector(btnSel);
+    const menu = document.querySelector(menuSel);
+    return btn?.getAttribute("aria-expanded") === "true" && menu && !menu.hidden;
+  }, { timeout: 10000 }, buttonSelector, menuSelector);
+
+  const menuState = await page.evaluate((btnSel, menuSel) => {
+    const btn = document.querySelector(btnSel);
+    const menu = document.querySelector(`${menuSel}:not([hidden])`) || document.querySelector(menuSel);
+    const row = btn?.closest("tr");
+    const items = menu ? Array.from(menu.querySelectorAll(".mapsMenuItem")).map((el) => ({
+      text: (el.textContent || "").trim(),
+      href: el.getAttribute("href") || "",
+      target: el.getAttribute("target") || ""
+    })) : [];
+    return {
+      expanded: btn?.getAttribute("aria-expanded"),
+      rowActive: row?.classList.contains("active") || false,
+      rowIsActive: row?.classList.contains("is-active") || false,
+      items
+    };
+  }, buttonSelector, menuSelector);
+
+  assert.equal(menuState.expanded, "true", `${label} button should be expanded`);
+  assert.equal(menuState.rowActive, true, `${label} button should mark its row active`);
+  assert.equal(menuState.rowIsActive, true, `${label} button should mark its row is-active`);
+  assert.ok(menuState.items.some((item) => /Trail Map/i.test(item.text)), `${label} should include Trail Map`);
+  assert.ok(menuState.items.some((item) => /Google Maps/i.test(item.text)), `${label} should include Google Maps`);
+  assert.ok(menuState.items.some((item) => /Apple Maps/i.test(item.text)), `${label} should include Apple Maps`);
+  assert.ok(
+    menuState.items.some((item) => /Google Maps/i.test(item.text) && item.href.includes("google") && item.target === "_blank"),
+    `${label} Google Maps item should open in a new tab`
+  );
+  assert.ok(
+    menuState.items.some((item) => /Apple Maps/i.test(item.text) && item.href.includes("apple") && item.target === "_blank"),
+    `${label} Apple Maps item should open in a new tab`
+  );
+
+  await page.$eval(buttonSelector, (el) => el.click());
+  await page.waitForFunction((btnSel, menuSel) => {
+    const btn = document.querySelector(btnSel);
+    const menu = document.querySelector(menuSel);
+    return btn?.getAttribute("aria-expanded") === "false" && !!menu?.hidden;
+  }, { timeout: 10000 }, buttonSelector, menuSelector);
+
+  await page.$eval(buttonSelector, (el) => el.click());
+  await page.waitForFunction((btnSel, menuSel) => {
+    const btn = document.querySelector(btnSel);
+    const menu = document.querySelector(menuSel);
+    return btn?.getAttribute("aria-expanded") === "true" && menu && !menu.hidden;
+  }, { timeout: 10000 }, buttonSelector, menuSelector);
+
+  await page.keyboard.press("Escape");
+  await page.waitForFunction((btnSel, menuSel) => {
+    const btn = document.querySelector(btnSel);
+    const menu = document.querySelector(menuSel);
+    return btn?.getAttribute("aria-expanded") === "false" && !!menu?.hidden;
+  }, { timeout: 10000 }, buttonSelector, menuSelector);
+
+  await page.focus(buttonSelector);
+  await page.keyboard.press("Enter");
+  await page.waitForFunction((btnSel, menuSel) => {
+    const btn = document.querySelector(btnSel);
+    const menu = document.querySelector(menuSel);
+    return btn?.getAttribute("aria-expanded") === "true" && menu && !menu.hidden;
+  }, { timeout: 10000 }, buttonSelector, menuSelector);
+
+  const keyboardState = await page.evaluate((btnSel) => {
+    const btn = document.querySelector(btnSel);
+    const row = btn?.closest("tr");
+    return {
+      rowActive: row?.classList.contains("active") || false,
+      rowIsActive: row?.classList.contains("is-active") || false
+    };
+  }, buttonSelector);
+
+  assert.equal(keyboardState.rowActive, true, `${label} keyboard open should keep row active`);
+  assert.equal(keyboardState.rowIsActive, true, `${label} keyboard open should keep row is-active`);
+
+  await page.keyboard.press("Escape");
+  await page.waitForFunction((btnSel, menuSel) => {
+    const btn = document.querySelector(btnSel);
+    const menu = document.querySelector(menuSel);
+    return btn?.getAttribute("aria-expanded") === "false" && !!menu?.hidden;
+  }, { timeout: 10000 }, buttonSelector, menuSelector);
+}
+
 async function trailmapSearchFlow(browser) {
   const page = await browser.newPage();
   try {
@@ -88,68 +188,19 @@ async function listingMapsMenuFlow(browser) {
   const page = await browser.newPage();
   try {
     await goto(page, "https://northaventrail.org/map-points-of-interest");
-    await page.waitForFunction(() => document.querySelectorAll(".mapsBtn").length > 0, {
-      timeout: 30000
-    });
-
-    await page.$eval(".mapsBtn", (el) => {
-      el.scrollIntoView({ block: "center" });
-      el.click();
-    });
-    await page.waitForFunction(() => {
-      const btn = document.querySelector(".mapsBtn");
-      const menu = document.querySelector(".mapsMenu");
-      return btn?.getAttribute("aria-expanded") === "true" && menu && !menu.hidden;
-    }, { timeout: 10000 });
-
-    const menuState = await page.evaluate(() => {
-      const menu = document.querySelector(".mapsMenu:not([hidden])");
-      const items = menu ? Array.from(menu.querySelectorAll(".mapsMenuItem")).map((el) => ({
-        text: (el.textContent || "").trim(),
-        href: el.getAttribute("href") || "",
-        target: el.getAttribute("target") || ""
-      })) : [];
-      return {
-        expanded: document.querySelector(".mapsBtn")?.getAttribute("aria-expanded"),
-        items
-      };
-    });
-
-    assert.equal(menuState.expanded, "true", "Maps button should be expanded");
-    assert.ok(menuState.items.some((item) => /Trail Map/i.test(item.text)), "Maps menu should include Trail Map");
-    assert.ok(menuState.items.some((item) => /Google Maps/i.test(item.text)), "Maps menu should include Google Maps");
-    assert.ok(menuState.items.some((item) => /Apple Maps/i.test(item.text)), "Maps menu should include Apple Maps");
-    assert.ok(
-      menuState.items.some((item) => /Google Maps/i.test(item.text) && item.href.includes("google") && item.target === "_blank"),
-      "Maps menu Google Maps item should open in a new tab"
-    );
-    assert.ok(
-      menuState.items.some((item) => /Apple Maps/i.test(item.text) && item.href.includes("apple") && item.target === "_blank"),
-      "Maps menu Apple Maps item should open in a new tab"
-    );
-
-    await page.$eval(".mapsBtn", (el) => el.click());
-    await page.waitForFunction(() => {
-      const btn = document.querySelector(".mapsBtn");
-      const menu = document.querySelector(".mapsMenu");
-      return btn?.getAttribute("aria-expanded") === "false" && !!menu?.hidden;
-    }, { timeout: 10000 });
-
-    await page.$eval(".mapsBtn", (el) => el.click());
-    await page.waitForFunction(() => {
-      const btn = document.querySelector(".mapsBtn");
-      const menu = document.querySelector(".mapsMenu");
-      return btn?.getAttribute("aria-expanded") === "true" && menu && !menu.hidden;
-    }, { timeout: 10000 });
-
-    await page.keyboard.press("Escape");
-    await page.waitForFunction(() => {
-      const btn = document.querySelector(".mapsBtn");
-      const menu = document.querySelector(".mapsMenu");
-      return btn?.getAttribute("aria-expanded") === "false" && !!menu?.hidden;
-    }, { timeout: 10000 });
-
+    await assertMapsMenuToggle(page, { label: "Listing maps menu" });
     console.log("listing maps menu: pass");
+  } finally {
+    await page.close();
+  }
+}
+
+async function hawkLightsMapsMenuFlow(browser) {
+  const page = await browser.newPage();
+  try {
+    await goto(page, "https://northaventrail.org/hawk-lights");
+    await assertMapsMenuToggle(page, { label: "Hawk Lights maps menu" });
+    console.log("hawk lights maps menu: pass");
   } finally {
     await page.close();
   }
@@ -284,6 +335,7 @@ async function main() {
   try {
     await trailmapSearchFlow(browser);
     await listingMapsMenuFlow(browser);
+    await hawkLightsMapsMenuFlow(browser);
     await issueTrackerSearchFlow(browser);
     await tailsMarkerFlow(browser);
     await valentineModalFlow(browser);
