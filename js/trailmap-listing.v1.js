@@ -167,10 +167,20 @@ if ('scrollRestoration' in history) {
     return (payload && payload.defs && payload.defs.types && payload.defs.types[typeKey]) || {};
   }
 
+  function tableClassSelector_(tableClass) {
+    const classes = String(tableClass || DEFAULTS.tableClass)
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean);
+    return classes.length ? `.${classes.join(".")}` : `.${DEFAULTS.tableClass}`;
+  }
+
   function columnToLabel_(col) {
     const mapping = {
       name: "Name",
       near: "Location",
+      signal: "Signal",
+      type: "Signal",
       description: "Description",
       image: "Image",
       maps: "Maps"
@@ -609,6 +619,12 @@ if ('scrollRestoration' in history) {
     const errorMessage = cfg.errorMessage || DEFAULTS.errorMessage;
     const tableClass = cfg.tableClass || DEFAULTS.tableClass;
     const dataUrl = cfg.dataUrl || DEFAULTS.dataUrl;
+    const cfgColumns = cfg.columns;
+    const columns = Array.isArray(cfgColumns)
+      ? cfgColumns.map((col) => String(col || "").trim().toLowerCase()).filter(Boolean)
+      : String(cfgColumns || "").trim()
+        ? String(cfgColumns).split(",").map((col) => col.trim().toLowerCase()).filter(Boolean)
+        : null;
 
     // Filter can be:
     // - window.ONLY_SHOW_LIST (labels)
@@ -661,20 +677,36 @@ if ('scrollRestoration' in history) {
 
           const table = document.createElement("table");
           table.className = tableClass;
-          table.innerHTML = `
-            <thead>
-              <tr>
-                <th scope="col">Name</th>
-                <th scope="col">Description</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          `;
+          if (columns?.length) {
+            table.innerHTML = `
+              <thead>
+                <tr>
+                  ${columns.map((col) => `<th scope="col">${escHtml(columnToLabel_(col))}</th>`).join("")}
+                </tr>
+              </thead>
+              <tbody></tbody>
+            `;
+          } else {
+            table.innerHTML = `
+              <thead>
+                <tr>
+                  <th scope="col">Name</th>
+                  <th scope="col">Description</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            `;
+          }
 
           const tbody = table.querySelector("tbody");
           attachRowActivation_(tbody, pageTitle, tableClass);
 
           rowModels.forEach((rowModel) => {
+            if (columns?.length) {
+              tbody.appendChild(buildRowForColumns_(rowModel, payload, pageTitle, tableClass, columns));
+              return;
+            }
+
             const { poi, id, urlmapping, gUrl, aUrl } = rowModel;
             const titleText = escHtml(poi.title);
             const menuHtml = buildMapsMenuHtml_(id, urlmapping, gUrl, aUrl, poi.title, poi.typeLabel);
@@ -723,8 +755,8 @@ if ('scrollRestoration' in history) {
   }
 
   function clearActiveFeature_(tableClass) {
-    const cls = tableClass || DEFAULTS.tableClass;
-    document.querySelectorAll(`.${cls} tbody tr`).forEach((row) => {
+    const tableSelector = tableClassSelector_(tableClass);
+    document.querySelectorAll(`${tableSelector} tbody tr`).forEach((row) => {
       row.classList.remove("active", "is-active");
     });
   }
@@ -732,9 +764,9 @@ if ('scrollRestoration' in history) {
   function highlightFeature_(featureId, tableClass, scroll = false) {
     const idStr = String(featureId ?? "");
     if (!idStr) return;
-    const cls = tableClass || DEFAULTS.tableClass;
+    const tableSelector = tableClassSelector_(tableClass);
     let found = null;
-    document.querySelectorAll(`.${cls} tbody tr`).forEach((row) => {
+    document.querySelectorAll(`${tableSelector} tbody tr`).forEach((row) => {
       const isMatch = row.dataset.featureId === idStr;
       row.classList.toggle("active", isMatch);
       row.classList.toggle("is-active", isMatch);
@@ -815,6 +847,9 @@ if ('scrollRestoration' in history) {
       }
       if (col === "near") {
         return `<td data-label="${label}"><div class="poi-near">${escHtml(poi.near || "")}</div></td>`;
+      }
+      if (col === "signal" || col === "type") {
+        return `<td data-label="${label}"><div class="poi-type">${escHtml(poi.typeLabel || "")}</div></td>`;
       }
       if (col === "description") {
         return `<td data-label="${label}"><div class="poi-desc">${escHtml(poi.descText || "")}</div></td>`;
