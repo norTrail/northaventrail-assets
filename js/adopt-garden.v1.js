@@ -220,7 +220,8 @@
 
   function init() {
     const containers = document.querySelectorAll(".ag-section");
-    if (!containers.length) return;
+    const headerEls = document.querySelectorAll(".ag-header");
+    if (!containers.length && !headerEls.length) return;
 
     containers.forEach(function (el) {
       setStatus(el, "Loading garden information\u2026", false);
@@ -241,14 +242,15 @@
         const gardens  = extractGardens(features);
         const total    = gardens.unclaimed.length + gardens.claimed.length;
 
-        // Render header block (summary + CTA) if present
-        const headerEl = document.querySelector(".ag-header");
-        if (headerEl) {
+        // Render header block (summary + CTA) into each matching container.
+        headerEls.forEach(function (headerEl) {
           renderHeader(headerEl, gardens.unclaimed.length, total);
-        }
+        });
 
-        // Render garden table into first .ag-section container
-        renderTable(containers[0], gardens.unclaimed, gardens.claimed);
+        // Render garden table into first .ag-section container when present.
+        if (containers[0]) {
+          renderTable(containers[0], gardens.unclaimed, gardens.claimed);
+        }
       })
       .catch(function (err) {
         clearTimeout(timeoutId);

@@ -69,6 +69,10 @@
   function driveThumbFromId(id, width = 400) {
     const value = String(id || "").trim();
     if (!value) return "";
+    // New POI feeds may store repo image filenames in `m` instead of Drive IDs.
+    if (/[./\s]/.test(value) && !/^(https?:)?\/\//i.test(value)) {
+      return normalizeSquarespaceAssetUrl(value);
+    }
     const match =
       value.match(/(?:id=)([a-zA-Z0-9_-]{10,})/) ||
       value.match(/\/d\/([a-zA-Z0-9_-]{10,})/);
@@ -269,7 +273,7 @@
     const s = String(url || "").trim();
     if (!s) return "";
     if (/^(https?:)?\/\//i.test(s) || s.startsWith("/")) return s;
-    return "https://assets.northaventrail.org/img/" + s;
+    return new URL(`img/${s}`, "https://assets.northaventrail.org/").toString();
   }
 
   function formatDateISO(iso, options) {
