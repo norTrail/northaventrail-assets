@@ -15,11 +15,11 @@
           },
           "properties": {
             "herdName": "Northaven TAILS",
-            "sheepImage": "https://drive.google.com/thumbnail?id=1ySW1nLWxlen_-xA2htwYjt3lP0kwal3o&sz=w250",
+            "sheepImage": "https://assets.northaventrail.org/img/tails/1ySW1nLWxlen_-xA2htwYjt3lP0kwal3o.jpg",
             "sheepInfo": "This is the current location of the herd on the trail.",
             "shepherdImage": "https://example.com/rick.jpg",
             "shepherdInfo": "Local goat whisperer",
-            "trailSectionShort": "🐑: Royal&nbsp;Ln to Webb Chapel&nbsp;Rd",
+            "trailSectionShort": "\ud83d\udc11: Royal&nbsp;Ln to Webb Chapel&nbsp;Rd",
             "trailSectionLong": "They are currently grazing between Royal&nbsp;Ln and Webb Chapel&nbsp;Rd."
           }
         }

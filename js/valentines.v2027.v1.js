@@ -408,7 +408,10 @@ function sanitizeImageUrl(value) {
   const raw = String(value || '').trim();
   if (!raw) return '';
   try {
-    const parsed = new URL(raw, window.location.href);
+    const normalized = /^(https?:)?\/\//i.test(raw)
+      ? raw
+      : `https://assets.northaventrail.org/img/${raw.replace(/^\/+/, '').replace(/^img\//, '')}`;
+    const parsed = new URL(normalized, window.location.href);
     return ['http:', 'https:'].includes(parsed.protocol) ? parsed.toString() : '';
   } catch {
     return '';
