@@ -268,8 +268,17 @@ if ('scrollRestoration' in history) {
       const { restoreFocusOnClose = false } = options;
       if (!btn) return;
       setActiveRowFromMapsButton_(btn);
-      const expanded = btn.getAttribute("aria-expanded") === "true";
-      console.log("toggleMenuFromButton_ expanded:", expanded);
+      const rawExpanded = btn.getAttribute("aria-expanded");
+      const expanded = rawExpanded === "true";
+      console.log("toggleMenuFromButton_:", {
+        rawExpanded,
+        expanded,
+        id: btn?.id || null,
+        menuId: btn?.dataset?.menuId || null,
+        openBtnId: openBtn?.id || null,
+        openBtnMenuId: openBtn?.dataset?.menuId || null,
+        sameButton: btn === openBtn
+      });
       expanded ? closeMenu_(restoreFocusOnClose) : openMenu_(btn);
     }
 
