@@ -291,7 +291,7 @@ if ('scrollRestoration' in history) {
     }
 
     function openMenu_(btn) {
-      closeMenu_();
+      // closeMenu_();
       const menu = getMenu_(btn);
       if (!menu) return;
       openBtn = btn;
