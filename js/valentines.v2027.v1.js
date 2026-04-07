@@ -954,10 +954,11 @@ function openPopupForFeature(feature, lngLat, verboseFlag) {
     })
     .setLngLat(center)
     .setHTML(html)
-    .addTo(map)
-    .on('open', () => {
-      window.NorthavenUtils?.focusFirstPopupElement?.(activePopup);
-    })
+    .addTo(map);
+
+  window.NorthavenUtils?.focusFirstPopupElement?.(activePopup);
+
+  activePopup
     .on('close', () => {
       try { clearActiveFeatureState(); } catch {}
       try { setHighlightFeature?.(null); } catch {}
