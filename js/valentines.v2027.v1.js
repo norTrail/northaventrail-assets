@@ -1477,7 +1477,7 @@ function loadWindow() {
     hideEl(shareButtonWrapper);
   }
 
-  window.NorthavenUtils.loadSvgSpriteOnce({ url: '/s/icons.svg' });
+  window.NorthavenUtils.loadSvgSpriteOnce({ url: 'https://assets.northaventrail.org/img/icons.svg' });
 
   setShareButton();
 

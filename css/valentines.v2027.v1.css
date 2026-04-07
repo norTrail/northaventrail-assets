@@ -45,15 +45,15 @@
 }
 
 .unclaimed_cling_location {
-  background-image: url('https://northaventrail.org/s/purple_marker_active.svg');
+  background-image: url('https://assets.northaventrail.org/img/val-marker-purple.avif');
 }
 
 .claimed_cling_location {
-  background-image: url('https://northaventrail.org/s/pink_marker_active.svg');
+  background-image: url('https://assets.northaventrail.org/img/val-marker-pink.avif');
 }
 
 .installed_cling_location {
-  background-image: url('https://northaventrail.org/s/red_marker_active.svg');
+  background-image: url('https://assets.northaventrail.org/img/val-marker-red.avif');
 }
 
 .cling_location:hover,

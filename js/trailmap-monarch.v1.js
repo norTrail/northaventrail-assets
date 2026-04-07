@@ -50,7 +50,7 @@
           <div class="map-popup-row">
             <div class="map-popup-image">
               <img
-                src="/s/Monarch.png"
+                src="https://assets.northaventrail.org/img/Monarch.avif"
                 width="64"
                 height="64"
                 alt="Monarch Way"

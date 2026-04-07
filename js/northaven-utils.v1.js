@@ -269,7 +269,7 @@
     const s = String(url || "").trim();
     if (!s) return "";
     if (/^(https?:)?\/\//i.test(s) || s.startsWith("/")) return s;
-    return "/s/" + s;
+    return "https://assets.northaventrail.org/img/" + s;
   }
 
   function formatDateISO(iso, options) {

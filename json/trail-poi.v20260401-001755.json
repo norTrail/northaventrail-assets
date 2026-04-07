@@ -7,7 +7,7 @@
       "pl": {
         "l": "Parking Lot",
         "k": "Cars Wheelchair Handicap",
-        "u": "Parking_Icon.png",
+        "u": "Parking_Icon.avif",
         "i": "parking.svg"
       },
       "mi": {
@@ -17,7 +17,7 @@
       "df": {
         "l": "Drinking Fountain",
         "k": "Water Pet",
-        "u": "Drinking_Icon.png",
+        "u": "Drinking_Icon.avif",
         "i": "water.svg"
       },
       "ra": {
@@ -52,7 +52,7 @@
         "l": "Kiosk",
         "k": "Signage",
         "d": "Information about the trail and upcoming events are posted here.",
-        "u": "Information_Icon.png",
+        "u": "Information_Icon.avif",
         "i": "information.svg"
       },
       "bg": {
@@ -110,7 +110,7 @@
         "l": "Bike Repair Station",
         "k": "Tools",
         "d": "Basic tools for repairing your bike including a pump for your tires.",
-        "u": "Bike_Icon.png",
+        "u": "Bike_Icon.avif",
         "i": "bicycle.svg"
       },
       "gy": {

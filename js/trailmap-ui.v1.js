@@ -607,13 +607,13 @@ function getCategoryDefaults_(category, feature = null) {
     case "bicycle-15":
       return {
         d: "Basic tools for repairing your bike including a pump for your tires.",
-        icon: "/s/Bike_Icon.png"
+        icon: "https://assets.northaventrail.org/img/Bike_Icon.avif"
       };
 
     case "information":
       return {
         d: "Information about the trail and upcoming events are posted here.",
-        icon: "/s/Information_Icon.png"
+        icon: "https://assets.northaventrail.org/img/Information_Icon.avif"
       };
 
     case "parking":
@@ -625,8 +625,8 @@ function getCategoryDefaults_(category, feature = null) {
     case "water":
       return {
         d: "A water fountain for humans and another one for dogs.",
-        icon: "/s/Drinking_Icon.png",
-        icon2: "/s/Pet_Drinking_Icon.png"
+        icon: "https://assets.northaventrail.org/img/Drinking_Icon.avif",
+        icon2: "https://assets.northaventrail.org/img/Pet_Drinking_Icon.avif"
       };
 
     case "garden":

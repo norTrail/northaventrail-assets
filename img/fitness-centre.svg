@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 54 54" height="54" width="54">
+  <title>fitness-centre.svg</title>
+  <rect fill="none" x="0" y="0" width="54" height="54"></rect>
+  <path fill="#ffa500" stroke="white" transform="translate(6 10) scale(3)" d="M7.5,0C5.0676,0,2.2297,1.4865,2.2297,5.2703
+	C2.2297,7.8378,6.2838,13.5135,7.5,15c1.0811-1.4865,5.2703-7.027,5.2703-9.7297C12.7703,1.4865,9.9324,0,7.5,0z"></path>
+  <path fill="#ffffff" transform="translate(17 15) scale(1.5)" d="M14.5,7V8h-1v2h-1v1H11V8H4v3H2.5V10h-1V8H.5V7h1V5h1V4H4V7h7V4h1.5V5h1V7Z"></path>
+</svg>

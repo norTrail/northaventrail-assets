@@ -927,8 +927,8 @@ function installMapControls_() {
   addFullscreenOnce(map);
 
   // Satellite toggle (your custom control)
-  const SATELLITE_ICON_ON = "https://assets.northaventrail.org/img/SatelliteOn.png";
-  const SATELLITE_ICON_OFF = "https://assets.northaventrail.org/img/SatelliteOff.png";
+  const SATELLITE_ICON_ON = "https://assets.northaventrail.org/img/SatelliteOn.avif";
+  const SATELLITE_ICON_OFF = "https://assets.northaventrail.org/img/SatelliteOff.avif";
 
   class SatelliteCustomControl {
     onAdd(mapInstance) {
