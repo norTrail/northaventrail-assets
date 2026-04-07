@@ -26,9 +26,7 @@
 
     let activeMonarchPopup = null;
 
-    function escapeHtml(s = "") {
-      return window.NorthavenUtils.escapeHtml(s);
-    }
+    const escapeHtml = (s = "") => window.NorthavenUtils.escapeHtml(s);
 
     function renderMonarchPopup({ title, body }) {
       const monarchPath = "/monarch-way";

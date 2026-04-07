@@ -158,10 +158,7 @@ function onMapClick_(event) {
 
   resetCoordinates = false;
 
-  // dropdown active class
-  document
-    .querySelectorAll(".activeOption")
-    .forEach((el) => el.classList.remove("activeOption"));
+  removeActive();
 
   // slim schema: id is on the feature itself (not properties.id)
   const listing = document.getElementById(`listing-${clickedId}`);
@@ -566,11 +563,6 @@ function flyToMarker(currentFeature, zoomLevel, coords) {
   });
 }
 
-function normalizeSquarespaceAssetUrl_(u) {
-  return normalizeSquarespaceAssetUrl(u);
-}
-
-
 function getPropertyDetails(prop, feature = null, payload = poiData) {
   if (!prop) return {};
 
@@ -918,7 +910,6 @@ function resetPageDetails() {
     window.history.pushState(null, pageTitle, url);
   }
 
-  updatePageTitle(pageTitle);
   setShareButton();
 
   const googleMapsEl = document.getElementById('googleMaps');
@@ -1009,8 +1000,6 @@ function updatePageDetails(object) {
   if (!backButton && window.location.href !== url) {
     window.history.pushState(null, pageTitle, url);
   }
-
-  updatePageTitle(pageTitle);
 
   if (markerTitle) {
     const text = `${markerTitle} on the Northaven Trail`;
@@ -1286,16 +1275,19 @@ function setupLegendClickedFor_(legendEl) {
 
 /* ------------------------------------------------------------ */
 let currentFocus = -1;
+let _activeDropdownEl = null;
+
 function addActive(options) {
   removeActive();
   if (currentFocus >= options.length) currentFocus = 0;
   if (currentFocus < 0) currentFocus = options.length - 1;
-  options[currentFocus]?.classList.add('activeOption');
+  _activeDropdownEl = options[currentFocus] ?? null;
+  _activeDropdownEl?.classList.add('activeOption');
 }
 
 function removeActive() {
-  document.querySelectorAll('.activeOption')
-    .forEach(el => el.classList.remove('activeOption'));
+  _activeDropdownEl?.classList.remove('activeOption');
+  _activeDropdownEl = null;
 }
 
 /* ------------------------------------------------------------ */
@@ -1436,10 +1428,6 @@ function goToElement(idOverride = null) {
   }
 }
 
-function updatePageTitle(pageTitle) {
-  return;
-}
-
 function setShareButton(title, text, url) {
   const el = document.getElementById("share-button");
   if (!el) return;
@@ -1571,7 +1559,7 @@ function buildFilterableLegendItemsFromTypes_(data, options = {}) {
     if (requireIcon && !iconRaw) continue;
 
     // normalize Squarespace-style asset keys/paths into a usable URL
-    const iconUrl = iconRaw ? normalizeSquarespaceAssetUrl_(iconRaw) : "";
+    const iconUrl = iconRaw ? normalizeSquarespaceAssetUrl(iconRaw) : "";
 
     // sort: prefer def.s, else label
     const sort = (def.s !== undefined && def.s !== null && def.s !== "")

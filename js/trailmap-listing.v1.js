@@ -37,12 +37,7 @@ if ('scrollRestoration' in history) {
     });
   };
 
-  function escHtml(s) {
-    if (window.NorthavenUtils?.escapeHtml) return window.NorthavenUtils.escapeHtml(s);
-    let str = String(s ?? "");
-    str = str.replace(/&nbsp;/g, "\u00A0");
-    return window.NorthavenUtils.escapeHtml(str);
-  }
+  const escHtml = (s) => window.NorthavenUtils.escapeHtml(s);
 
   function htmlToText(html) {
     const div = document.createElement("div");
@@ -83,10 +78,11 @@ if ('scrollRestoration' in history) {
     } catch (_) { }
   }
 
-  const normalizeAbsUrl_   = (u) => window.NorthavenUtils.normalizeAbsUrl(u);
-  const isSamePageUrl_    = (u) => window.NorthavenUtils.isSamePageUrl(u);
-  const isExternalDomain_ = (u) => window.NorthavenUtils.isExternalDomain(u);
-  const driveThumbFromId_ = (id, w) => window.NorthavenUtils.driveThumbFromId(id, w);
+  const normalizeAbsUrl_              = (u) => window.NorthavenUtils.normalizeAbsUrl(u);
+  const isSamePageUrl_                = (u) => window.NorthavenUtils.isSamePageUrl(u);
+  const isExternalDomain_             = (u) => window.NorthavenUtils.isExternalDomain(u);
+  const driveThumbFromId_             = (id, w) => window.NorthavenUtils.driveThumbFromId(id, w);
+  const normalizeSquarespaceAssetUrl_ = (u) => window.NorthavenUtils.normalizeSquarespaceAssetUrl(u);
 
   function normalizeOnlyShowListLabels_(v) {
     if (v === undefined || v === null) return null;
@@ -173,20 +169,6 @@ if ('scrollRestoration' in history) {
     if (tl) return tl;
 
     return String(feature?.id || "Location");
-  }
-
-  function normalizeSquarespaceAssetUrl_(u) {
-    const s = String(u || "").trim();
-    if (!s) return "";
-
-    // already absolute (https://, http://, //)
-    if (/^(https?:)?\/\//i.test(s)) return s;
-
-    // already a site-relative path
-    if (s.startsWith("/")) return s;
-
-    // Squarespace asset key → prefix with /s/
-    return "/s/" + s;
   }
 
   // ---------------------------
