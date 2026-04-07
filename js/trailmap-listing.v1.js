@@ -279,10 +279,10 @@ if ('scrollRestoration' in history) {
         openBtnMenuId: openBtn?.dataset?.menuId || null,
         sameButton: btn === openBtn
       });
-      expanded ? closeMenu_(restoreFocusOnClose) : openMenu_(btn);
+      expanded ? closeMenu_(restoreFocusOnClose, "toggle button") : openMenu_(btn);
     }
 
-    function closeMenu_(restoreFocus = false) {
+    function closeMenu_(restoreFocus = false, reason = "unspecified") {
       if (!openBtn) return;
       const menu = getMenu_(openBtn);
       const btnToRestore = openBtn;
@@ -290,7 +290,8 @@ if ('scrollRestoration' in history) {
       console.log("closeMenu_ set aria-expanded=false:", {
         id: openBtn?.id || null,
         menuId: openBtn?.dataset?.menuId || null,
-        restoreFocus
+        restoreFocus,
+        reason
       });
       if (menu) {
         menu.hidden = true;
@@ -384,7 +385,7 @@ if ('scrollRestoration' in history) {
         if (!menu.contains(e.relatedTarget)) {
           setTimeout(() => {
             if (openBtn && !menu.contains(document.activeElement)) {
-              closeMenu_();
+              closeMenu_(false, "menu focusout");
             }
           }, 0);
         }
@@ -420,7 +421,7 @@ if ('scrollRestoration' in history) {
       if (cancel || closeBtn) {
         e.preventDefault();
         e.stopPropagation();
-        closeMenu_(true);
+        closeMenu_(true, cancel ? "cancel button" : "menu close button");
         return;
       }
 
@@ -428,7 +429,7 @@ if ('scrollRestoration' in history) {
       if (menuLink) {
         // Let the link navigate; just close and stop row click
         e.stopPropagation();
-        closeMenu_();
+        closeMenu_(false, "menu link");
         return;
       }
 
@@ -437,12 +438,12 @@ if ('scrollRestoration' in history) {
       if (clickedOpenMenuChrome) {
         e.preventDefault();
         e.stopPropagation();
-        closeMenu_(true);
+        closeMenu_(true, "menu chrome click");
         return;
       }
 
       // Clicking anywhere outside closes
-      if (!inMaps) closeMenu_();
+      if (!inMaps) closeMenu_(false, "outside click");
     });
 
     document.addEventListener("keydown", (e) => {
@@ -457,11 +458,11 @@ if ('scrollRestoration' in history) {
         if (e.key === "Escape" && btn.getAttribute("aria-expanded") === "true") {
           e.preventDefault();
           e.stopPropagation();
-          closeMenu_(true);
+          closeMenu_(true, "button escape");
           return;
         }
       }
-      if (e.key === "Escape") closeMenu_(true);
+      if (e.key === "Escape") closeMenu_(true, "global escape");
     });
   }
 
