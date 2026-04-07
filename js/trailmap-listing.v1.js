@@ -240,6 +240,17 @@ if ('scrollRestoration' in history) {
     if (tr) tr.classList.add("maps-menu-open");
   }
 
+  function setActiveRowFromMapsButton_(btn) {
+    const row = btn?.closest?.("tr[data-feature-id]");
+    const tbody = row?.closest?.("tbody");
+    if (!row || !tbody) return;
+    tbody.querySelectorAll("tr").forEach((tr) => {
+      const isMatch = tr === row;
+      tr.classList.toggle("active", isMatch);
+      tr.classList.toggle("is-active", isMatch);
+    });
+  }
+
   function installMapsMenuController_() {
     if (window.__mapsMenuControllerInstalled) return;
     window.__mapsMenuControllerInstalled = true;
@@ -374,8 +385,9 @@ if ('scrollRestoration' in history) {
       if (btn) {
         e.preventDefault();
         e.stopPropagation(); // don't trigger row click
+        setActiveRowFromMapsButton_(btn);
         const expanded = btn.getAttribute("aria-expanded") === "true";
-        expanded ? closeMenu_(true) : openMenu_(btn);
+        expanded ? closeMenu_(false) : openMenu_(btn);
         return;
       }
 
