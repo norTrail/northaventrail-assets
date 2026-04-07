@@ -25,11 +25,20 @@
   // ------------------------------------------------------------------
 
   function escHtml(s) {
-    return window.NorthavenUtils.escapeHtml(s);
+    if (window.NorthavenUtils?.escapeHtml) return window.NorthavenUtils.escapeHtml(s);
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
   }
 
   function safeOnReady(fn) {
-    window.NorthavenUtils.onReady(fn);
+    if (window.NorthavenUtils?.onReady) {
+      window.NorthavenUtils.onReady(fn);
+    } else if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", fn, { once: true });
+    } else {
+      fn();
+    }
   }
 
   function setStatus(el, msg, isError) {
