@@ -1895,7 +1895,7 @@ function showLargeImage(pictureURL) {
   `;
 
   //Add Closing X
-  var closeX = document.getElementById("lightbox-closing");
+  let closeX = document.getElementById("lightbox-closing");
   if (!closeX) {
     closeX = document.createElement("span");
   }

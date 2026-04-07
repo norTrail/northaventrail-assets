@@ -101,130 +101,13 @@ let resetCoordinates = false;
 
 /* ---------- Startup ---------- */
 
-// Global "Skip to Content" link for accessibility
-(function injectSkipLink() {
-  function start() {
-    if (!document.body) return setTimeout(start, 20);
-
-    // Remove if already exists to prevent duplicates
-    const existing = document.querySelector('.skip-link');
-    if (existing) existing.remove();
-
-    // Inject CSS
-    const styleId = 'skip-link-style';
-    if (!document.getElementById(styleId)) {
-      const style = document.createElement('style');
-      style.id = styleId;
-      style.innerHTML = `
-        .skip-link {
-          position: absolute;
-          top: -100px;
-          left: 50%;
-          transform: translateX(-50%);
-          background: #108452;
-          color: #fff !important;
-          padding: 12px 24px;
-          z-index: 10000;
-          text-decoration: none;
-          font-weight: bold;
-          border-radius: 0 0 8px 8px;
-          transition: top 0.2s ease-in-out;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-          outline: none;
-        }
-        .skip-link:focus {
-          top: 0;
-          outline: 3px solid #ffba08;
-          outline-offset: 2px;
-        }
-      `;
-      document.head.appendChild(style);
-    }
-
-    // Ensure skip link is always at the top of the body
-    function ensureSkipLinkInDom_() {
-      const existing = document.querySelector('.skip-link');
-      if (existing) {
-        if (document.body.firstElementChild !== existing) {
-          document.body.insertAdjacentElement('afterbegin', existing);
-        }
-        return;
-      }
-      const skipLink = document.createElement('a');
-      skipLink.href = (typeof SKIP_LINK_TARGET !== 'undefined' ? SKIP_LINK_TARGET : null) || '#map';
-      skipLink.className = 'skip-link';
-      skipLink.innerText = (typeof SKIP_LINK_LABEL !== 'undefined' ? SKIP_LINK_LABEL : null) || 'Skip to Map Content';
-      document.body.insertAdjacentElement('afterbegin', skipLink);
-    }
-
-    ensureSkipLinkInDom_();
-    // Also re-run if body changes (Squarespace case)
-    const observer = new MutationObserver(ensureSkipLinkInDom_);
-    observer.observe(document.body, { childList: true });
-  }
-
-  // Run on DOMContentLoaded or immediately if already loaded
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', start);
-  } else {
-    start();
-  }
-})();
-
-// Patch Squarespace landmark issues for ADA compliance
-(function patchLandmarks() {
-  function applyPatches() {
-    // Issue 2: give each <nav> a unique accessible label so screen readers
-    // can distinguish between them.
-    const mainNav = document.querySelector('#mainNavigation');
-    if (mainNav && !mainNav.getAttribute('aria-label')) {
-      mainNav.setAttribute('aria-label', 'Main navigation');
-    }
-    const iconNav = document.querySelector('nav.sqs-svg-icon--list');
-    if (iconNav && !iconNav.getAttribute('aria-label')) {
-      iconNav.setAttribute('aria-label', 'Social links');
-    }
-
-    // Issue 3a: Squarespace's own skip link (.skip-main) lives outside any
-    // landmark.  Wrap it in a <header> so it is contained by a landmark region.
-    const skipMain = document.querySelector('.skip-main');
-    if (skipMain && skipMain.parentElement?.tagName !== 'HEADER') {
-      const wrapper = document.createElement('header');
-      wrapper.setAttribute('aria-label', 'Skip navigation');
-      skipMain.parentNode.insertBefore(wrapper, skipMain);
-      wrapper.appendChild(skipMain);
-    }
-
-    // Issue 3b: Squarespace button-block containers (yui_ IDs) are inside
-    // #content but that element has no landmark role.  If no native <main>
-    // exists, promote #content to role="main" so all child content is within
-    // a landmark.
-    if (!document.querySelector('main, [role="main"]')) {
-      const content = document.getElementById('content');
-      if (content) content.setAttribute('role', 'main');
-    }
-
-    document.querySelectorAll('.sr-only-map-image[aria-hidden="true"]').forEach((el) => {
-      el.removeAttribute('aria-hidden');
-    });
-  }
-
-  function start() {
-    if (!document.body) return setTimeout(start, 20);
-    applyPatches();
-    // Re-run once if Squarespace finishes rendering after initial load
-    const observer = new MutationObserver(() => {
-      applyPatches();
-    });
-    observer.observe(document.body, { childList: true, subtree: false });
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', start);
-  } else {
-    start();
-  }
-})();
+if (window.NorthavenUtils) {
+  window.NorthavenUtils.ensureSkipLink({
+    target: (typeof SKIP_LINK_TARGET !== 'undefined' ? SKIP_LINK_TARGET : null) || '#map',
+    label: (typeof SKIP_LINK_LABEL !== 'undefined' ? SKIP_LINK_LABEL : null) || 'Skip to Map Content'
+  });
+  window.NorthavenUtils.patchSquarespaceA11y();
+}
 
 function bootWhenReady() {
   if (!window.TrailmapError) return setTimeout(bootWhenReady, 10);

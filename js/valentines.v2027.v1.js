@@ -234,15 +234,15 @@ function toggleLegendStatus(status) {
 // Status summary header + legend count badges
 // ---------------------------------------------------------------------
 function countClingsByStatus(fc) {
-  var counts = {};
+  const counts = {};
   counts[LOCATION_UNCLAIMED] = 0;
   counts[LOCATION_CLAIMED]   = 0;
   counts[LOCATION_INSTALLED] = 0;
   counts.total = 0;
   if (!fc || !Array.isArray(fc.features)) return counts;
-  for (var i = 0; i < fc.features.length; i++) {
-    var f = fc.features[i];
-    var status = f && f.properties ? String(f.properties.status || '') : '';
+  for (let i = 0; i < fc.features.length; i++) {
+    const f = fc.features[i];
+    const status = f && f.properties ? String(f.properties.status || '') : '';
     if      (status === LOCATION_UNCLAIMED) counts[LOCATION_UNCLAIMED]++;
     else if (status === LOCATION_CLAIMED)   counts[LOCATION_CLAIMED]++;
     else if (status === LOCATION_INSTALLED) counts[LOCATION_INSTALLED]++;
@@ -252,14 +252,14 @@ function countClingsByStatus(fc) {
 }
 
 function renderStatusHeader(counts) {
-  var el = document.querySelector('.v-header');
+  const el = document.querySelector('.v-header');
   if (!el || counts.total === 0) return;
 
-  var unclaimed = counts[LOCATION_UNCLAIMED];
-  var claimed   = counts[LOCATION_CLAIMED];
-  var total     = counts.total;
-  var isAlert   = unclaimed > 0 || claimed > 0;
-  var msg;
+  const unclaimed = counts[LOCATION_UNCLAIMED];
+  const claimed   = counts[LOCATION_CLAIMED];
+  const total     = counts.total;
+  const isAlert   = unclaimed > 0 || claimed > 0;
+  let msg;
 
   if (!isAlert) {
     msg = 'All ' + total + ' cling locations are installed! \uD83C\uDF89';
@@ -283,21 +283,21 @@ function renderStatusHeader(counts) {
 }
 
 function updateLegendCounts(counts) {
-  var keyMap = [
+  const keyMap = [
     { status: LOCATION_UNCLAIMED, elId: 'unclaimedKey' },
     { status: LOCATION_CLAIMED,   elId: 'claimedKey' },
     { status: LOCATION_INSTALLED, elId: 'installedKey' }
   ];
 
   keyMap.forEach(function(item) {
-    var el = getElementById(item.elId);
+    const el = getElementById(item.elId);
     if (!el) return;
 
-    var n = counts[item.status] || 0;
+    const n = counts[item.status] || 0;
 
     // Find or create the count span inside .keyText (falls back to the key el itself)
-    var target = el.querySelector('.keyText') || el;
-    var countSpan = target.querySelector('.v-legend-count');
+    const target = el.querySelector('.keyText') || el;
+    let countSpan = target.querySelector('.v-legend-count');
     if (!countSpan) {
       countSpan = document.createElement('span');
       countSpan.className = 'v-legend-count';
@@ -1090,7 +1090,7 @@ async function refreshClingData() {
 }
 
 function updateStatusUI(fc) {
-  var counts = countClingsByStatus(fc);
+  const counts = countClingsByStatus(fc);
   renderStatusHeader(counts);
   updateLegendCounts(counts);
 }

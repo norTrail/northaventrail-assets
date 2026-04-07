@@ -1115,10 +1115,17 @@ if ('scrollRestoration' in history) {
       // keyboard users can bypass the map and jump straight to the POI listing.
       const firstWrap = wraps[0];
       if (!firstWrap.id) firstWrap.id = "poi-listing";
-      const skipLink = document.querySelector(".skip-link");
-      if (skipLink) {
-        skipLink.href = "#" + firstWrap.id;
-        skipLink.textContent = "Skip to trail locations";
+      if (window.NorthavenUtils) {
+        window.NorthavenUtils.ensureSkipLink({
+          target: "#" + firstWrap.id,
+          label: "Skip to trail locations"
+        });
+      } else {
+        const skipLink = document.querySelector(".skip-link");
+        if (skipLink) {
+          skipLink.href = "#" + firstWrap.id;
+          skipLink.textContent = "Skip to trail locations";
+        }
       }
 
       // Loading indicators

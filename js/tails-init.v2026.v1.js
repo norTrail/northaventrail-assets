@@ -109,38 +109,26 @@ async function bootstrapTailsApp() {
     mapView.setAttribute("aria-busy", "true");
   }
 
-  // Inject sr-only page heading and skip link for screen readers / keyboard users
+  // Inject page heading and skip link for screen readers / keyboard users
   // (WCAG 2.1 A — page titled; 2.4.1 — bypass blocks)
-  const appRoot = document.getElementById("tails-app");
-  if (appRoot && !document.getElementById("tails-skip-link")) {
-    const skip = document.createElement("a");
-    skip.id = "tails-skip-link";
-    skip.href = "#map";
-    skip.className = "sr-only";
-    skip.textContent = "Skip to map";
-    appRoot.prepend(skip);
-
-    if (!document.querySelector('h1')) {
-      const h1 = document.createElement("h1");
-      h1.className = "sr-only";
-      h1.textContent = "Northaven TAILS — Herd Grazing Map";
-      appRoot.prepend(h1);
-    }
+  if (window.NorthavenUtils) {
+    window.NorthavenUtils.ensureSkipLink({
+      id: "tails-skip-link",
+      target: "#map",
+      label: "Skip to map",
+      container: "#tails-app"
+    });
+    window.NorthavenUtils.ensureSrOnlyHeading({
+      text: "Northaven TAILS - Herd Grazing Map",
+      container: "#tails-app"
+    });
   }
 
   loadSvgSpriteOnce();  // load shared icon sprite from assets.northaventrail.org
   initMap(mapEl);
   wireUIControls();
-  labelUntiledIframes();
-  
-  // Fix Squarespace "Link opens in a new window" mismatch for ADA
-  document.querySelectorAll('a[aria-label="Link opens in a new window"]').forEach(a => {
-    if (a.textContent.trim()) {
-      a.setAttribute('aria-label', a.textContent.trim() + ' (opens in a new window)');
-    } else {
-      a.removeAttribute('aria-label');
-    }
-  });
+  window.NorthavenUtils?.labelUntitledIframes();
+  window.NorthavenUtils?.fixNewWindowAriaLabels();
 }
 
 
@@ -304,23 +292,11 @@ function initMap(container) {
     // Add legend as a visible Mapbox control on the map itself
     map.addControl(new NoMowLegendControl(), "bottom-left");
 
-    labelUntiledIframes();
+    window.NorthavenUtils?.labelUntitledIframes();
   });
 
 
 }
-
-/* ----------------------------
-   Accessibility: title untitled iframes (Squarespace / Mapbox inject these)
-   ---------------------------- */
-
-function labelUntiledIframes() {
-  const pageTitle = document.title || 'Northaven Trail';
-  document.querySelectorAll('iframe:not([title])').forEach(f => {
-    f.setAttribute('title', `${pageTitle} Video`);
-  });
-}
-
 
 /* ----------------------------
    UI wiring for controls check boxes
