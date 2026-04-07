@@ -26,27 +26,12 @@ if ('scrollRestoration' in history) {
   // Small helpers
   // ---------------------------
 
-  function safeOnReady(fn) {
-    if (window.NorthavenUtils?.onReady) {
-      window.NorthavenUtils.onReady(fn);
-    } else if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", fn, { once: true });
-    } else {
-      fn();
-    }
-  }
-
+  const safeOnReady = (fn) => window.NorthavenUtils.onReady(fn);
   function escHtml(s) {
     if (window.NorthavenUtils?.escapeHtml) return window.NorthavenUtils.escapeHtml(s);
     let str = String(s ?? "");
     str = str.replace(/&nbsp;/g, "\u00A0");
-    return str.replace(/[&<>"']/g, (c) => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;",
-    }[c]));
+    return window.NorthavenUtils.escapeHtml(str);
   }
 
   function htmlToText(html) {
@@ -88,52 +73,10 @@ if ('scrollRestoration' in history) {
     } catch (_) { }
   }
 
-  function normalizeAbsUrl_(u) {
-    if (window.NorthavenUtils?.normalizeAbsUrl) return window.NorthavenUtils.normalizeAbsUrl(u);
-    const s = String(u || "").trim();
-    if (!s) return "";
-    try {
-      return new URL(s, location.href).toString();
-    } catch {
-      return s;
-    }
-  }
-
-  function isSamePageUrl_(u) {
-    if (window.NorthavenUtils?.isSamePageUrl) return window.NorthavenUtils.isSamePageUrl(u);
-    try {
-      const url = new URL(String(u || ""), location.href);
-      const here = new URL(location.href);
-      return (
-        url.origin === here.origin &&
-        url.pathname.replace(/\/+$/, "") === here.pathname.replace(/\/+$/, "")
-      );
-    } catch {
-      return false;
-    }
-  }
-
-  function isExternalDomain_(u) {
-    if (window.NorthavenUtils?.isExternalDomain) return window.NorthavenUtils.isExternalDomain(u);
-    try {
-      const url = new URL(String(u || ""), location.href);
-      return url.origin !== location.origin;
-    } catch {
-      return false;
-    }
-  }
-
-  function driveThumbFromId_(id, w) {
-    if (window.NorthavenUtils?.driveThumbFromId) return window.NorthavenUtils.driveThumbFromId(id, w);
-    const s = String(id || "").trim();
-    if (!s) return "";
-    const m =
-      s.match(/(?:id=)([a-zA-Z0-9_-]{10,})/) ||
-      s.match(/\/d\/([a-zA-Z0-9_-]{10,})/);
-    const driveId = m ? m[1] : s;
-    const width = Number(w) || 400;
-    return `https://drive.google.com/thumbnail?id=${encodeURIComponent(driveId)}&sz=w${width}`;
-  }
+  const normalizeAbsUrl_   = (u) => window.NorthavenUtils.normalizeAbsUrl(u);
+  const isSamePageUrl_    = (u) => window.NorthavenUtils.isSamePageUrl(u);
+  const isExternalDomain_ = (u) => window.NorthavenUtils.isExternalDomain(u);
+  const driveThumbFromId_ = (id, w) => window.NorthavenUtils.driveThumbFromId(id, w);
 
   function normalizeOnlyShowListLabels_(v) {
     if (v === undefined || v === null) return null;

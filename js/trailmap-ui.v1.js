@@ -300,16 +300,16 @@ function wireCustomSearchUI_() {
     const html = results.map((r, i) => {
       const selected = i === activeIndex ? ` aria-selected="true"` : ` aria-selected="false"`;
       return `
-       <div
-         class="searchOption"
-         role="option"
-         id="search-opt-${r.id}"
-         data-id="${escapeHtmlAttr_(r.id)}"
-         data-idx="${i}"
-         ${selected}
-       >
-         <span class="label">${normalizeText_(r.label)}</span>
-       </div>`;
+        <div
+          class="searchOption"
+          role="option"
+          id="search-opt-${r.id}"
+          data-id="${escapeHtmlAttr(r.id)}"
+          data-idx="${i}"
+          ${selected}
+        >
+          <span class="label">${String(r.label).trim()}</span>
+        </div>`;
     }).join("");
 
     box.innerHTML = html;
@@ -488,19 +488,15 @@ function ensureSearchClearButton_() {
   return button;
 }
 
-function normalizeText_(s = "") {
-  return String(s)
-    .replace(/\u00A0/g, " ")   // real NBSP → normal space
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function escapeHtml_(s = "") {
-  return window.NorthavenUtils.escapeHtml(s);
-}
-function escapeHtmlAttr_(s = "") {
-  return window.NorthavenUtils.escapeHtmlAttr(s);
-}
+const escapeHtml = (s) => window.NorthavenUtils.escapeHtml(s);
+const escapeHtmlAttr = (s) => window.NorthavenUtils.escapeHtmlAttr(s);
+const normalizeAbsUrl = (u) => window.NorthavenUtils.normalizeAbsUrl(u);
+const isSamePageUrl = (u) => window.NorthavenUtils.isSamePageUrl(u);
+const isExternalDomain = (u) => window.NorthavenUtils.isExternalDomain(u);
+const driveThumbFromId = (id, w) => window.NorthavenUtils.driveThumbFromId(id, w);
+const normalizeSquarespaceAssetUrl = (u) => window.NorthavenUtils.normalizeSquarespaceAssetUrl(u);
+const isApple = () => window.NorthavenUtils.isApple();
+const isMobile = () => window.NorthavenUtils.isMobile();
 
 /* ============================================================
    Your existing functions (kept) — only minor let/const cleanup
@@ -570,18 +566,7 @@ function flyToMarker(currentFeature, zoomLevel, coords) {
   });
 }
 
-function normalizeSquarespaceAssetUrl_(u) {
-  const s = String(u || "").trim();
-  if (!s) return "";
-
-  // already absolute (https://, http://, //)
-  if (/^(https?:)?\/\//i.test(s)) return s;
-
-  // already a site-relative path
-  if (s.startsWith("/")) return s;
-
-  // Squarespace asset key → prefix with /s/
-  return "/s/" + s;
+  return normalizeSquarespaceAssetUrl(u);
 }
 
 
@@ -597,16 +582,16 @@ function getPropertyDetails(prop, feature = null, payload = poiData) {
   // Effective link fields (POI overrides type)
   const linkText = String(prop.e || typeDef?.e || '').trim();
   const linkUrlRaw = String(prop.f || typeDef?.f || '').trim();
-  const linkUrl = linkUrlRaw ? normalizeAbsUrl_(linkUrlRaw) : '';
-  const includeLink = Boolean(linkUrl && !isSamePageUrl_(linkUrl));
-  const external = includeLink && isExternalDomain_(linkUrl);
+  const linkUrl = linkUrlRaw ? normalizeAbsUrl(linkUrlRaw) : '';
+  const includeLink = Boolean(linkUrl && !isSamePageUrl(linkUrl));
+  const external = includeLink && isExternalDomain(linkUrl);
 
   // Image: POI.u > POI.m > type.u > type.m
   const imgUrl =
-    normalizeSquarespaceAssetUrl_(prop.u) ||
-    driveThumbFromId_(prop.m, 400) ||
-    normalizeSquarespaceAssetUrl_(typeDef?.u) ||
-    driveThumbFromId_(typeDef?.m, 400);
+    normalizeSquarespaceAssetUrl(prop.u) ||
+    driveThumbFromId(prop.m, 400) ||
+    normalizeSquarespaceAssetUrl(typeDef?.u) ||
+    driveThumbFromId(typeDef?.m, 400);
 
   // Build body HTML (desc + optional link)
   let bodyHtml = desc;
@@ -718,7 +703,7 @@ function createPopUp(currentFeature) {
     <div class="map-popup-row">
       ${imageURL
       ? `<div class="map-popup-image">
-               <img src="${escapeHtmlAttr_(imageURL)}" width="64" height="64"
+               <img src="${escapeHtmlAttr(imageURL)}" width="64" height="64"
                     alt="${escapeHtml(labelName || "Marker")}" loading="lazy">
              </div>`
       : ""
@@ -726,11 +711,11 @@ function createPopUp(currentFeature) {
 
       <div class="map-popup-body">
         ${title
-      ? `<div class="map-popup-header">${escapeHtml_(title)}</div>`
+      ? `<div class="map-popup-header">${escapeHtml(title)}</div>`
       : ""
     }
         ${body
-      ? `<div class="map-popup-text">${escapeHtml_(body)}</div>`
+      ? `<div class="map-popup-text">${escapeHtml(body)}</div>`
       : ""
     }
       </div>
@@ -818,35 +803,7 @@ function createPopUp(currentFeature) {
   popup.addTo(map);
 }
 
-function escapeHtml(str) {
-  return window.NorthavenUtils.escapeHtml(str);
-}
 /* ---------- URL + filter helpers (kept) ---------- */
-
-/**
- * Return the human-readable label for a POI.
- * Hybrid schema priority:
- *  1) feature.properties.l  (server-computed effective label)
- *  2) feature.properties.n  (explicit POI name, if different)
- *  3) defs.types[t].l       (type label fallback)
- *  4) feature.id            (last-resort)
- */
-
-function driveThumbFromId_(id, w = 400) {
-  return window.NorthavenUtils.driveThumbFromId(id, w);
-}
-
-function normalizeAbsUrl_(u) {
-  return window.NorthavenUtils.normalizeAbsUrl(u);
-}
-
-function isSamePageUrl_(u) {
-  return window.NorthavenUtils.isSamePageUrl(u);
-}
-
-function isExternalDomain_(u) {
-  return window.NorthavenUtils.isExternalDomain(u);
-}
 
 /**
  * Hybrid resolver: POI props override type defaults.
@@ -862,16 +819,16 @@ function resolvePoi_(feature, data) {
 
   const linkText = String(p.e || td.e || "").trim();
   const linkUrlRaw = String(p.f || td.f || "").trim();
-  const linkUrl = linkUrlRaw ? normalizeAbsUrl_(linkUrlRaw) : "";
+  const linkUrl = linkUrlRaw ? normalizeAbsUrl(linkUrlRaw) : "";
 
-  const includeLink = Boolean(linkUrl && !isSamePageUrl_(linkUrl));
-  const externalLink = includeLink && isExternalDomain_(linkUrl);
+  const includeLink = Boolean(linkUrl && !isSamePageUrl(linkUrl));
+  const externalLink = includeLink && isExternalDomain(linkUrl);
 
   const imgUrl =
-    normalizeSquarespaceAssetUrl_(p.u) ||
-    driveThumbFromId_(p.m, 400) ||
-    normalizeSquarespaceAssetUrl_(td.u) ||
-    driveThumbFromId_(td.m, 400) ||
+    normalizeSquarespaceAssetUrl(p.u) ||
+    driveThumbFromId(p.m, 400) ||
+    normalizeSquarespaceAssetUrl(td.u) ||
+    driveThumbFromId(td.m, 400) ||
     "";
 
   const keywords = [p.k, td.k].filter(Boolean).map(String).join(" ").trim();
@@ -961,7 +918,7 @@ function resetPageDetails() {
   setShareButton();
 
   const googleMapsEl = document.getElementById('googleMaps');
-  const appleMapsEl = document.getElementById('applesMaps');
+  const appleMapsEl = document.getElementById('appleMaps');
 
   if (googleMapsEl) googleMapsEl.style.display = 'none';
   if (appleMapsEl) appleMapsEl.style.display = 'none';
@@ -989,7 +946,7 @@ function updatePageDetails(object) {
 
     if (isApple()) {
       const appleBtn = document.getElementById("appleMapsButton");
-      const appleWrap = document.getElementById("applesMaps");
+      const appleWrap = document.getElementById("appleMaps");
 
       if (appleBtn) appleBtn.setAttribute("href", APPLE_MAP_URL + coords);
       if (appleWrap) appleWrap.style.display = "";
@@ -998,7 +955,7 @@ function updatePageDetails(object) {
 
   const hideMapLinks_ = () => {
     const googleWrap = document.getElementById("googleMaps");
-    const appleWrap = document.getElementById("applesMaps");
+    const appleWrap = document.getElementById("appleMaps");
     if (googleWrap) googleWrap.style.display = "none";
     if (appleWrap) appleWrap.style.display = "none";
   };
@@ -1339,26 +1296,10 @@ function removeActive() {
 
 /* ------------------------------------------------------------ */
 
-const isApple = () => /(Mac|iPhone|iPad|iPod)/i.test(navigator.platform);
-const isMobile = () =>
-  /(iPhone|Android|BlackBerry|Windows Phone)/i.test(navigator.userAgent);
-
 /* ------------------------------------------------------------ */
 
 function clickShare(title, text, url) {
-  if (!navigator.share) {
-    return;
-  }
-
-  const payload = {
-    title: String(title || "Northaven Trail"),
-    text: String(text || ""),
-    url: String(url || location.href)
-  };
-
-  navigator.share(payload).catch(err => {
-    console.log("Share rejected:", err?.name);
-  });
+  window.NorthavenUtils.clickShare({ title, text, url });
 }
 
 /* ------------------------------------------------------------ */

@@ -23,22 +23,9 @@
   // Helpers
   // ------------------------------------------------------------------
 
-  function escHtml(s) {
-    if (window.NorthavenUtils?.escapeHtml) return window.NorthavenUtils.escapeHtml(s);
-    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
-      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
-    });
-  }
-
-  function safeOnReady(fn) {
-    if (window.NorthavenUtils?.onReady) {
-      window.NorthavenUtils.onReady(fn);
-    } else if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", fn, { once: true });
-    } else {
-      fn();
-    }
-  }
+  const escHtml     = (s) => window.NorthavenUtils.escapeHtml(s);
+  const safeOnReady = (fn) => window.NorthavenUtils.onReady(fn);
+  const fetchJson   = (url, mode, sig) => window.NorthavenUtils.fetchJson(url, { cache: mode, signal: sig });
 
   function setStatus(el, msg, isError) {
     el.innerHTML =
@@ -46,18 +33,6 @@
       escHtml(msg) + "</p>";
   }
 
-  // ------------------------------------------------------------------
-  // Fetch helpers
-  // ------------------------------------------------------------------
-
-  function fetchJson(url, cacheMode, signal) {
-    const opts = { cache: cacheMode || "default" };
-    if (signal) opts.signal = signal;
-    return fetch(url, opts).then(function (res) {
-      if (!res.ok) throw new Error("HTTP " + res.status + " fetching " + url);
-      return res.json();
-    });
-  }
 
   // ------------------------------------------------------------------
   // Build mailto href with pre-filled subject and body

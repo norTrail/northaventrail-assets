@@ -247,6 +247,71 @@
     });
   }
 
+  function isApple() {
+    return /(Mac|iPhone|iPad|iPod)/i.test(navigator.platform);
+  }
+
+  function isMobile() {
+    return /(iPhone|Android|BlackBerry|Windows Phone)/i.test(navigator.userAgent);
+  }
+
+  function fetchJson(url, options = {}) {
+    const { cache = "default", signal = null } = options;
+    return fetch(url, { cache, signal }).then((res) => {
+      if (!res.ok) throw new Error(`HTTP ${res.status} fetching ${url}`);
+      return res.json();
+    });
+  }
+
+  function normalizeSquarespaceAssetUrl(url) {
+    const s = String(url || "").trim();
+    if (!s) return "";
+    if (/^(https?:)?\/\//i.test(s) || s.startsWith("/")) return s;
+    return "/s/" + s;
+  }
+
+  function formatDateISO(iso, options) {
+    if (!iso) return "";
+    try {
+      const [y, m, d] = iso.split("-").map(Number);
+      return new Date(y, m - 1, d).toLocaleDateString("en-US", options);
+    } catch {
+      return "";
+    }
+  }
+
+  function formatDateISOLong(iso) {
+    return formatDateISO(iso, { weekday: "long", month: "long", day: "numeric" });
+  }
+
+  function to12Hour(h) {
+    const n = Number(h) % 12;
+    return n === 0 ? 12 : n;
+  }
+
+  function amPm(h) {
+    return Number(h) >= 12 ? "pm" : "am";
+  }
+
+  function clickShare(options = {}) {
+    const {
+      title = "Northaven Trail",
+      text = "",
+      url = window.location.href
+    } = options;
+
+    if (!navigator.share) return;
+    navigator.share({
+      title: String(title),
+      text: String(text),
+      url: String(url)
+    }).catch((err) => {
+      if (err.name !== "AbortError") {
+        console.warn("Share failed:", err);
+      }
+    });
+  }
+
   window.NorthavenUtils = Object.assign(window.NorthavenUtils || {}, {
     onReady,
     escapeHtml,
@@ -260,6 +325,16 @@
     patchSquarespaceA11y,
     fixNewWindowAriaLabels,
     labelUntitledIframes,
-    ensureSrOnlyHeading
+    ensureSrOnlyHeading,
+    isApple,
+    isMobile,
+    fetchJson,
+    normalizeSquarespaceAssetUrl,
+    formatDateISO,
+    formatDateISOLong,
+    to12Hour,
+    amPm,
+    clickShare
   });
 })(window, document);
+

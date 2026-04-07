@@ -1101,19 +1101,10 @@ function hideMapButtonAndLocation() {
    ============================================================ */
 
 /** Returns true on iPhone, iPad, iPod, or Mac (where Apple Maps is native) */
-const isApple = () => /(Mac|iPhone|iPad|iPod)/i.test(navigator.platform);
+const isApple = () => window.NorthavenUtils.isApple();
 
-/**
- * Trigger the OS-native share sheet via the Web Share API.
- * Safe to call — silently no-ops if navigator.share is unavailable.
- */
 function clickShare(title, text, url) {
-  if (!navigator.share) return;
-  navigator.share({
-    title: String(title || ""),
-    text: String(text || ""),
-    url: String(url || location.href)
-  }).catch(err => console.log("Share dismissed:", err?.name));
+  window.NorthavenUtils.clickShare({ title, text, url });
 }
 
 /**
@@ -1174,48 +1165,13 @@ function wirePopupShare(popup) {
   });
 }
 
-function formatLongDate(dateStr) {
-  try {
-    return new Date(dateStr).toLocaleDateString("en-US", {
-      weekday: "long",
-      month: "long",
-      day: "numeric"
-    });
-  } catch {
-    return "";
-  }
-}
-
-// Format a "YYYY-MM-DD" ISO date string for display, avoiding UTC offset issues.
-function formatDateISO(iso, opts) {
-  if (!iso) return "";
-  try {
-    const [y, m, d] = iso.split("-").map(Number);
-    return new Date(y, m - 1, d).toLocaleDateString("en-US", opts);
-  } catch {
-    return "";
-  }
-}
-function formatDateISOLong(iso) {
-  return formatDateISO(iso, { weekday: "long", month: "long", day: "numeric" });
-}
-
-function escapeHtml(value) {
-  return window.NorthavenUtils.escapeHtml(value);
-}
-
-function escapeHtmlAttr(value) {
-  return window.NorthavenUtils.escapeHtmlAttr(value);
-}
-
-function to12Hour(h) {
-  const n = h % 12;
-  return n === 0 ? 12 : n;
-}
-
-function amPm(h) {
-  return h >= 12 ? "pm" : "am";
-}
+function formatLongDate(d) { return window.NorthavenUtils.formatDateISO(d, { weekday: "long", month: "long", day: "numeric" }); }
+function formatDateISO(d, opts) { return window.NorthavenUtils.formatDateISO(d, opts); }
+function formatDateISOLong(d) { return window.NorthavenUtils.formatDateISOLong(d); }
+function escapeHtml(v) { return window.NorthavenUtils.escapeHtml(v); }
+function escapeHtmlAttr(v) { return window.NorthavenUtils.escapeHtmlAttr(v); }
+function to12Hour(h) { return window.NorthavenUtils.to12Hour(h); }
+function amPm(h) { return window.NorthavenUtils.amPm(h); }
 
 
 function zoomToHerd(map) {
