@@ -43,7 +43,15 @@ export default {
         return jsonError('Bad request - invalid JSON', 400, origin);
       }
 
-      // 3. Honeypot check (field must be empty)
+      // 3. Rate limit final issue submissions before touching the upstream GAS endpoint.
+      const page = body.page || body.p || '';
+      const isFinalIssueSubmit = pathname === '/submit' && page === 'saveData';
+      if (isFinalIssueSubmit) {
+        const rateLimitResponse = await enforceSubmitRateLimit(request, env, origin);
+        if (rateLimitResponse) return rateLimitResponse;
+      }
+
+      // 4. Honeypot check (field must be empty)
       if (body._hp && body._hp !== '') {
         // Silently accept (don't reveal to bots that they were caught)
         return new Response(JSON.stringify({ result: 'success' }), {
@@ -51,11 +59,10 @@ export default {
         });
       }
 
-      // 4. Turnstile validation (only for /submit form submissions, not image ops)
+      // 5. Turnstile validation (only for /submit form submissions, not image ops)
       //    Fail open by default because Turnstile has been unreliable on the host page.
       //    Set REQUIRE_TURNSTILE=true in Worker env vars to require a token later.
       if (pathname === '/submit') {
-        const page = body.page || body.p || '';
         const requiresTurnstile = (page === 'saveData');
         if (requiresTurnstile) {
           const token = body._turnstile;
@@ -75,11 +82,11 @@ export default {
         }
       }
 
-      // 5. Strip internal fields, inject GAS secret
+      // 6. Strip internal fields, inject GAS secret
       const { _turnstile, _hp, ...gasBody } = body;
       gasBody._secret = env.GAS_SECRET;
 
-      // 6. Forward to GAS
+      // 7. Forward to GAS
       const gasResponse = await fetch(targetUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -122,6 +129,26 @@ export default {
     }
   },
 };
+
+async function enforceSubmitRateLimit(request, env, origin) {
+  if (!env.SUBMIT_RATE_LIMITER) {
+    console.warn('SUBMIT_RATE_LIMITER binding missing; allowing request');
+    return null;
+  }
+
+  const clientIp =
+    request.headers.get('CF-Connecting-IP') ||
+    request.headers.get('X-Forwarded-For') ||
+    'unknown';
+
+  const { success } = await env.SUBMIT_RATE_LIMITER.limit({
+    key: `issue-submit:${clientIp}`,
+  });
+
+  if (success) return null;
+
+  return jsonError('Too many requests', 429, origin);
+}
 
 function jsonError(message, status, origin) {
   return new Response(JSON.stringify({ error: message, status: status }), {

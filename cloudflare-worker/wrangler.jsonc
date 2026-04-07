@@ -8,6 +8,16 @@
     "GAS_ISSUE_URL": "https://script.google.com/macros/s/AKfycbygx5-v6xF0qyd9riNo3Rf0IPSzf5PmUmS3OBH-fCITcI2qqFcaVY4CFWl-rHMUUgEQTQ/exec",
     "GAS_LOG_URL": "https://script.google.com/macros/s/AKfycbx9IspdJ2im9U03qhE0IPfcL-2gVKBlm6kgam_WL1GXVPT2nqOZCzHYBc427dFH_Zvc/exec"
   },
+  "ratelimits": [
+    {
+      "name": "SUBMIT_RATE_LIMITER",
+      "namespace_id": "1001",
+      "simple": {
+        "limit": 20,
+        "period": 60
+      }
+    }
+  ],
   "observability": {
     "enabled": true,
     "head_sampling_rate": 1,
