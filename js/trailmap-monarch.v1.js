@@ -27,13 +27,7 @@
     let activeMonarchPopup = null;
 
     function escapeHtml(s = "") {
-      return String(s).replace(/[&<>"']/g, (ch) => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;"
-      }[ch]));
+      return window.NorthavenUtils.escapeHtml(s);
     }
 
     function renderMonarchPopup({ title, body }) {

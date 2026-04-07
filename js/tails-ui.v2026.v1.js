@@ -1201,17 +1201,11 @@ function formatDateISOLong(iso) {
 }
 
 function escapeHtml(value) {
-  return String(value ?? "").replace(/[&<>"']/g, ch => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;"
-  }[ch]));
+  return window.NorthavenUtils.escapeHtml(value);
 }
 
 function escapeHtmlAttr(value) {
-  return escapeHtml(value);
+  return window.NorthavenUtils.escapeHtmlAttr(value);
 }
 
 function to12Hour(h) {

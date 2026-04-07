@@ -27,25 +27,11 @@ if ('scrollRestoration' in history) {
   // ---------------------------
 
   function safeOnReady(fn) {
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", fn, { once: true });
-    } else {
-      fn();
-    }
+    window.NorthavenUtils.onReady(fn);
   }
 
   function escHtml(s) {
-    let str = String(s ?? "");
-    // If the string contains &nbsp;, it's likely intended as a space.
-    // Replace it with the actual character so it doesn't get double-escaped to &amp;nbsp;
-    str = str.replace(/&nbsp;/g, "\u00A0");
-    return str.replace(/[&<>"']/g, (c) => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;",
-    }[c]));
+    return window.NorthavenUtils.escapeHtml(s);
   }
 
   function htmlToText(html) {
@@ -88,46 +74,19 @@ if ('scrollRestoration' in history) {
   }
 
   function normalizeAbsUrl_(u) {
-    const s = String(u || "").trim();
-    if (!s) return "";
-    try {
-      return new URL(s, location.href).toString();
-    } catch {
-      return s;
-    }
+    return window.NorthavenUtils.normalizeAbsUrl(u);
   }
 
   function isSamePageUrl_(u) {
-    try {
-      const url = new URL(String(u || ""), location.href);
-      const here = new URL(location.href);
-      return (
-        url.origin === here.origin &&
-        url.pathname.replace(/\/+$/, "") === here.pathname.replace(/\/+$/, "")
-      );
-    } catch {
-      return false;
-    }
+    return window.NorthavenUtils.isSamePageUrl(u);
   }
 
   function isExternalDomain_(u) {
-    try {
-      const url = new URL(String(u || ""), location.href);
-      return url.origin !== location.origin;
-    } catch {
-      return false;
-    }
+    return window.NorthavenUtils.isExternalDomain(u);
   }
 
   function driveThumbFromId_(id, w) {
-    const s = String(id || "").trim();
-    if (!s) return "";
-    const m =
-      s.match(/(?:id=)([a-zA-Z0-9_-]{10,})/) ||
-      s.match(/\/d\/([a-zA-Z0-9_-]{10,})/);
-    const driveId = m ? m[1] : s;
-    const width = Number(w) || 400;
-    return `https://drive.google.com/thumbnail?id=${encodeURIComponent(driveId)}&sz=w${width}`;
+    return window.NorthavenUtils.driveThumbFromId(id, w);
   }
 
   function normalizeOnlyShowListLabels_(v) {

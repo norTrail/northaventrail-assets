@@ -496,12 +496,10 @@ function normalizeText_(s = "") {
 }
 
 function escapeHtml_(s = "") {
-  return String(s).replace(/[&<>"']/g, ch => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-  }[ch]));
+  return window.NorthavenUtils.escapeHtml(s);
 }
 function escapeHtmlAttr_(s = "") {
-  return escapeHtml_(s);
+  return window.NorthavenUtils.escapeHtmlAttr(s);
 }
 
 /* ============================================================
@@ -820,14 +818,8 @@ function createPopUp(currentFeature) {
   popup.addTo(map);
 }
 
-/* Minimal HTML escaper (keep your existing one if you already have it) */
 function escapeHtml(str) {
-  return String(str || "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+  return window.NorthavenUtils.escapeHtml(str);
 }
 /* ---------- URL + filter helpers (kept) ---------- */
 
@@ -841,42 +833,19 @@ function escapeHtml(str) {
  */
 
 function driveThumbFromId_(id, w = 400) {
-  const s = String(id || "").trim();
-  if (!s) return "";
-  // Accept either full Drive URL or an ID
-  const m = s.match(/(?:id=)([a-zA-Z0-9_-]{10,})/) || s.match(/\/d\/([a-zA-Z0-9_-]{10,})/);
-  const driveId = m ? m[1] : s;
-  return `https://drive.google.com/thumbnail?id=${encodeURIComponent(driveId)}&sz=w${Number(w) || 400}`;
+  return window.NorthavenUtils.driveThumbFromId(id, w);
 }
 
 function normalizeAbsUrl_(u) {
-  const s = String(u || "").trim();
-  if (!s) return "";
-  try {
-    return new URL(s, location.href).toString();
-  } catch {
-    return s; // leave as-is if it can't parse
-  }
+  return window.NorthavenUtils.normalizeAbsUrl(u);
 }
 
 function isSamePageUrl_(u) {
-  try {
-    const url = new URL(String(u || ""), location.href);
-    const here = new URL(location.href);
-    // treat same origin+path as “same page” (ignore query/hash)
-    return url.origin === here.origin && url.pathname.replace(/\/+$/, "") === here.pathname.replace(/\/+$/, "");
-  } catch {
-    return false;
-  }
+  return window.NorthavenUtils.isSamePageUrl(u);
 }
 
 function isExternalDomain_(u) {
-  try {
-    const url = new URL(String(u || ""), location.href);
-    return url.origin !== location.origin;
-  } catch {
-    return false;
-  }
+  return window.NorthavenUtils.isExternalDomain(u);
 }
 
 /**

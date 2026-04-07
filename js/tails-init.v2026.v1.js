@@ -520,23 +520,11 @@ function wireSatelliteToggle(map) {
    ---------------------------- */
 
 function loadSvgSpriteOnce() {
-  if (document.getElementById("svg-sprite-inline")) return;
-  fetch("https://assets.northaventrail.org/img/icons.svg", { cache: "force-cache" })
-    .then(r => {
-      if (!r.ok) throw new Error(`SVG sprite fetch failed: ${r.status}`);
-      return r.text();
-    })
-    .then(svgText => {
-      const wrap = document.createElement("div");
-      wrap.id = "svg-sprite-inline";
-      wrap.style.display = "none";
-      wrap.innerHTML = svgText;
-      document.body.prepend(wrap);
-    })
-    .catch(err => {
-      console.warn("Could not load SVG sprite:", err);
+  window.NorthavenUtils.loadSvgSpriteOnce({
+    onError: (err) => {
       logClientError("loadSvgSpriteOnce", err?.message || String(err), { stack: err?.stack || null });
-    });
+    }
+  });
 }
 
 

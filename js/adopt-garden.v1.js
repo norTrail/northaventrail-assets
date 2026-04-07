@@ -25,17 +25,11 @@
   // ------------------------------------------------------------------
 
   function escHtml(s) {
-    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
-      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
-    });
+    return window.NorthavenUtils.escapeHtml(s);
   }
 
   function safeOnReady(fn) {
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", fn, { once: true });
-    } else {
-      fn();
-    }
+    window.NorthavenUtils.onReady(fn);
   }
 
   function setStatus(el, msg, isError) {
