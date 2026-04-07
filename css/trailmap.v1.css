@@ -287,6 +287,13 @@ html, body {
   align-items: flex-start;
 }
 
+.map-popup-image .map-popup-image-trigger {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
 .map-popup-image img {
   display: block;
   border-radius: 8px;

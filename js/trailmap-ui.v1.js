@@ -697,8 +697,15 @@ function createPopUp(currentFeature) {
     <div class="map-popup-row">
       ${imageURL
       ? `<div class="map-popup-image">
-               <img src="${escapeHtmlAttr(imageURL)}" width="64" height="64"
-                    alt="${escapeHtml(labelName || "Marker")}" loading="lazy">
+               <button
+                 type="button"
+                 class="lightboxable map-popup-image-trigger"
+                 data-image-url="${escapeHtmlAttr(imageURL)}"
+                 aria-label="Open larger image for ${escapeHtmlAttr(labelName || "Marker")}"
+               >
+                 <img src="${escapeHtmlAttr(imageURL)}" width="64" height="64"
+                      alt="${escapeHtml(labelName || "Marker")}" loading="lazy">
+               </button>
              </div>`
       : ""
     }
@@ -762,6 +769,14 @@ function createPopUp(currentFeature) {
 
     // Delegate: catches clicks on <a>, <svg>, <use>, etc.
     popupEl.addEventListener("click", (e) => {
+      const lightboxTrigger = e.target?.closest?.(".map-popup-image-trigger");
+      if (lightboxTrigger) {
+        e.preventDefault();
+        e.stopPropagation();
+        showLargeImage(lightboxTrigger.getAttribute("data-image-url") || "");
+        return;
+      }
+
       const share = e.target?.closest?.(".shareButton");
       if (!share) return;
 
