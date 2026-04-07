@@ -5,6 +5,7 @@
    ============================================================ */
 
 let rotateEndTimer = null;
+let popupEscapeWired = false;
 
 function wireMapEventsAfterMarkers_() {
   if (!map || map.__trailmapEventsAfterMarkersWired) return;
@@ -717,10 +718,10 @@ function createPopUp(currentFeature) {
     ${showNav
       ? `<div class="map-popup-actions" tabindex="-1">
              <a tabindex="-1" style="display:none"></a>
-             <a class="popupIconLink" title="Open in Google Maps" aria-label="Open in Google Maps" href="${googleHref}">
+             <a class="popupIconLink" title="Open in Google Maps" aria-label="Open in Google Maps" href="${googleHref}" target="_blank" rel="noopener noreferrer">
                <svg aria-hidden="true" class="popupIcon googleMapButton"><use href="#google-logo"></use></svg>
              </a>
-             <a class="popupIconLink" title="Open in Apple Maps" aria-label="Open in Apple Maps" href="${appleHref}">
+             <a class="popupIconLink" title="Open in Apple Maps" aria-label="Open in Apple Maps" href="${appleHref}" target="_blank" rel="noopener noreferrer">
                <svg aria-hidden="true" class="popupIcon"><use href="#apple-logo"></use></svg>
              </a>
              <button class="popupIconLink shareButton" type="button" title="Share" aria-label="Share">
@@ -936,14 +937,22 @@ function updatePageDetails(object) {
     const googleBtn = document.getElementById("googleMapsButton");
     const googleWrap = document.getElementById("googleMaps");
 
-    if (googleBtn) googleBtn.setAttribute("href", GOOGLE_MAP_URL + coords);
+    if (googleBtn) {
+      googleBtn.setAttribute("href", GOOGLE_MAP_URL + coords);
+      googleBtn.setAttribute("target", "_blank");
+      googleBtn.setAttribute("rel", "noopener noreferrer");
+    }
     if (googleWrap) googleWrap.style.display = "";
 
     if (isApple()) {
       const appleBtn = document.getElementById("appleMapsButton");
       const appleWrap = document.getElementById("appleMaps");
 
-      if (appleBtn) appleBtn.setAttribute("href", APPLE_MAP_URL + coords);
+      if (appleBtn) {
+        appleBtn.setAttribute("href", APPLE_MAP_URL + coords);
+        appleBtn.setAttribute("target", "_blank");
+        appleBtn.setAttribute("rel", "noopener noreferrer");
+      }
       if (appleWrap) appleWrap.style.display = "";
     }
   };
@@ -1273,6 +1282,13 @@ function setupLegendClickedFor_(legendEl) {
   });
 }
 
+function clearLegendSelection_() {
+  document.querySelectorAll(".legendElement.clickable.active").forEach((el) => {
+    el.classList.remove("active");
+    el.setAttribute("aria-pressed", "false");
+  });
+}
+
 /* ------------------------------------------------------------ */
 let currentFocus = -1;
 let _activeDropdownEl = null;
@@ -1342,6 +1358,14 @@ function goToElement(idOverride = null) {
   // 1) explicit override (search)
   // 2) URL param (existing behavior)
   const targetId = idOverride ?? params?.[LOCATION_PARM];
+
+  if (idOverride !== null && idOverride !== undefined) {
+    const hasActiveLegendFilter = document.querySelector(".legendElement.clickable.active");
+    if (hasActiveLegendFilter) {
+      clearLegendSelection_();
+      filterData(null);
+    }
+  }
 
   // ─────────────────────────────────────────
   // No params + no override → reset map
@@ -1858,6 +1882,23 @@ function wireLightboxOnce() {
   });
 }
 
+function wirePopupEscapeOnce() {
+  if (popupEscapeWired) return;
+  popupEscapeWired = true;
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+
+    const lightBox = document.getElementById(MAP_LIGHT_BOX_ID);
+    if (lightBox && lightBox.style.display === "block") return;
+    if (!document.querySelector(".mapboxgl-popup")) return;
+
+    e.stopPropagation();
+    forceClosePopups();
+    resetPageDetails();
+  });
+}
+
 function closeLargeImage() {
   const lightBox = document.getElementById(MAP_LIGHT_BOX_ID);
   if (!lightBox) return;
@@ -1882,3 +1923,4 @@ window.setShareButton = setShareButton;
 window.buildURL = buildURL;
 window.goToElement = goToElement;
 window.forceClosePopups = forceClosePopups;
+window.wirePopupEscapeOnce = wirePopupEscapeOnce;

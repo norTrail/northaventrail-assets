@@ -810,6 +810,7 @@ function applyMarkerPayload_(m, payload) {
   installMapControls_();
   wireMapEventsAfterMarkers_();
   wireCustomSearchUI_();
+  wirePopupEscapeOnce?.();
 
   m.once("idle", () => {
     buildSearchIndex_(poiData);

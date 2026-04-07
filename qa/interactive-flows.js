@@ -57,6 +57,27 @@ async function trailmapSearchFlow(browser) {
     }).then(() => true).catch(() => false);
 
     assert.equal(hasPopup, true, "Trailmap search should open a popup");
+
+    const popupLinks = await page.evaluate(() =>
+      Array.from(document.querySelectorAll(".mapboxgl-popup .popupIconLink[href]")).map((el) => ({
+        label: el.getAttribute("aria-label") || "",
+        target: el.getAttribute("target") || "",
+        rel: el.getAttribute("rel") || ""
+      }))
+    );
+
+    assert.ok(
+      popupLinks.some((link) => /Google Maps/i.test(link.label) && link.target === "_blank"),
+      "Trailmap popup Google Maps link should open in a new tab"
+    );
+    assert.ok(
+      popupLinks.some((link) => /Apple Maps/i.test(link.label) && link.target === "_blank"),
+      "Trailmap popup Apple Maps link should open in a new tab"
+    );
+
+    await page.keyboard.press("Escape");
+    await page.waitForFunction(() => !document.querySelector(".mapboxgl-popup"), { timeout: 10000 });
+
     console.log("trailmap search: pass");
   } finally {
     await page.close();
@@ -85,7 +106,8 @@ async function listingMapsMenuFlow(browser) {
       const menu = document.querySelector(".mapsMenu:not([hidden])");
       const items = menu ? Array.from(menu.querySelectorAll(".mapsMenuItem")).map((el) => ({
         text: (el.textContent || "").trim(),
-        href: el.getAttribute("href") || ""
+        href: el.getAttribute("href") || "",
+        target: el.getAttribute("target") || ""
       })) : [];
       return {
         expanded: document.querySelector(".mapsBtn")?.getAttribute("aria-expanded"),
@@ -97,6 +119,14 @@ async function listingMapsMenuFlow(browser) {
     assert.ok(menuState.items.some((item) => /Trail Map/i.test(item.text)), "Maps menu should include Trail Map");
     assert.ok(menuState.items.some((item) => /Google Maps/i.test(item.text)), "Maps menu should include Google Maps");
     assert.ok(menuState.items.some((item) => /Apple Maps/i.test(item.text)), "Maps menu should include Apple Maps");
+    assert.ok(
+      menuState.items.some((item) => /Google Maps/i.test(item.text) && item.href.includes("google") && item.target === "_blank"),
+      "Maps menu Google Maps item should open in a new tab"
+    );
+    assert.ok(
+      menuState.items.some((item) => /Apple Maps/i.test(item.text) && item.href.includes("apple") && item.target === "_blank"),
+      "Maps menu Apple Maps item should open in a new tab"
+    );
 
     await page.keyboard.press("Escape");
     await page.waitForFunction(() => {
