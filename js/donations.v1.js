@@ -134,14 +134,6 @@
         }
       });
 
-      function getManifestDataUrls(manifest) {
-        return [...new Set(
-          [manifest?.current, manifest?.fallback, manifest?.previous]
-            .map((value) => String(value || "").trim())
-            .filter(Boolean)
-        )];
-      }
-
       // Fetch + render for one URL group.
       // If the URL ends in .latest.json it is treated as a manifest:
       //   1. Fetch the manifest to get the candidate versioned data URLs.
@@ -181,7 +173,7 @@
               .then(r => r.json())
               .then(manifest => {
                 const currentUrl = String(manifest?.current || "").trim();
-                const candidateUrls = getManifestDataUrls(manifest);
+                const candidateUrls = window.NorthavenUtils.getManifestDataUrls(manifest);
                 if (!candidateUrls.length) return; // manifest malformed — keep existing UI
 
                 const cached = loadCache(group.cacheKey);

@@ -28,15 +28,7 @@
   const safeOnReady = (fn) => window.NorthavenUtils.onReady(fn);
   const fetchJson   = (url, mode, sig) => window.NorthavenUtils.fetchJson(url, { cache: mode, signal: sig });
   const normalizeAbsUrl = (url) => window.NorthavenUtils.normalizeAbsUrl(url);
-  const logClientEvent = (kind, err, details) => {
-    window.TrailmapError?.logClientEvent?.({
-      kind,
-      app: "adoptgarden",
-      message: String(err?.message || err || ""),
-      stack: err?.stack || null,
-      ...details
-    });
-  };
+  const logClientEvent = window.NorthavenUtils.makeLogClientEvent("adoptgarden");
 
   function setStatus(el, msg, isError) {
     el.innerHTML =

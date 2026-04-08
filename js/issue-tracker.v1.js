@@ -48,15 +48,7 @@
     // -------------------------
     // Utilities & Helpers
     // -------------------------
-    function logClientEvent(kind, err, details = {}) {
-        window.TrailmapError?.logClientEvent?.({
-            kind,
-            app: "report-trail-issue",
-            message: String(err?.message || err || ""),
-            stack: err?.stack || null,
-            ...details
-        });
-    }
+    const logClientEvent = window.NorthavenUtils.makeLogClientEvent("report-trail-issue");
 
     async function fetchWithTimeout(resource, options = {}, timeout = 10000) {
         const { signal, ...fetchOptions } = options;
@@ -91,17 +83,6 @@
         return payload;
     }
 
-    function getManifestDataUrls_(manifest) {
-        const urls = [
-            manifest?.current,
-            manifest?.fallback,
-            manifest?.previous
-        ]
-            .map(value => String(value || "").trim())
-            .filter(Boolean);
-        return [...new Set(urls)];
-    }
-
     async function fetchPoiPayload_() {
         const manifestRes = await fetchWithTimeout(POI_MANIFEST_URL);
         if (!manifestRes.ok) {
@@ -110,7 +91,7 @@
 
         const manifest = await manifestRes.json();
         const currentUrl = String(manifest?.current || "").trim();
-        const candidateUrls = getManifestDataUrls_(manifest);
+        const candidateUrls = window.NorthavenUtils.getManifestDataUrls(manifest);
         if (!candidateUrls.length) {
             throw new Error("Manifest missing current POI URL");
         }

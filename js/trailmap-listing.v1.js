@@ -27,15 +27,7 @@ if ('scrollRestoration' in history) {
   // ---------------------------
 
   const safeOnReady = (fn) => window.NorthavenUtils.onReady(fn);
-  const logClientEvent = (kind, err, details) => {
-    window.TrailmapError?.logClientEvent?.({
-      kind,
-      app: "trailmap-listing",
-      message: String(err?.message || err || ""),
-      stack: err?.stack || null,
-      ...details
-    });
-  };
+  const logClientEvent = window.NorthavenUtils.makeLogClientEvent("trailmap-listing");
 
   const escHtml = (s) => window.NorthavenUtils.escapeHtml(s);
 
@@ -511,14 +503,6 @@ if ('scrollRestoration' in history) {
     return payload;
   }
 
-  function getManifestDataUrls_(manifest) {
-    return [...new Set(
-      [manifest?.current, manifest?.fallback, manifest?.previous]
-        .map((value) => String(value || "").trim())
-        .filter(Boolean)
-    )];
-  }
-
   function getPoiData_(dataUrl) {
     const url = String(dataUrl || "").trim() || DEFAULTS.dataUrl;
 
@@ -555,7 +539,7 @@ if ('scrollRestoration' in history) {
       })
       .then((manifest) => {
         const currentUrl = String(manifest?.current || "").trim();
-        const candidateUrls = getManifestDataUrls_(manifest);
+        const candidateUrls = window.NorthavenUtils.getManifestDataUrls(manifest);
         if (!candidateUrls.length) throw new Error("Manifest missing current POI URL");
 
         const cached = getPoiCache_();

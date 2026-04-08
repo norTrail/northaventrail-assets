@@ -26,16 +26,7 @@
   const escHtml     = (s) => window.NorthavenUtils?.escapeHtml(s) ?? s;
   const safeOnReady = (fn) => window.NorthavenUtils?.onReady(fn) ?? document.addEventListener("DOMContentLoaded", fn);
   const fetchJson   = (url, mode, sig) => window.NorthavenUtils?.fetchJson(url, { cache: mode, signal: sig });
-
-  const logClientEvent = (kind, err, details) => {
-    window.TrailmapError?.logClientEvent?.({
-      kind,
-      app: "trail-captains",
-      message: String(err?.message || err || ""),
-      stack: err?.stack || null,
-      ...details
-    });
-  };
+  const logClientEvent = window.NorthavenUtils.makeLogClientEvent("trail-captains");
 
   function setStatus(el, msg, isError) {
     el.innerHTML =

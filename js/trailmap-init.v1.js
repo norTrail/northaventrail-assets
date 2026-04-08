@@ -613,14 +613,6 @@ function typeKeysForIcons_(payload, icons) {
 let __markerReqId = 0;
 let __markerManifestCurrent = null; // last-known versioned URL from manifest
 
-function getManifestDataUrls_(manifest) {
-  return [...new Set(
-    [manifest?.current, manifest?.fallback, manifest?.previous]
-      .map((value) => String(value || "").trim())
-      .filter(Boolean)
-  )];
-}
-
 function getMarkerData() {
   const reqId = ++__markerReqId;
   const mapAtStart = map; // capture current instance
@@ -635,7 +627,7 @@ function getMarkerData() {
     .then((manifest) => {
       if (reqId !== __markerReqId) return;
       const currentUrl = String(manifest?.current || "").trim();
-      const candidateUrls = getManifestDataUrls_(manifest);
+      const candidateUrls = window.NorthavenUtils.getManifestDataUrls(manifest);
       if (!candidateUrls.length) throw new Error("Manifest missing current POI URL");
 
       if (poiData && currentUrl && __markerManifestCurrent === currentUrl) return;

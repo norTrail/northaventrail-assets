@@ -39,15 +39,7 @@ let zoomEndTimeout = null;
 const ZOOM_DEBOUNCE_MS = 50;
 let maxZoomRequired = 0;
 
-function logClientEvent(kind, err, details = {}) {
-  window.TrailmapError?.logClientEvent?.({
-    kind,
-    app: 'valentines-map',
-    message: String(err?.message || err || ''),
-    stack: err?.stack || null,
-    ...details
-  });
-}
+const logClientEvent = window.NorthavenUtils.makeLogClientEvent('valentines-map');
 
 // -------------------- GeoJSON state --------------------
 let currentClingGeojson = null;                // last loaded FeatureCollection
@@ -417,15 +409,6 @@ function sanitizeImageUrl(value) {
     return '';
   }
 }
-
-function getManifestDataUrls(manifest) {
-  return [...new Set(
-    [manifest?.current, manifest?.fallback, manifest?.previous]
-      .map((value) => String(value || '').trim())
-      .filter(Boolean)
-  )];
-}
-
 
 // Hide sales areas after sales close
 (function hideSalesAfterClose(){
@@ -1064,7 +1047,7 @@ function goToParamFeature() {
 async function refreshClingData() {
   const manifest = await window.NorthavenUtils.fetchJson(CLING_MANIFEST_URL);
   const currentUrl = String(manifest?.current || '').trim();
-  const candidateUrls = getManifestDataUrls(manifest);
+  const candidateUrls = window.NorthavenUtils.getManifestDataUrls(manifest);
   if (!candidateUrls.length) {
     throw new Error('Manifest missing current cling URL');
   }

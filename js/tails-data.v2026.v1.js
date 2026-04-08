@@ -191,18 +191,10 @@ async function fetchJsonStable(url) {
   }
 }
 
-function getManifestDataUrls(manifest) {
-  return [...new Set(
-    [manifest?.current, manifest?.fallback, manifest?.previous]
-      .map((value) => String(value || "").trim())
-      .filter(Boolean)
-  )];
-}
-
 async function fetchManifestData(manifestUrl, fetcher, lastKnownVersion, { allowCached = true } = {}) {
   const manifest = await fetchJson(manifestUrl);
   const currentUrl = String(manifest?.current || "").trim();
-  const candidateUrls = getManifestDataUrls(manifest);
+  const candidateUrls = window.NorthavenUtils.getManifestDataUrls(manifest);
   if (!candidateUrls.length) {
     throw new Error(`Manifest missing "current" field: ${manifestUrl}`);
   }
