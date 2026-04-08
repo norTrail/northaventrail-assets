@@ -608,6 +608,44 @@ if ('scrollRestoration' in history) {
     });
   }
 
+  function installRovingTabindex_(tbody) {
+    if (!tbody || tbody.dataset.rovingTabindexBound === "1") return;
+    tbody.dataset.rovingTabindexBound = "1";
+
+    const getRows = () => Array.from(tbody.querySelectorAll("tr[data-feature-id]"));
+
+    // First row is the single Tab entry point into this table.
+    const rows = getRows();
+    rows.forEach((r, i) => { r.tabIndex = i === 0 ? 0 : -1; });
+
+    // ArrowDown / ArrowUp move focus between rows.
+    // Not intercepted when focus is on .mapsBtn (ArrowDown opens its menu)
+    // or inside .mapsMenu (arrow keys navigate menu items there).
+    tbody.addEventListener("keydown", (e) => {
+      if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+      if (e.target.closest?.(".mapsMenu") || e.target.closest?.(".mapsBtn")) return;
+      const currentRow = e.target.closest?.("tr[data-feature-id]");
+      if (!currentRow) return;
+      e.preventDefault();
+      const allRows = getRows();
+      const idx = allRows.indexOf(currentRow);
+      const nextIdx = e.key === "ArrowDown"
+        ? Math.min(idx + 1, allRows.length - 1)
+        : Math.max(idx - 1, 0);
+      if (nextIdx === idx) return;
+      allRows.forEach((r, i) => { r.tabIndex = i === nextIdx ? 0 : -1; });
+      allRows[nextIdx].focus();
+    });
+
+    // Keep the roving entry point in sync when focus lands anywhere in the tbody
+    // — covers clicking a row, tabbing to a maps button, and returning from a menu.
+    tbody.addEventListener("focusin", (e) => {
+      const row = e.target.closest?.("tr[data-feature-id]");
+      if (!row) return;
+      getRows().forEach((r) => { r.tabIndex = r === row ? 0 : -1; });
+    });
+  }
+
   // ---------------------------
   // Single-table listing
   // ---------------------------
@@ -715,7 +753,7 @@ if ('scrollRestoration' in history) {
 
             const tr = document.createElement("tr");
             tr.dataset.featureId = id;
-            tr.setAttribute("tabindex", "0");
+            tr.setAttribute("tabindex", "-1");
 
             const desc = poi.descText || "";
             tr.innerHTML = `
@@ -739,6 +777,7 @@ if ('scrollRestoration' in history) {
           });
 
           stopRowLinkPropagation(tbody);
+          installRovingTabindex_(tbody);
 
           container.innerHTML = "";
           container.appendChild(table);
@@ -839,7 +878,7 @@ if ('scrollRestoration' in history) {
 
     const tr = document.createElement("tr");
     tr.dataset.featureId = id;
-    tr.setAttribute("tabindex", "0");
+    tr.setAttribute("tabindex", "-1");
 
     const cellHtml = columns.map((col) => {
       const label = escHtml(columnToLabel_(col));
@@ -1231,6 +1270,7 @@ if ('scrollRestoration' in history) {
             finalRows.forEach(rowModel => usedFeatureIds.add(String(rowModel.id || ""))); // mark as used
 
             stopRowLinkPropagation(tbody);
+            installRovingTabindex_(tbody);
 
             wrap.setAttribute("aria-busy", "false");
             if (loading) loading.hidden = true;
@@ -1279,6 +1319,7 @@ if ('scrollRestoration' in history) {
               });
 
               stopRowLinkPropagation(tbody);
+              installRovingTabindex_(tbody);
 
               const loading = otherWrap.querySelector("[data-poi-loading]");
               const err = otherWrap.querySelector("[data-poi-error]");
