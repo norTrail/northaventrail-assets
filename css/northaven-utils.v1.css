@@ -45,12 +45,23 @@
   text-decoration: none;
   font-weight: bold;
   border-radius: 0 0 8px 8px;
-  transition: top 0.2s ease-in-out;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   outline: none;
 }
 
+/* Slide-in animation — suppressed for users who prefer reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .skip-link {
+    transition: top 0.2s ease-in-out;
+  }
+}
+
+/* :focus keeps the link visible for browsers lacking :focus-visible support. */
 .skip-link:focus {
+  top: 0;
+}
+
+.skip-link:focus-visible {
   top: 0;
   outline: 3px solid #ffba08;
   outline-offset: 2px;
@@ -102,6 +113,5 @@
     display: block;
     width: 100%;
     text-align: center;
-    box-sizing: border-box;
   }
 }

@@ -212,14 +212,21 @@
 
   function fixNewWindowAriaLabels() {
     withBody(() => {
-      document.querySelectorAll('a[aria-label="Link opens in a new window"]').forEach((anchor) => {
-        const label = anchor.textContent.trim();
-        if (label) {
-          anchor.setAttribute("aria-label", `${label} (opens in a new window)`);
-        } else {
-          anchor.removeAttribute("aria-label");
-        }
-      });
+      function patchLinks() {
+        document.querySelectorAll('a[aria-label="Link opens in a new window"]').forEach((anchor) => {
+          const label = anchor.textContent.trim();
+          if (label) {
+            anchor.setAttribute("aria-label", `${label} (opens in a new window)`);
+          } else {
+            anchor.removeAttribute("aria-label");
+          }
+        });
+      }
+      patchLinks();
+      if (window.MutationObserver) {
+        const observer = new MutationObserver(patchLinks);
+        observer.observe(document.body, { childList: true, subtree: true });
+      }
     });
   }
 
@@ -254,7 +261,10 @@
   }
 
   function isApple() {
-    return /(Mac|iPhone|iPad|iPod)/i.test(navigator.platform);
+    // navigator.platform is deprecated; prefer userAgentData when available.
+    const platform = navigator.userAgentData?.platform || navigator.platform || "";
+    return /(Mac|iPhone|iPad|iPod)/i.test(platform) ||
+      /(Mac|iPhone|iPad|iPod)/i.test(navigator.userAgent);
   }
 
   function isMobile() {
@@ -274,6 +284,31 @@
     if (!s) return "";
     if (/^(https?:)?\/\//i.test(s) || s.startsWith("/")) return s;
     return new URL(`img/${s}`, "https://assets.northaventrail.org/").toString();
+  }
+
+  // Returns the ordered, deduplicated set of data URLs from a manifest object.
+  // Tries manifest.current → manifest.fallback → manifest.previous.
+  // Used by page scripts that fetch versioned trail-poi / tails data files.
+  function getManifestDataUrls(manifest) {
+    return [...new Set(
+      [manifest?.current, manifest?.fallback, manifest?.previous]
+        .map((v) => String(v || "").trim())
+        .filter(Boolean)
+    )];
+  }
+
+  // Returns a logClientEvent function scoped to the given app name.
+  // Usage: const logClientEvent = NorthavenUtils.makeLogClientEvent("adoptgarden");
+  function makeLogClientEvent(appName) {
+    return function (kind, err, details) {
+      window.TrailmapError?.logClientEvent?.({
+        kind,
+        app: appName,
+        message: String(err?.message || err || ""),
+        stack: err?.stack || null,
+        ...details
+      });
+    };
   }
 
   function formatDateISO(iso, options) {
@@ -323,19 +358,14 @@
     pointerAt: 0
   };
 
+  const _navigationKeys = new Set([
+    "Tab", "Enter", " ", "Spacebar",
+    "ArrowUp", "ArrowRight", "ArrowDown", "ArrowLeft"
+  ]);
+
   document.addEventListener("keydown", (event) => {
     if (event.metaKey || event.altKey || event.ctrlKey) return;
-    const navigationKeys = new Set([
-      "Tab",
-      "Enter",
-      " ",
-      "Spacebar",
-      "ArrowUp",
-      "ArrowRight",
-      "ArrowDown",
-      "ArrowLeft"
-    ]);
-    if (navigationKeys.has(event.key)) focusModality.keyboardAt = Date.now();
+    if (_navigationKeys.has(event.key)) focusModality.keyboardAt = Date.now();
   }, true);
 
   ["pointerdown", "mousedown", "touchstart"].forEach((eventName) => {
@@ -394,6 +424,8 @@
     isMobile,
     fetchJson,
     normalizeSquarespaceAssetUrl,
+    getManifestDataUrls,
+    makeLogClientEvent,
     formatDateISO,
     formatDateISOLong,
     to12Hour,
