@@ -42,18 +42,11 @@
 
 /* --- Progress bar fill --- */
 .greenbar {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding-right: 8px;
   height: 100%;
   background-color: #2f6f4e;
   width: 0;
   transition: width 1s ease-in-out;
-  color: white;
-  font-weight: 700;
   border-radius: 10px;
-  font-size: 0.78rem;
 }
 
 .progress {
@@ -165,6 +158,10 @@
 
 .fund-donate-btn:hover {
   background: #245a3e;
+}
+
+.fund-donate-btn:active {
+  background: #1e4d35;
 }
 
 .fund-donate-btn:focus-visible {

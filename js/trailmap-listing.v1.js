@@ -270,10 +270,10 @@ if ('scrollRestoration' in history) {
       setActiveRowFromMapsButton_(btn);
       const rawExpanded = btn.getAttribute("aria-expanded");
       const expanded = rawExpanded === "true";
-      expanded ? closeMenu_(restoreFocusOnClose, "toggle button") : openMenu_(btn);
+      expanded ? closeMenu_(restoreFocusOnClose) : openMenu_(btn);
     }
 
-    function closeMenu_(restoreFocus = false, reason = "unspecified") {
+    function closeMenu_(restoreFocus = false) {
       if (!openBtn) return;
       const menu = getMenu_(openBtn);
       const btnToRestore = openBtn;
@@ -291,7 +291,6 @@ if ('scrollRestoration' in history) {
     }
 
     function openMenu_(btn) {
-      // closeMenu_();
       const menu = getMenu_(btn);
       if (!menu) return;
       openBtn = btn;
@@ -341,22 +340,21 @@ if ('scrollRestoration' in history) {
 
       setMenuRowHighlight_(btn);
 
+      // Arrow key navigation between items
+      const menuItems = Array.from(menu.querySelectorAll(".mapsMenuItem"));
+
       // Focus first item after browser renders the menu
       requestAnimationFrame(() => {
-        const first = menu.querySelector(".mapsMenuItem");
-        first?.focus?.();
+        menuItems[0]?.focus?.();
       });
-
-      // Arrow key navigation between items
       menuKeyDown_ = (e) => {
-        const items = Array.from(menu.querySelectorAll(".mapsMenuItem"));
-        const idx = items.indexOf(document.activeElement);
+        const idx = menuItems.indexOf(document.activeElement);
         if (e.key === "ArrowDown") {
           e.preventDefault();
-          items[(idx + 1) % items.length]?.focus?.();
+          menuItems[(idx + 1) % menuItems.length]?.focus?.();
         } else if (e.key === "ArrowUp") {
           e.preventDefault();
-          items[(idx - 1 + items.length) % items.length]?.focus?.();
+          menuItems[(idx - 1 + menuItems.length) % menuItems.length]?.focus?.();
         }
       };
       menu.addEventListener("keydown", menuKeyDown_);
@@ -369,7 +367,7 @@ if ('scrollRestoration' in history) {
           if (e.relatedTarget === openBtn) return;
           setTimeout(() => {
             if (openBtn && !menu.contains(document.activeElement)) {
-              closeMenu_(false, "menu focusout");
+              closeMenu_(false);
             }
           }, 0);
         }
@@ -384,7 +382,7 @@ if ('scrollRestoration' in history) {
       const closeBtn = e.target.closest?.(".mapsMenuTitle__close");
       const menuLink = e.target.closest?.(".mapsMenu a.mapsMenuItem");
       const menuChrome = e.target.closest?.(".mapsMenu");
-      const openPoiMaps = openBtn?.closest?.(".poiMaps") || null;
+      const openPoiMaps = openBtn?.closest?.(".poiMaps");
       const clickedOpenMenuChrome =
         !!openBtn &&
         !!menuChrome &&
@@ -405,7 +403,7 @@ if ('scrollRestoration' in history) {
       if (cancel || closeBtn) {
         e.preventDefault();
         e.stopPropagation();
-        closeMenu_(true, cancel ? "cancel button" : "menu close button");
+        closeMenu_(true);
         return;
       }
 
@@ -413,7 +411,7 @@ if ('scrollRestoration' in history) {
       if (menuLink) {
         // Let the link navigate; just close and stop row click
         e.stopPropagation();
-        closeMenu_(false, "menu link");
+        closeMenu_(false);
         return;
       }
 
@@ -422,12 +420,12 @@ if ('scrollRestoration' in history) {
       if (clickedOpenMenuChrome) {
         e.preventDefault();
         e.stopPropagation();
-        closeMenu_(true, "menu chrome click");
+        closeMenu_(true);
         return;
       }
 
       // Clicking anywhere outside closes
-      if (!inMaps) closeMenu_(false, "outside click");
+      if (!inMaps) closeMenu_(false);
     });
 
     document.addEventListener("keydown", (e) => {
@@ -442,11 +440,11 @@ if ('scrollRestoration' in history) {
         if (e.key === "Escape" && btn.getAttribute("aria-expanded") === "true") {
           e.preventDefault();
           e.stopPropagation();
-          closeMenu_(true, "button escape");
+          closeMenu_(true);
           return;
         }
       }
-      if (e.key === "Escape") closeMenu_(true, "global escape");
+      if (e.key === "Escape") closeMenu_(true);
     });
   }
 

@@ -76,7 +76,6 @@
         if (matchLine.innerHTML !== html) matchLine.innerHTML = html;
       }
 
-      // Render one bar (progress bar + status text)
       function renderBar(root, payload, fallbacks) {
         const raised  = num(payload.raised, fallbacks.raisedAttr);
         const goal    = num(payload.goal, fallbacks.goalAttr);
@@ -91,11 +90,12 @@
           greenbar.setAttribute('aria-hidden', pct <= 0 ? 'true' : 'false');
         }
         if (progressLbl) progressLbl.textContent = Math.round(pct) + '%';
-        if (statusLine) {
+        if (statusLine && Number.isFinite(raised) && Number.isFinite(goal)) {
           const thankyou = (root.getAttribute('data-thankyou') || 'Thank you!').trim();
           const baseText = `We have raised ${fmtMoney(raised)} of our ${fmtMoney(goal)} goal so far.` +
                            (thankyou ? ` ${thankyou}` : '');
-          statusLine.innerHTML = `${baseText}<br><span class="updatedLine">${updated ? fmtUpdated(updated) : 'Updated —'}</span>`;
+          statusLine.innerHTML = baseText +
+            (updated ? `<br><span class="updatedLine">${fmtUpdated(updated)}</span>` : '');
         }
 
         const meter = root.querySelector('.meter');
@@ -117,15 +117,11 @@
         if (jsonUrl) {
           const cacheKey = CACHE_PREFIX + jsonUrl;
           const cached   = loadCache(cacheKey);
-          if (cached) {
-            const age          = Date.now() - (cached._cachedAt || 0);
-            const paintForBars = (age > CACHE_TTL_MS)
-              ? { raised: raisedAttr, goal: goalAttr, updated: null }
-              : cached;
-            renderBar(root, paintForBars, { goalAttr, raisedAttr });
-          } else {
-            renderBar(root, { raised: raisedAttr, goal: goalAttr, updated: null }, { goalAttr, raisedAttr });
-          }
+          const age      = cached ? (Date.now() - (cached._cachedAt || 0)) : Infinity;
+          const paintForBars = (cached && age <= CACHE_TTL_MS)
+            ? cached
+            : { raised: raisedAttr, goal: goalAttr, updated: null };
+          renderBar(root, paintForBars, { goalAttr, raisedAttr });
           if (!groups.has(jsonUrl)) {
             groups.set(jsonUrl, {
               bars: [], goalDefault: goalAttr, raisedDefault: raisedAttr,
@@ -158,6 +154,12 @@
 
         const isManifest = url.endsWith('.latest.json');
 
+        const renderGroup = (payload) => {
+          group.bars.forEach(({ root, goalAttr, raisedAttr }) => {
+            renderBar(root, payload, { goalAttr, raisedAttr });
+          });
+        };
+
         const doFetchData = (dataUrl) =>
           fetch(dataUrl, { cache: 'no-store' })
             .then(r => r.json())
@@ -169,9 +171,7 @@
                 remainingFunds: sanitizeNum(data.remainingFunds ?? data.remainingFundsCell),
                 updated:        data.updated || new Date().toISOString()
               };
-              group.bars.forEach(({ root, goalAttr, raisedAttr }) => {
-                renderBar(root, payload, { goalAttr, raisedAttr });
-              });
+              renderGroup(payload);
               saveCache(group.cacheKey, { ...payload, _manifestCurrent: dataUrl });
               group.lastFetchedAt = Date.now();
             });
@@ -186,9 +186,7 @@
 
                 const cached = loadCache(group.cacheKey);
                 if (cached && currentUrl && cached._manifestCurrent === currentUrl) {
-                  group.bars.forEach(({ root, goalAttr, raisedAttr }) => {
-                    renderBar(root, cached, { goalAttr, raisedAttr });
-                  });
+                  renderGroup(cached);
                   group.lastFetchedAt = Date.now();
                   return;
                 }
@@ -262,13 +260,16 @@
           <span class="progress">0%</span>
         </div>
         <div class="fund-msg">
-          <span class="statusLine">We have raised $0 of our $0 goal so far. Thank you!<br><span class="updatedLine">Updated —</span></span>
+          <span class="statusLine"></span>
         </div>
         <p class="fund-match" hidden></p>
       `;
 
-      const oldFundBlock = document.getElementById('block-43e60a69556693902014');
-      const iconBlock = document.getElementById('block-63b26464c986557ea752');
+      // These are Squarespace block IDs specific to the /tails-2026 page layout.
+      // If the page is rebuilt in Squarespace these IDs will change; the fallback
+      // chain below (iconBlock → mapSqsBlock → appRoot) handles that gracefully.
+      const oldFundBlock = document.getElementById('block-43e60a69556693902014'); // legacy donation block
+      const iconBlock    = document.getElementById('block-63b26464c986557ea752'); // icon row above map
       const mapSqsBlock = appRoot.closest('.sqs-block');
 
       if (oldFundBlock?.parentNode) {
