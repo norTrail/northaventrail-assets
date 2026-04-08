@@ -149,12 +149,12 @@
           "<span class='ag-garden-name'>" + nameHtml + "</span>" +
           roadHtml +
         "</td>" +
-        "<td>" +
+        '<td data-label="Status">' +
           "<span class='ag-vacant-label'>Needs Adoption</span>" +
           "<br>" +
           '<a class="ag-signup-link"' +
           ' href="' + escHtml(mailtoHref) + '"' +
-          ' aria-label="Adopt the ' + nameHtml + ' garden">' +
+          ' aria-label="Adopt the ' + escHtml(g.name) + ' garden">' +
           "Sign up to adopt \u2192</a>" +
         "</td>" +
         "</tr>"
@@ -232,9 +232,16 @@
 
     fetchJson(MANIFEST_URL, "no-store", controller.signal)
       .then(function (manifest) {
-        const dataUrl = String((manifest && manifest.current) || "").trim();
-        if (!dataUrl) throw new Error("Manifest missing 'current' URL.");
-        return fetchJson(dataUrl, "default", controller.signal);
+        // Try current → fallback → previous in order; first successful fetch wins.
+        const candidates = [manifest && manifest.current, manifest && manifest.fallback, manifest && manifest.previous]
+          .map(function (v) { return String(v || "").trim(); })
+          .filter(Boolean);
+        if (!candidates.length) throw new Error("Manifest missing data URLs.");
+        let chain = Promise.reject(new Error("no candidates"));
+        candidates.forEach(function (dataUrl) {
+          chain = chain.catch(function () { return fetchJson(dataUrl, "default", controller.signal); });
+        });
+        return chain;
       })
       .then(function (data) {
         clearTimeout(timeoutId);
@@ -247,10 +254,9 @@
           renderHeader(headerEl, gardens.unclaimed.length, total);
         });
 
-        // Render garden table into first .ag-section container when present.
-        if (containers[0]) {
-          renderTable(containers[0], gardens.unclaimed, gardens.claimed);
-        }
+        containers.forEach(function (el) {
+          renderTable(el, gardens.unclaimed, gardens.claimed);
+        });
       })
       .catch(function (err) {
         clearTimeout(timeoutId);
@@ -270,13 +276,7 @@
         });
         console.error("[adopt-garden]", err);
         containers.forEach(function (el) {
-          if (el.querySelector(".ag-loading")) {
-            setStatus(
-              el,
-              "Unable to load garden information at this time. Please try again later.",
-              true
-            );
-          }
+          setStatus(el, "Unable to load garden information at this time. Please try again later.", true);
         });
       });
   }

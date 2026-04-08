@@ -25,7 +25,6 @@
   padding: 14px 20px;
   margin-bottom: 12px;
   flex-wrap: wrap;
-  box-sizing: border-box;
 }
 
 .ag-summary-text {
@@ -181,90 +180,6 @@
   border-radius: 2px;
 }
 
-/* ---- Listing-table enhancements on /adoptgarden ---- */
-.listing-table tbody tr.ag-garden-row td:first-child,
-.poi-table tbody tr.ag-garden-row td:first-child {
-  min-width: 220px;
-}
-
-.listing-table tbody tr.ag-vacant,
-.poi-table tbody tr.ag-vacant {
-  background-color: #fff5f5;
-}
-
-.listing-table tbody tr.ag-vacant:hover,
-.poi-table tbody tr.ag-vacant:hover {
-  background-color: #ffe4e4;
-}
-
-.listing-table tbody tr.ag-claimed,
-.poi-table tbody tr.ag-claimed {
-  background-color: #fbfefc;
-}
-
-.ag-status-pill {
-  display: inline-flex;
-  align-items: center;
-  margin-top: 8px;
-  padding: 3px 8px;
-  border-radius: 999px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-}
-
-.ag-status-pill--vacant {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.ag-status-pill--claimed {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.ag-row-cta,
-.ag-row-note {
-  margin-top: 8px;
-}
-
-.ag-row-cta-copy,
-.ag-row-note {
-  display: block;
-  font-size: 0.88rem;
-  line-height: 1.4;
-}
-
-.ag-row-cta-copy {
-  color: #7f1d1d;
-  font-weight: 600;
-}
-
-.ag-row-note {
-  color: #444;
-}
-
-.ag-row-note a {
-  color: inherit;
-}
-
-/* ---- Claimed row: subtle green left accent ---- */
-.ag-table tbody tr.ag-claimed {
-  border-left: 3px solid rgb(16, 132, 82);
-}
-
-/* ---- Keyboard focus ring (keyboard nav only) ---- */
-.ag-table tbody tr:focus-visible {
-  outline: 2px solid rgb(16, 132, 82);
-  outline-offset: -2px;
-  background-color: #eef6f0;
-}
-
-/* Suppress outline on mouse click */
-.ag-table tbody tr:focus:not(:focus-visible) {
-  outline: none;
-}
 
 /* ---- Narrow tablet fallback: avoid sticky header overlap when caption wraps ---- */
 @media (max-width: 820px) {
@@ -347,7 +262,6 @@
   .ag-summary-text {
     width: 100%;
     margin-bottom: 12px;
-    box-sizing: border-box;
   }
 
   /* .nt-cta-btn mobile — defined in northaven-utils.v1.css */
@@ -356,12 +270,4 @@
     width: 100%;
   }
 
-  .ag-status-pill {
-    margin-top: 10px;
-  }
-
-  .ag-row-cta .ag-signup-link {
-    width: 100%;
-    margin-top: 8px;
-  }
 }
