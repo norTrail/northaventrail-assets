@@ -39,8 +39,6 @@ let zoomEndTimeout = null;
 const ZOOM_DEBOUNCE_MS = 50;
 let maxZoomRequired = 0;
 
-const logClientEvent = window.NorthavenUtils.makeLogClientEvent('valentines-map');
-
 // -------------------- GeoJSON state --------------------
 let currentClingGeojson = null;                // last loaded FeatureCollection
 let currentClingByLocationID = new Map();      // locationID -> feature
@@ -1097,7 +1095,7 @@ function updateStatusUI(fc) {
 }
 
 function onRefreshError(err) {
-  logClientEvent('valentines_cling_refresh_error', err, {
+  window.NorthavenUtils.makeLogClientEvent('valentines-map')('valentines_cling_refresh_error', err, {
     phase: 'cling_refresh',
     manifestUrl: CLING_MANIFEST_URL
   });
@@ -1312,6 +1310,9 @@ function closeBottomSheet() {
 // Map setup
 // ---------------------------------------------------------------------
 function loadWindow() {
+  const carouselMount = document.getElementById(CAROUSEL_MOUNT_ID);
+  if (carouselMount) carouselMount.setAttribute('role', 'region');
+
   map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/wdawso/cjok8zmkc2mld2tlkh2qvbuej',
