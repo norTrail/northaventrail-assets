@@ -829,7 +829,7 @@ function applyMarkerPayload_(m, payload) {
     const onlyShow = normalizeOnlyShowListLabels_(ONLY_SHOW_LIST);
 
     if (onlyShow?.length) {
-      // ONLY_SHOW_LIST contains icon/category names like "parking" / "garden"
+      // ONLY_SHOW_LIST contains type labels like "Parking Lot" / "Garden"
       const matchingTypeKeys = typeKeysForLabels_(poiData, onlyShow);
 
       if (matchingTypeKeys.length) {

@@ -22,6 +22,9 @@ if ('scrollRestoration' in history) {
       "https://assets.northaventrail.org/json/trail-poi.latest.json",
   };
 
+  const boundTbodies_ = new WeakSet();
+  const rovingTbodies_ = new WeakSet();
+
   // ---------------------------
   // Small helpers
   // ---------------------------
@@ -80,17 +83,17 @@ if ('scrollRestoration' in history) {
     if (v === undefined || v === null) return null;
     const arr = Array.isArray(v) ? v : [v];
     const out = arr
-      .map((x) => String(x ?? "").trim())
+      .map((x) => String(x ?? "").trim().toLowerCase())
       .filter(Boolean);
     return out.length ? out : null;
   }
 
   function typeKeysForLabels_(payload, labels) {
-    const labelSet = new Set((labels || []).map((s) => String(s).trim()));
+    const labelSet = new Set((labels || []).map((s) => String(s).trim().toLowerCase()));
     const out = [];
     const types = payload?.defs?.types || {};
     for (const [tKey, def] of Object.entries(types)) {
-      const l = String(def?.l || "").trim();
+      const l = String(def?.l || "").trim().toLowerCase();
       if (l && labelSet.has(l)) out.push(tKey);
     }
     return out;
@@ -574,8 +577,8 @@ if ('scrollRestoration' in history) {
   }
 
   function attachRowActivation_(tbody, pageTitle, tableClass) {
-    if (!tbody || tbody.dataset.rowActivationBound === "1") return;
-    tbody.dataset.rowActivationBound = "1";
+    if (!tbody || boundTbodies_.has(tbody)) return;
+    boundTbodies_.add(tbody);
     tbody.addEventListener("click", (e) => {
       if (e.target && e.target.closest && e.target.closest(".poiMaps")) return;
       const row = e.target && e.target.closest ? e.target.closest("tr[data-feature-id]") : null;
@@ -593,8 +596,8 @@ if ('scrollRestoration' in history) {
   }
 
   function installRovingTabindex_(tbody) {
-    if (!tbody || tbody.dataset.rovingTabindexBound === "1") return;
-    tbody.dataset.rovingTabindexBound = "1";
+    if (!tbody || rovingTbodies_.has(tbody)) return;
+    rovingTbodies_.add(tbody);
 
     const getRows = () => Array.from(tbody.querySelectorAll("tr[data-feature-id]"));
 

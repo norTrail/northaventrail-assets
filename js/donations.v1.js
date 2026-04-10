@@ -125,7 +125,8 @@
           if (!groups.has(jsonUrl)) {
             groups.set(jsonUrl, {
               bars: [], goalDefault: goalAttr, raisedDefault: raisedAttr,
-              cacheKey, lastFetchedAt: 0, inFlight: false, timerId: null
+              cacheKey, lastFetchedAt: 0, inFlight: false, timerId: null,
+              initialAge: age
             });
           }
           groups.get(jsonUrl).bars.push({ root, goalAttr, raisedAttr });
@@ -198,9 +199,7 @@
 
       // Auto-refresh + visibility handling per URL group
       function scheduleGroup(url, group) {
-        const cached = loadCache(group.cacheKey);
-        const age    = cached ? (Date.now() - (cached._cachedAt || 0)) : Infinity;
-        if (age > CACHE_TTL_MS) fetchAndRender(url, group);
+        if (group.initialAge > CACHE_TTL_MS) fetchAndRender(url, group);
 
         const jitter = Math.floor(Math.random() * (REFRESH_MS * 0.2));
         const stopTimer  = () => { if (group.timerId) { clearInterval(group.timerId); group.timerId = null; } };

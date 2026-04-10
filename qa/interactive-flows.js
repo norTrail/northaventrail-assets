@@ -25,6 +25,19 @@ function launchBrowser() {
   });
 }
 
+async function waitForMenuState_(page, btnSel, menuSel, open) {
+  await page.waitForFunction(
+    (b, m, o) => {
+      const btn = document.querySelector(b);
+      const menu = document.querySelector(m);
+      return btn?.getAttribute("aria-expanded") === (o ? "true" : "false") &&
+             menu && (o ? !menu.hidden : !!menu.hidden);
+    },
+    { timeout: 10000 },
+    btnSel, menuSel, open
+  );
+}
+
 async function assertMapsMenuToggle(page, options = {}) {
   const {
     buttonSelector = ".mapsBtn",
@@ -38,11 +51,7 @@ async function assertMapsMenuToggle(page, options = {}) {
     el.click();
   });
 
-  await page.waitForFunction((btnSel, menuSel) => {
-    const btn = document.querySelector(btnSel);
-    const menu = document.querySelector(menuSel);
-    return btn?.getAttribute("aria-expanded") === "true" && menu && !menu.hidden;
-  }, { timeout: 10000 }, buttonSelector, menuSelector);
+  await waitForMenuState_(page, buttonSelector, menuSelector, true);
 
   const menuState = await page.evaluate((btnSel, menuSel) => {
     const btn = document.querySelector(btnSel);
@@ -77,33 +86,17 @@ async function assertMapsMenuToggle(page, options = {}) {
   );
 
   await page.$eval(buttonSelector, (el) => el.click());
-  await page.waitForFunction((btnSel, menuSel) => {
-    const btn = document.querySelector(btnSel);
-    const menu = document.querySelector(menuSel);
-    return btn?.getAttribute("aria-expanded") === "false" && !!menu?.hidden;
-  }, { timeout: 10000 }, buttonSelector, menuSelector);
+  await waitForMenuState_(page, buttonSelector, menuSelector, false);
 
   await page.$eval(buttonSelector, (el) => el.click());
-  await page.waitForFunction((btnSel, menuSel) => {
-    const btn = document.querySelector(btnSel);
-    const menu = document.querySelector(menuSel);
-    return btn?.getAttribute("aria-expanded") === "true" && menu && !menu.hidden;
-  }, { timeout: 10000 }, buttonSelector, menuSelector);
+  await waitForMenuState_(page, buttonSelector, menuSelector, true);
 
   await page.keyboard.press("Escape");
-  await page.waitForFunction((btnSel, menuSel) => {
-    const btn = document.querySelector(btnSel);
-    const menu = document.querySelector(menuSel);
-    return btn?.getAttribute("aria-expanded") === "false" && !!menu?.hidden;
-  }, { timeout: 10000 }, buttonSelector, menuSelector);
+  await waitForMenuState_(page, buttonSelector, menuSelector, false);
 
   await page.focus(buttonSelector);
   await page.keyboard.press("Enter");
-  await page.waitForFunction((btnSel, menuSel) => {
-    const btn = document.querySelector(btnSel);
-    const menu = document.querySelector(menuSel);
-    return btn?.getAttribute("aria-expanded") === "true" && menu && !menu.hidden;
-  }, { timeout: 10000 }, buttonSelector, menuSelector);
+  await waitForMenuState_(page, buttonSelector, menuSelector, true);
 
   const keyboardState = await page.evaluate((btnSel) => {
     const btn = document.querySelector(btnSel);
@@ -118,11 +111,7 @@ async function assertMapsMenuToggle(page, options = {}) {
   assert.equal(keyboardState.rowIsActive, true, `${label} keyboard open should keep row is-active`);
 
   await page.keyboard.press("Escape");
-  await page.waitForFunction((btnSel, menuSel) => {
-    const btn = document.querySelector(btnSel);
-    const menu = document.querySelector(menuSel);
-    return btn?.getAttribute("aria-expanded") === "false" && !!menu?.hidden;
-  }, { timeout: 10000 }, buttonSelector, menuSelector);
+  await waitForMenuState_(page, buttonSelector, menuSelector, false);
 }
 
 async function openTrailmapSearch(page, term) {
@@ -231,23 +220,12 @@ async function trailmapSearchFlow(browser) {
   }
 }
 
-async function listingMapsMenuFlow(browser) {
+async function mapsMenuPageFlow(browser, url, label) {
   const page = await browser.newPage();
   try {
-    await goto(page, "https://northaventrail.org/map-points-of-interest");
-    await assertMapsMenuToggle(page, { label: "Listing maps menu" });
-    console.log("listing maps menu: pass");
-  } finally {
-    await page.close();
-  }
-}
-
-async function hawkLightsMapsMenuFlow(browser) {
-  const page = await browser.newPage();
-  try {
-    await goto(page, "https://northaventrail.org/hawk-lights");
-    await assertMapsMenuToggle(page, { label: "Hawk Lights maps menu" });
-    console.log("hawk lights maps menu: pass");
+    await goto(page, url);
+    await assertMapsMenuToggle(page, { label });
+    console.log(`${label}: pass`);
   } finally {
     await page.close();
   }
@@ -396,8 +374,8 @@ async function main() {
   try {
     await trailmapPopupLightboxFlow(browser);
     await trailmapSearchFlow(browser);
-    await listingMapsMenuFlow(browser);
-    await hawkLightsMapsMenuFlow(browser);
+    await mapsMenuPageFlow(browser, "https://northaventrail.org/map-points-of-interest", "listing maps menu");
+    await mapsMenuPageFlow(browser, "https://northaventrail.org/hawk-lights", "hawk lights maps menu");
     await issueTrackerSearchFlow(browser);
     await tailsMarkerFlow(browser);
     await valentineModalFlow(browser);

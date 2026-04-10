@@ -50,6 +50,10 @@
   // Optionally garden-specific when name is provided
   // ------------------------------------------------------------------
 
+  function buildRoadHtml(road) {
+    return road ? "<span class='ag-garden-road'>" + escHtml(road) + "</span>" : "";
+  }
+
   function buildMailtoHref(name) {
     const body = name
       ? "I am interested in adopting the " + name + " garden on the Northaven Trail."
@@ -129,11 +133,10 @@
         "</span>"
       : " \u00b7 <span class='ag-fully-planted'>All maintained</span>";
 
-    // Build unclaimed rows
     const unclaimedRows = unclaimed.map(function (g) {
       const mailtoHref = buildMailtoHref(g.name);
       const nameHtml   = escHtml(g.name);
-      const roadHtml   = g.road ? "<span class='ag-garden-road'>" + escHtml(g.road) + "</span>" : "";
+      const roadHtml   = buildRoadHtml(g.road);
 
       return (
         '<tr class="ag-vacant">' +
@@ -153,10 +156,9 @@
       );
     });
 
-    // Build claimed rows
     const claimedRows = claimed.map(function (g) {
       const nameHtml = escHtml(g.name);
-      const roadHtml = g.road ? "<span class='ag-garden-road'>" + escHtml(g.road) + "</span>" : "";
+      const roadHtml = buildRoadHtml(g.road);
 
       let statusHtml;
       const safeLink = normalizeAbsUrl(g.link);
@@ -224,10 +226,7 @@
 
     fetchJson(MANIFEST_URL, "no-store", controller.signal)
       .then(function (manifest) {
-        // Try current → fallback → previous in order; first successful fetch wins.
-        const candidates = [manifest && manifest.current, manifest && manifest.fallback, manifest && manifest.previous]
-          .map(function (v) { return String(v || "").trim(); })
-          .filter(Boolean);
+        const candidates = window.NorthavenUtils.getManifestDataUrls(manifest);
         if (!candidates.length) throw new Error("Manifest missing data URLs.");
         let chain = Promise.reject(new Error("no candidates"));
         candidates.forEach(function (dataUrl) {
@@ -241,7 +240,6 @@
         const gardens  = extractGardens(features);
         const total    = gardens.unclaimed.length + gardens.claimed.length;
 
-        // Render header block (summary + CTA) into each matching container.
         headerEls.forEach(function (headerEl) {
           renderHeader(headerEl, gardens.unclaimed.length, total);
         });

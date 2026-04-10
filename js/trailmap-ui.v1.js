@@ -1549,7 +1549,7 @@ function getAllowedTypeKeysFromOnlyShow_(data) {
   const labels = normalizeOnlyShowListLabels_(raw);
   if (!labels) return null;
 
-  const labelSetLower = new Set(labels.map(x => String(x).trim().toLowerCase()).filter(Boolean));
+  const labelSetLower = new Set(labels);
   const allowed = buildAllowedTypeKeySetByLabels_(data, labelSetLower);
 
   // If defs.types is missing/empty, we can't map labels -> keys; do not filter.
@@ -1560,7 +1560,7 @@ function getAllowedTypeKeysFromOnlyShow_(data) {
 function typeKeysForLabels_(data, labels) {
   const list = normalizeOnlyShowListLabels_(labels);
   if (!list) return [];
-  const setLower = new Set(list.map(s => String(s).trim().toLowerCase()).filter(Boolean));
+  const setLower = new Set(list);
   return Array.from(buildAllowedTypeKeySetByLabels_(data, setLower));
 }
 
