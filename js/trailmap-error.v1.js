@@ -17,7 +17,7 @@ function isSquarespaceHost_() {
 }
 
 function isLikelyAutomatedClient_(ua = navigator.userAgent || "") {
-  return /bot|crawler|spider|ahrefs|bingpreview|storebot|facebookexternalhit|meta-externalads|slurp|duckduckbot|yandex|semrush|headless/i.test(ua);
+  return /bot|bingbot|crawler|spider|ahrefs|bingpreview|storebot|facebookexternalhit|meta-externalads|slurp|duckduckbot|yandex|semrush|headless/i.test(ua);
 }
 
 function isIgnorableWindowError_(e) {

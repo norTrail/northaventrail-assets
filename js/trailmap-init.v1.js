@@ -130,14 +130,24 @@ function loadWindow() {
     return;
   }
 
+  // Skip map init for crawlers — they can't render WebGL and generate noisy errors
+  if (/bot|crawler|spider|headless|bingbot|bingpreview|facebookexternalhit|slurp|duckduckbot|yandex|semrush/i.test(navigator.userAgent)) {
+    return;
+  }
+
   // Create map
   let recovery = null;
   let mapLoadWatchdog = null;
+  let watchdogCleanup_ = null;
 
   function clearMapFailureWatchdog_() {
     if (mapLoadWatchdog) {
       clearTimeout(mapLoadWatchdog);
       mapLoadWatchdog = null;
+    }
+    if (watchdogCleanup_) {
+      watchdogCleanup_();
+      watchdogCleanup_ = null;
     }
   }
 
@@ -255,9 +265,51 @@ function loadWindow() {
   map = buildMap();
   if (!map) return;
 
-  mapLoadWatchdog = setTimeout(() => {
-    showMapFallback_("map_load_timeout");
-  }, 15000);
+  // Visibility-aware watchdog: only counts elapsed time while the page is visible.
+  // Prevents false map_load_timeout fallbacks when iOS backgrounds the tab during load.
+  (function installVisibilityWatchdog_() {
+    const TIMEOUT_MS = 15000;
+    let remaining = TIMEOUT_MS;
+    let startedAt = null;
+    let timer = null;
+
+    function startTimer() {
+      if (timer !== null) return;
+      startedAt = Date.now();
+      timer = setTimeout(() => {
+        document.removeEventListener("visibilitychange", onVisChange);
+        showMapFallback_("map_load_timeout");
+      }, remaining);
+      mapLoadWatchdog = timer;
+    }
+
+    function pauseTimer() {
+      if (timer === null) return;
+      clearTimeout(timer);
+      timer = null;
+      mapLoadWatchdog = null;
+      remaining -= (Date.now() - startedAt);
+      if (remaining <= 0) {
+        document.removeEventListener("visibilitychange", onVisChange);
+        showMapFallback_("map_load_timeout");
+      }
+    }
+
+    function onVisChange() {
+      if (document.visibilityState === "hidden") {
+        pauseTimer();
+      } else {
+        startTimer();
+      }
+    }
+
+    watchdogCleanup_ = () => document.removeEventListener("visibilitychange", onVisChange);
+    document.addEventListener("visibilitychange", onVisChange);
+
+    if (document.visibilityState === "visible") {
+      startTimer();
+    }
+  })();
 
   map.once("load", clearMapFailureWatchdog_);
   map.once("idle", clearMapFailureWatchdog_);
