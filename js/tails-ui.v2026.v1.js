@@ -62,11 +62,9 @@ function updateOverlayState(state) {
       hideMapButtonAndLocation();
       UI.controls.style.display = "none";
 
-      // Upddate the Overlay Message
       UI.overlayMessage.innerHTML =
         `The sheep and goats are coming!<br>${formatLongDate(state.startDate)}`;
 
-      // Update the Status Pill
       UI.statusPill.innerText = "Coming";
       UI.statusPill.dataset.state = "coming";
       UI.statusPill.style.display = "block";
@@ -88,7 +86,6 @@ function updateOverlayState(state) {
       UI.overlayImage.src = state.image || "";
       UI.overlayImage.alt = "The herd is resting overnight off the trail.";
 
-      // Update the Status Pill
       UI.statusPill.innerText = "Sleeping";
       UI.statusPill.dataset.state = "sleeping";
       UI.statusPill.style.display = "block";
@@ -117,7 +114,6 @@ function updateOverlayState(state) {
       UI.overlayImage.src = state.image || "";
       UI.overlayImage.alt = "The herd has completed grazing on this section of the Northaven Trail.";
 
-      // Update the Status Pill
       UI.statusPill.innerText = "Finished";
       UI.statusPill.dataset.state = "history";
       UI.statusPill.style.display = "block";
@@ -129,7 +125,6 @@ function updateOverlayState(state) {
       hideBanner();
       UI.controls.style.display = "";
 
-      // Update the Status Pill
       UI.statusPill.innerText = "Grazing";
       UI.statusPill.dataset.state = "grazing";
       UI.statusPill.style.display = "block";
@@ -159,7 +154,6 @@ function updateMarker(herdCode, herdObj, map) {
   setCurrentHerdLocation(lat, lng);
   hideFlockLoader();
 
-  // Show zoom ONLY once we have a valid herd location
   if (UI.zoomInBtn && !isZoomedToHerd) {
     UI.zoomInBtn.style.display = "block";
     updateBottomUiState();
@@ -173,15 +167,12 @@ function updateMarker(herdCode, herdObj, map) {
   const longText = String(props.trailSectionLong || "The herd is grazing on the trail.");
   const shortText = String(feature.properties.trailSectionShort || "The herd is grazing on the trail.");
 
-  // Update existing marker
   if (herdMarkers[herdCode]) {
     herdMarkers[herdCode].setLngLat([lng, lat]);
-    // Updating the google map button and location text
     showMapButtonAndLocation(lat, lng, shortText, longText)
     return;
   }
 
-  // Create marker element
   const el = document.createElement("button");
   el.type = "button";
   el.tabIndex = 0;
@@ -248,11 +239,9 @@ function updateMarker(herdCode, herdObj, map) {
     .addTo(map);
 
 
-  // Show the hamburger
   const hamburgerElement = document.getElementById("hamburger");
   if (hamburgerElement) { hamburgerElement.style.display = "block"; }
 
-  // Updating the google map button and location text
   showMapButtonAndLocation(lat, lng, shortText, longText)
 }
 
@@ -268,13 +257,11 @@ function updateHerdHistoryLine(herdCode, historyGeoJSON, color, map) {
   // 🔑 RECORD THE SOURCE ID
   herdHistorySources[herdCode] = sourceId;
 
-  // Update the existing line
   if (map.getSource(sourceId)) {
     map.getSource(sourceId).setData(historyGeoJSON);
     return;
   }
 
-  // Create a new line
   map.addSource(sourceId, {
     type: "geojson",
     data: historyGeoJSON
@@ -380,7 +367,7 @@ function setNoMowMarkerHoverState_(markerEl, hovered) {
 
 function openNoMowZonePopup_(zoneCode, markerEl) {
   const obj = noMowZoneMarkers?.[zoneCode];
-  const map = window.TAILS?.getMap?.() || window.TAILS_DATA?.getMap?.() || getMapInstance?.();
+  const map = window.TAILS?.getMap?.();
   if (!obj || !obj.feature || !markerEl || !map) return;
 
   const props = obj.feature.properties || {};
@@ -505,7 +492,6 @@ function updateNoMowLayers(map, geojson, force = false) {
   lastNoMowHash = hash;
   attachNoMowMarkerDelegationOnce();
 
-  // Show the table button
   UI.tableBtn.style.display = "block";
   updateBottomUiState();
 

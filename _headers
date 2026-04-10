@@ -20,7 +20,7 @@
 /json/no-mow-zones.v2026.geojson
   Cache-Control: public, max-age=7200, stale-while-revalidate=600
 
-/json/valinetine-cling.v2027.geojson
+/json/valentine-cling.v2027.geojson
   Cache-Control: public, max-age=604800, stale-while-revalidate=86400
 
 # 3. Versioned data files — immutable. Manifests and legacy files are already

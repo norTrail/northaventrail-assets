@@ -7,7 +7,7 @@ mapboxgl.accessToken = 'pk.eyJ1Ijoid2Rhd3NvIiwiYSI6ImNqb2c3MmJ5czAwbXYzd2xoN2o0c
 const SALES_DIV_ID = ['block-yui_3_17_2_1_1673283235024_2521','block-yui_3_17_2_1_1673289954674_3052','block-yui_3_17_2_1_1673896880328_4180','block-63c18efae56ef1315372db3a', 'block-yui_3_17_2_1_1673896880328_3826'];
 const LAST_SALES_DATE = new Date(2026, 1, 5, 23, 59, 59);  // months are 0-11
 
-const CLING_MANIFEST_URL = `https://assets.northaventrail.org/json/valinetine-cling.v2027.latest.json`;
+const CLING_MANIFEST_URL = `https://assets.northaventrail.org/json/valentine-cling.v2027.latest.json`;
 
 // Last-known versioned URL from manifest — skip data fetch when unchanged
 let __clingManifestCurrent = null;
@@ -1310,9 +1310,6 @@ function closeBottomSheet() {
 // Map setup
 // ---------------------------------------------------------------------
 function loadWindow() {
-  const carouselMount = document.getElementById(CAROUSEL_MOUNT_ID);
-  if (carouselMount) carouselMount.setAttribute('role', 'region');
-
   map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/wdawso/cjok8zmkc2mld2tlkh2qvbuej',
