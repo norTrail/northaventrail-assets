@@ -125,30 +125,77 @@ async function assertMapsMenuToggle(page, options = {}) {
   }, { timeout: 10000 }, buttonSelector, menuSelector);
 }
 
+async function openTrailmapSearch(page, term) {
+  await page.waitForSelector("#searchButton", { visible: true, timeout: 15000 });
+  await page.click("#searchButton");
+  await page.waitForSelector("#locationListInput", { visible: true, timeout: 15000 });
+  await page.waitForFunction(() => {
+    try {
+      return typeof SEARCH_READY !== "undefined" && SEARCH_READY === true;
+    } catch (_err) {
+      return false;
+    }
+  }, { timeout: 30000 });
+  await page.click("#locationListInput", { clickCount: 3 });
+  await page.type("#locationListInput", term, { delay: 40 });
+  await page.waitForFunction(() => {
+    const opts = document.querySelectorAll(".searchOption[role='option']");
+    return opts.length > 0;
+  }, { timeout: 30000 });
+  await page.keyboard.press("Enter");
+}
+
+async function trailmapPopupLightboxFlow(browser) {
+  const page = await browser.newPage();
+  try {
+    await goto(page, "https://northaventrail.org/trailmap");
+    await waitForMap(page);
+    // "mural" matches "Mural on Northaven Trail Bridge" which has a Drive image
+    await openTrailmapSearch(page, "mural");
+    await page.waitForSelector(".mapboxgl-popup", { visible: true, timeout: 15000 });
+
+    const triggerState = await page.evaluate(() => {
+      const trigger = document.querySelector(".mapboxgl-popup .map-popup-image-trigger");
+      return {
+        exists: !!trigger,
+        dataUrl: trigger ? (trigger.getAttribute("data-image-url") || "") : ""
+      };
+    });
+
+    assert.equal(triggerState.exists, true, "Popup with image should have .map-popup-image-trigger button");
+    assert.ok(triggerState.dataUrl.startsWith("https://"), "Popup image trigger should have a valid https data-image-url");
+
+    await page.$eval(".mapboxgl-popup .map-popup-image-trigger", (el) => el.click());
+
+    await page.waitForFunction(() => {
+      const lightbox = document.getElementById("lightbox-map");
+      return lightbox && lightbox.style.display === "flex";
+    }, { timeout: 10000 });
+
+    const lightboxState = await page.evaluate(() => {
+      const lightbox = document.getElementById("lightbox-map");
+      const img = lightbox ? lightbox.querySelector(".lightbox-image") : null;
+      return {
+        hasImage: !!img,
+        imgSrc: img ? img.getAttribute("src") : ""
+      };
+    });
+
+    assert.equal(lightboxState.hasImage, true, "Lightbox should contain an image");
+    assert.ok(lightboxState.imgSrc.length > 0, "Lightbox image should have a src");
+
+    console.log("trailmap popup lightbox: pass");
+  } finally {
+    await page.close();
+  }
+}
+
 async function trailmapSearchFlow(browser) {
   const page = await browser.newPage();
   try {
     await goto(page, "https://northaventrail.org/trailmap");
     await waitForMap(page);
-    await page.waitForSelector("#searchButton", { visible: true, timeout: 15000 });
-    await page.click("#searchButton");
-    await page.waitForSelector("#locationListInput", { visible: true, timeout: 15000 });
-    await page.waitForFunction(() => {
-      try {
-        return typeof SEARCH_READY !== "undefined" && SEARCH_READY === true;
-      } catch (_err) {
-        return false;
-      }
-    }, { timeout: 30000 });
-
-    await page.click("#locationListInput", { clickCount: 3 });
-    await page.type("#locationListInput", "royal", { delay: 40 });
-    await page.waitForFunction(() => {
-      const opts = document.querySelectorAll(".searchOption[role='option']");
-      return opts.length > 0;
-    }, { timeout: 30000 });
-
-    await page.keyboard.press("Enter");
+    await openTrailmapSearch(page, "royal");
     await page.waitForFunction(() => window.location.search.includes("loc="), { timeout: 15000 });
 
     const hasPopup = await page.waitForSelector(".mapboxgl-popup", {
@@ -276,6 +323,20 @@ async function valentineModalFlow(browser) {
   try {
     await goto(page, "https://northaventrail.org/valentine-cling-map-2027");
     await waitForMap(page);
+    await page.waitForFunction(() => {
+      try {
+        return typeof currentClingByLocationID !== "undefined" && currentClingByLocationID !== null && currentClingByLocationID.size > 0;
+      } catch (_err) {
+        return false;
+      }
+    }, { timeout: 30000 });
+
+    // Carousel mount must have role="region" (set in loadWindow — regression guard for fc8cfd5)
+    const carouselRole = await page.evaluate(() => {
+      const el = document.getElementById("valentine-carousel");
+      return el ? el.getAttribute("role") : null;
+    });
+    assert.equal(carouselRole, "region", "Valentine carousel mount (#valentine-carousel) should have role='region'");
 
     const opened = await page.evaluate(() => {
       try {
@@ -333,6 +394,7 @@ async function valentineModalFlow(browser) {
 async function main() {
   const browser = await launchBrowser();
   try {
+    await trailmapPopupLightboxFlow(browser);
     await trailmapSearchFlow(browser);
     await listingMapsMenuFlow(browser);
     await hawkLightsMapsMenuFlow(browser);

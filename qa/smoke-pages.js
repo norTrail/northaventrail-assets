@@ -35,6 +35,12 @@ function isIgnorableRequestFailure(url) {
   ].some((needle) => url.includes(needle));
 }
 
+function isIgnorablePageError(message) {
+  return [
+    "[Cloudflare Turnstile] Remove async/defer from the Turnstile api.js script tag before using turnstile.ready()."
+  ].some((needle) => String(message || "").includes(needle));
+}
+
 async function checkPage(browser, url) {
   const page = await browser.newPage();
   const consoleMessages = [];
@@ -105,7 +111,12 @@ async function main() {
   let hasFailure = false;
   for (const result of results) {
     const badStatus = result.status !== 200;
-    const hasJsErrors = result.pageErrors.length > 0;
+    const actionablePageErrors = [];
+    const ignoredPageErrors = [];
+    for (const message of result.pageErrors) {
+      (isIgnorablePageError(message) ? ignoredPageErrors : actionablePageErrors).push(message);
+    }
+    const hasJsErrors = actionablePageErrors.length > 0;
     const actionableNetworkFailures = result.failedRequests.filter(
       (item) => !isIgnorableRequestFailure(item.url)
     );
@@ -124,9 +135,14 @@ async function main() {
     console.log(`  mapbox canvases: ${result.mapboxCanvases}`);
     console.log(`  map fallback visible: ${result.fallbackVisible ? "yes" : "no"}`);
 
-    if (result.pageErrors.length) {
+    if (actionablePageErrors.length) {
       console.log("  page errors:");
-      for (const error of result.pageErrors) console.log(`    - ${error}`);
+      for (const error of actionablePageErrors) console.log(`    - ${error}`);
+    }
+
+    if (ignoredPageErrors.length) {
+      console.log("  ignored known page errors:");
+      for (const error of ignoredPageErrors) console.log(`    - ${error}`);
     }
 
     if (actionableNetworkFailures.length) {

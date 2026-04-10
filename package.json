@@ -4,8 +4,11 @@
   "version": "0.0.0",
   "description": "Browser QA tooling for northaventrail.org asset-backed pages",
   "scripts": {
+    "qa": "node qa/run-all.js",
+    "qa:contracts": "node qa/contracts.js",
     "qa:smoke": "node qa/smoke-pages.js",
-    "qa:interactive": "node qa/interactive-flows.js"
+    "qa:interactive": "node qa/interactive-flows.js",
+    "qa:a11y": "node qa/a11y-pages.js"
   },
   "dependencies": {
     "puppeteer": "^24.7.1"
