@@ -169,51 +169,11 @@
       ? " \u00b7 <span class='tc-vacancy-count'>" + vacantCount + (vacantCount === 1 ? " vacancy" : " vacancies") + "</span>"
       : " \u00b7 <span class='tc-fully-staffed'>Fully staffed</span>";
 
-    const rows = segments.map(function (seg) {
-      const segName  = String(seg.segment || "");
-      const captains = Array.isArray(seg.captains) ? seg.captains : [];
-      const isVacant = captains.length === 0;
-
-      if (isVacant) {
-        const mailtoHref = buildMailtoHref(label, segName);
-        return (
-          '<tr class="tc-vacant">' +
-          '<td data-label="Trail Segment">' + escHtml(segName) + "</td>" +
-          "<td>" +
-          '<span class="tc-vacant-label">Captain Needed</span>' +
-          '<br><a class="tc-signup-link"' +
-          ' href="' + escHtml(mailtoHref) + '"' +
-          ' aria-label="Adopt the ' + escHtml(segName) + ' segment as Trail Captain">' +
-          "Adopt this segment \u2192</a>" +
-          "</td>" +
-          "</tr>"
-        );
-      }
-
-      const captainLabel = captains.length === 1 ? "Trail Captain" : "Trail Captains";
-      const captainHtml  = captains.length === 1
-        ? escHtml(captains[0])
-        : '<ul class="tc-captain-list">' +
-          captains.map(function (name) {
-            return "<li>" + escHtml(name) + "</li>";
-          }).join("") +
-          "</ul>";
-
-      return (
-        "<tr>" +
-        '<td data-label="Trail Segment">' + escHtml(segName) + "</td>" +
-        '<td data-label="' + captainLabel + '">' + captainHtml + "</td>" +
-        "</tr>"
-      );
-    });
-
     container.innerHTML =
       '<div class="tc-wrap">' +
       '<table class="tc-table" aria-label="' + escHtml(label) + ' Trail Captains">' +
-      // Visually hidden <caption> kept for screen readers / SEO
       '<caption class="sr-only">' + captionText + "</caption>" +
       "<thead>" +
-      // Caption row — sticks together with the column header row as one unit
       '<tr class="tc-caption-row">' +
       '<th colspan="2" class="tc-caption-cell">' + captionText + vacancyBadge + "</th>" +
       "</tr>" +
@@ -222,11 +182,50 @@
       '<th scope="col">Trail Captain(s)</th>' +
       "</tr>" +
       "</thead>" +
-      "<tbody>" +
-      rows.join("") +
-      "</tbody>" +
+      "<tbody></tbody>" +
       "</table>" +
       "</div>";
+
+    const tbody = container.querySelector("tbody");
+    const fragment = document.createDocumentFragment();
+
+    segments.forEach(function (seg) {
+      const segName  = String(seg.segment || "");
+      const captains = Array.isArray(seg.captains) ? seg.captains : [];
+      const isVacant = captains.length === 0;
+
+      const tr = document.createElement("tr");
+
+      if (isVacant) {
+        tr.className = "tc-vacant";
+        const mailtoHref = buildMailtoHref(label, segName);
+        tr.innerHTML =
+          '<td data-label="Trail Segment">' + escHtml(segName) + "</td>" +
+          "<td>" +
+          '<span class="tc-vacant-label">Captain Needed</span>' +
+          '<br><a class="tc-signup-link"' +
+          ' href="' + escHtml(mailtoHref) + '"' +
+          ' aria-label="Adopt the ' + escHtml(segName) + ' segment as Trail Captain">' +
+          "Adopt this segment \u2192</a>" +
+          "</td>";
+      } else {
+        const captainLabel = captains.length === 1 ? "Trail Captain" : "Trail Captains";
+        const captainHtml  = captains.length === 1
+          ? escHtml(captains[0])
+          : '<ul class="tc-captain-list">' +
+            captains.map(function (name) {
+              return "<li>" + escHtml(name) + "</li>";
+            }).join("") +
+            "</ul>";
+
+        tr.innerHTML =
+          '<td data-label="Trail Segment">' + escHtml(segName) + "</td>" +
+          '<td data-label="' + captainLabel + '">' + captainHtml + "</td>";
+      }
+      fragment.appendChild(tr);
+    });
+
+    tbody.appendChild(fragment);
   }
 
   // ------------------------------------------------------------------

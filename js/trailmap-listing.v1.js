@@ -732,9 +732,11 @@ if ('scrollRestoration' in history) {
           const tbody = table.querySelector("tbody");
           attachRowActivation_(tbody, pageTitle, tableClass);
 
+          const fragment = document.createDocumentFragment();
+
           rowModels.forEach((rowModel) => {
             if (columns?.length) {
-              tbody.appendChild(buildRowForColumns_(rowModel, payload, pageTitle, tableClass, columns));
+              fragment.appendChild(buildRowForColumns_(rowModel, payload, pageTitle, tableClass, columns));
               return;
             }
 
@@ -764,8 +766,10 @@ if ('scrollRestoration' in history) {
               </td>
             `;
 
-            tbody.appendChild(tr);
+            fragment.appendChild(tr);
           });
+
+          tbody.appendChild(fragment);
 
           stopRowLinkPropagation(tbody);
           installRovingTabindex_(tbody);

@@ -244,6 +244,13 @@ function wireCustomSearchUI_() {
 
   let clear = ensureSearchClearButton_();
 
+  // Pre-fetch POI data when user shows intent to search
+  const triggerPrefetch = () => {
+    if (typeof getMarkerData === "function") getMarkerData();
+  };
+  input.addEventListener("mouseenter", triggerPrefetch, { once: true });
+  input.addEventListener("touchstart", triggerPrefetch, { once: true });
+
   // Add a visually-hidden <label> for maximum screen reader compatibility.
   // The sr-only class is defined in trailmap.v1.css.
   if (!document.querySelector('label[for="locationListInput"]')) {
