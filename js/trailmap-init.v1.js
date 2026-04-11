@@ -745,9 +745,11 @@ function _fetchAndApplyMarkerData(reqId, mapAtStart, dataUrls, index = 0) {
 }
 
 function applyMarkerPayload_(m, payload) {
-  // payload = { type, name, v, defs:{types:{}}, features:[...] }
+  // payload = { type, name, v, scriptVersion, defs:{types:{}}, features:[...] }
   poiData = payload;
   const types = payload?.defs?.types || {};
+
+  console.log(`[Trailmap] Optimization v5.1 Active. Data Version: ${payload?.scriptVersion || "legacy"}`);
 
   // Re-hydrate features: individual feature properties override type-level defaults.
   // This ensures that deduplicated JSON remains small over the wire while 
