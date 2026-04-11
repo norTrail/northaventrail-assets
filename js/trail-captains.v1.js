@@ -23,10 +23,32 @@
   // Helpers
   // ------------------------------------------------------------------
 
-  const escHtml     = (s) => window.NorthavenUtils?.escapeHtml(s) ?? s;
-  const safeOnReady = (fn) => window.NorthavenUtils?.onReady(fn) ?? document.addEventListener("DOMContentLoaded", fn);
-  const fetchJson   = (url, mode, sig) => window.NorthavenUtils?.fetchJson(url, { cache: mode, signal: sig });
-  const logClientEvent = window.NorthavenUtils.makeLogClientEvent("trail-captains");
+  const utils = window.NorthavenUtils || {};
+  const escHtml = (s) => (typeof utils.escapeHtml === "function" ? utils.escapeHtml(s) : String(s ?? ""));
+  const safeOnReady = (fn) => {
+    if (typeof utils.onReady === "function") {
+      utils.onReady(fn);
+      return;
+    }
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", fn, { once: true });
+    } else {
+      fn();
+    }
+  };
+  const fetchJson = (url, mode, sig) => {
+    if (typeof utils.fetchJson === "function") {
+      return utils.fetchJson(url, { cache: mode, signal: sig });
+    }
+    return fetch(url, { cache: mode, signal: sig }).then(function (response) {
+      if (!response.ok) throw new Error("HTTP " + response.status);
+      return response.json();
+    });
+  };
+  const logClientEvent =
+    typeof utils.makeLogClientEvent === "function"
+      ? utils.makeLogClientEvent("trail-captains")
+      : function () {};
 
   function setStatus(el, msg, isError) {
     el.innerHTML =

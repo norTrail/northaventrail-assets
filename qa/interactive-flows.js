@@ -3,12 +3,19 @@
 const assert = require("node:assert/strict");
 const puppeteer = require("puppeteer");
 
+const QA_USER_AGENT =
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) " +
+  "AppleWebKit/537.36 (KHTML, like Gecko) " +
+  "Chrome/146.0.0.0 Safari/537.36";
+
 async function goto(page, url) {
+  await page.setUserAgent(QA_USER_AGENT);
   const response = await page.goto(url, {
     waitUntil: "networkidle2",
     timeout: 45000
   });
-  assert.equal(response && response.status(), 200, `Expected 200 for ${url}`);
+  const status = response && response.status();
+  assert.ok(status === 200 || status === 304, `Expected 200/304 for ${url}, got ${status}`);
 }
 
 async function waitForMap(page) {

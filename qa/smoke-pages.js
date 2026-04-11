@@ -2,6 +2,11 @@
 
 const puppeteer = require("puppeteer");
 
+const QA_USER_AGENT =
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) " +
+  "AppleWebKit/537.36 (KHTML, like Gecko) " +
+  "Chrome/146.0.0.0 Safari/537.36";
+
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -43,6 +48,7 @@ function isIgnorablePageError(message) {
 
 async function checkPage(browser, url) {
   const page = await browser.newPage();
+  await page.setUserAgent(QA_USER_AGENT);
   const consoleMessages = [];
   const pageErrors = [];
   const failedRequests = [];
