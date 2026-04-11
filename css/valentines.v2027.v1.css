@@ -392,6 +392,12 @@
   cursor: pointer;
 }
 
+.popUpClingImage:focus-visible {
+  outline: 3px solid #108452;
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
 .tooltip {
   position: relative;
   display: inline-block;
@@ -479,6 +485,8 @@
   pointer-events: auto;
   border: 0;
   border-radius: 999px;
+  min-width: 44px;
+  min-height: 44px;
   padding: 10px 12px;
   margin: 10px;
   background: rgba(255, 255, 255, .92);
@@ -489,6 +497,11 @@
 .val-carousel__btn:focus {
   outline: 3px solid rgba(0, 0, 0, .35);
   outline-offset: 2px
+}
+
+.val-carousel__img:focus-visible {
+  outline: 3px solid #108452;
+  outline-offset: 3px;
 }
 
 .val-carousel__counter {

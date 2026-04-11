@@ -539,6 +539,9 @@ function initCarouselUIOnce() {
 
   prevBtn.addEventListener("click", () => go(-1), { passive: true });
   nextBtn.addEventListener("click", () => go(1), { passive: true });
+  img.tabIndex = 0;
+  img.setAttribute("role", "button");
+  img.setAttribute("aria-label", "Open larger Valentine cling image");
 
   mount.tabIndex = 0;
   mount.setAttribute('role', 'region');
@@ -549,6 +552,13 @@ function initCarouselUIOnce() {
   });
 
   img.addEventListener("click", () => {
+    carouselState.paused = true;
+    stopCarousel();
+    if (typeof window.showModal === "function") window.showModal(img);
+  });
+  img.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    e.preventDefault();
     carouselState.paused = true;
     stopCarousel();
     if (typeof window.showModal === "function") window.showModal(img);
@@ -652,7 +662,10 @@ function buildPopupHTMLFromProps(props) {
             alt="${escapeHtmlAttr(clingText)}"
             class="popUpClingImage"
             src="${escapeHtmlAttr(bigURL)}"
-            src_large="${escapeHtmlAttr(bigURL)}">
+            src_large="${escapeHtmlAttr(bigURL)}"
+            role="button"
+            tabindex="0"
+            aria-label="${escapeHtmlAttr(`Open larger image for cling location ${locId}`)}">
         </div>
       `;
     }
@@ -1272,6 +1285,9 @@ function closeModal(){
   modalRestoreFocusEl?.focus?.();
 }
 
+window.showModal = showModal;
+window.closeModal = closeModal;
+
 // ---------------------------------------------------------------------
 // Mobile Bottom Sheet - replacing popups
 // ---------------------------------------------------------------------
@@ -1743,6 +1759,14 @@ if (!valentinesRuntime.globalHandlersBound) {
       event.preventDefault();
       showModal(popupImage);
     }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    const popupImage = event.target?.closest?.('.popUpClingImage');
+    if (!popupImage) return;
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    showModal(popupImage);
   });
 }
 

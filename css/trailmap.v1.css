@@ -183,6 +183,22 @@ html, body {
   outline-offset: 2px;
 }
 
+/* Shared minimum target sizes for map controls. */
+.mapboxgl-ctrl-group button,
+.mapboxgl-ctrl-attrib-button,
+.search-custom-control,
+.satellite-custom-control {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.mapboxgl-ctrl-group button,
+.mapboxgl-ctrl-attrib-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* Mobile popup tweaks */
 @media (max-width: 480px) {
   .mapboxgl-popup-content {
@@ -242,10 +258,10 @@ html, body {
    Satellite Contro
    ========================= */
 .satellite-custom-control {
- width: 30px;
- height: 30px;
+ width: 44px;
+ height: 44px;
  pointer-events: auto;
- padding: 2px;
+ padding: 6px;
  border-radius: 4px;
  margin: 2px;
  cursor: pointer;

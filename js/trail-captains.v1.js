@@ -23,9 +23,16 @@
   // Helpers
   // ------------------------------------------------------------------
 
-  const utils = window.NorthavenUtils || {};
-  const escHtml = (s) => (typeof utils.escapeHtml === "function" ? utils.escapeHtml(s) : String(s ?? ""));
+  function getUtils() {
+    return window.NorthavenUtils || {};
+  }
+
+  const escHtml = (s) => {
+    const utils = getUtils();
+    return typeof utils.escapeHtml === "function" ? utils.escapeHtml(s) : String(s ?? "");
+  };
   const safeOnReady = (fn) => {
+    const utils = getUtils();
     if (typeof utils.onReady === "function") {
       utils.onReady(fn);
       return;
@@ -37,6 +44,7 @@
     }
   };
   const fetchJson = (url, mode, sig) => {
+    const utils = getUtils();
     if (typeof utils.fetchJson === "function") {
       return utils.fetchJson(url, { cache: mode, signal: sig });
     }
@@ -45,10 +53,13 @@
       return response.json();
     });
   };
-  const logClientEvent =
-    typeof utils.makeLogClientEvent === "function"
-      ? utils.makeLogClientEvent("trail-captains")
-      : function () {};
+  const logClientEvent = function (kind, err, details) {
+    const utils = getUtils();
+    if (typeof utils.makeLogClientEvent === "function") {
+      return utils.makeLogClientEvent("trail-captains")(kind, err, details);
+    }
+    return undefined;
+  };
 
   function setStatus(el, msg, isError) {
     el.innerHTML =

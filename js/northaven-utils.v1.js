@@ -186,6 +186,12 @@
 
   function patchSquarespaceA11y() {
     withBody(() => {
+      function deriveRegionLabel(container, fallbackLabel) {
+        const heading = container?.querySelector?.("h1, h2, h3, h4, h5, h6");
+        const text = String(heading?.textContent || "").trim();
+        return text || fallbackLabel;
+      }
+
       function applyPatches() {
         const mainNav = document.querySelector("#mainNavigation");
         if (mainNav && !mainNav.getAttribute("aria-label")) {
@@ -198,16 +204,43 @@
         }
 
         const skipMain = document.querySelector(".skip-main");
-        if (skipMain && skipMain.parentElement?.tagName !== "HEADER") {
-          const wrapper = document.createElement("header");
-          wrapper.setAttribute("aria-label", "Skip navigation");
+        if (skipMain && !skipMain.parentElement?.hasAttribute("data-nt-skip-main-wrapper")) {
+          const wrapper = document.createElement("div");
+          wrapper.setAttribute("data-nt-skip-main-wrapper", "true");
           skipMain.parentNode.insertBefore(wrapper, skipMain);
           wrapper.appendChild(skipMain);
         }
 
-        if (!document.querySelector("main, [role='main']")) {
+        const main = document.querySelector("main, [role='main']");
+        if (!main) {
           const content = document.getElementById("content");
           if (content) content.setAttribute("role", "main");
+        }
+
+        const backToTopNav = document.querySelector(".back-to-top-nav > nav");
+        if (backToTopNav && !backToTopNav.getAttribute("aria-label")) {
+          backToTopNav.setAttribute("aria-label", "Back to top");
+        }
+
+        const content = document.getElementById("content");
+        if (content && !content.hasAttribute("aria-label")) {
+          content.setAttribute("aria-label", deriveRegionLabel(content, "Page content"));
+        }
+        if (content && !content.hasAttribute("role")) {
+          content.setAttribute("role", "region");
+        }
+
+        document.querySelectorAll("#content > .sqs-layout, main[role='main'] > .sqs-layout").forEach((section, index) => {
+          if (!section.hasAttribute("role")) {
+            section.setAttribute("role", "region");
+          }
+          if (!section.hasAttribute("aria-label")) {
+            section.setAttribute("aria-label", deriveRegionLabel(section, `Content section ${index + 1}`));
+          }
+        });
+
+        document.querySelectorAll(".skip-main").forEach((link) => {
+          link.classList.add("skip-link");
         }
 
         document.querySelectorAll(".sr-only-map-image[aria-hidden='true']").forEach((el) => {
