@@ -1,0 +1,53 @@
+/* trailmap-fullscreen.css */
+:root {
+  --safe-bottom: 0px;
+  --safe-top: 0px;
+  --ada-height: 56px;
+  --bottom-ui-height: 70px;
+}
+
+/* The element that gets the fullscreen class (default: #mapView) */
+#mapView.is-fullscreen {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: var(--vvh, 100dvh);
+  z-index: 999999;
+  background: #fff;
+}
+
+/* Map element inside the fullscreen container (default: #map) */
+#mapView.is-fullscreen #map {
+  height: calc(
+    var(--vvh)
+    - var(--ada-height)
+    - var(--bottom-ui-height)
+  );
+}
+
+/*#mapView.is-fullscreen .legend {
+  bottom: calc(22px + var(--safe-bottom));
+} removed when legend became a map  control */
+
+/* Prevent page scroll while fullscreen */
+body.is-map-fullscreen {
+  overflow: hidden;
+}
+
+/* If you have a fixed top ADA banner, this keeps it visible */
+.is-fullscreen #ada-info {
+  position: fixed;
+  top: var(--safe-top, 0px);
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 10px 14px;
+  z-index: 1000000;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+/* If you have bottom UI buttons and want to lift them above safe area:
+   keep your existing selector if you use #bottomUiGroupMap */
+#mapView.is-fullscreen #bottomUiGroupMap {
+  bottom: calc(62px + var(--safe-bottom, 0px) + env(safe-area-inset-bottom));
+}

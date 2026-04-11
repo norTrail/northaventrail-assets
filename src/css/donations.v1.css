@@ -1,0 +1,210 @@
+/* ============================================================
+   Northaven Trail — Fundraising Bar (shared)
+   Multi-instance, auto-refresh, CDN-backed JSON
+   ============================================================
+   Usage: add data-json="https://assets.northaventrail.org/json/<file>.json"
+   to the .fund-bar element to point at any donation data file.
+   Inject a donate button via donations.v1.js (reads .sqs-donate-button label).
+   ============================================================ */
+
+/* --- Fund bar container --- */
+.fund-bar {
+  background: #eef6f0;
+  border: 1px solid #2f6f4e;
+  border-radius: 8px;
+  padding: 16px 20px;
+  text-align: left;
+  margin: 0 0 16px;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
+}
+
+.fund-title {
+  margin: 0 0 8px;
+  letter-spacing: .02em;
+}
+
+.fund-bar[data-hide-title="true"] .fund-title {
+  display: none !important;
+}
+
+/* --- Progress bar track --- */
+.meter {
+  position: relative;
+  height: 22px;
+  background: #c8e6c8;
+  border-radius: 10px;
+  max-width: 100%;
+  margin: 0 0 8px;
+  overflow: hidden;
+}
+
+/* --- Progress bar fill --- */
+.greenbar {
+  height: 100%;
+  background-color: #2f6f4e;
+  width: 0;
+  transition: width 1s ease-in-out;
+  border-radius: 10px;
+}
+
+.progress {
+  font-size: 16px;
+  margin: 0;
+  pointer-events: none;
+}
+
+/* Hide legacy copy only when a bar explicitly opts in. */
+.fund-bar[data-hide-legacy-copy="true"] > div:not(.meter):not(.fund-msg) {
+  display: none;
+}
+
+/* --- Status / messaging --- */
+.fund-msg {
+  font-size: 0.9rem;
+  color: #333;
+  margin-top: 4px;
+}
+
+.statusLine {
+  display: block;
+  line-height: 1.5;
+}
+
+.updatedLine {
+  font-size: 0.9em;
+  font-style: italic;
+  color: #666;
+}
+
+.fund-match {
+  margin: 8px 0 0;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #0a5a3d;
+  line-height: 1.5em;
+}
+
+.fund-bar--tails {
+  margin-bottom: 16px;
+}
+
+.fund-bar--tails .fund-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 10px;
+}
+
+.fund-bar--tails .fund-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.fund-bar--tails .meter {
+  flex: 1;
+  height: 12px;
+  border-radius: 6px;
+  margin-bottom: 0;
+}
+
+.fund-bar--tails .greenbar {
+  border-radius: 6px;
+}
+
+.fund-bar--tails .progress {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #2f6f4e;
+  white-space: nowrap;
+  min-width: 3ch;
+  text-align: right;
+}
+
+.fund-bar--tails .statusLine {
+  line-height: 1.4;
+}
+
+.fund-bar--tails .fund-match {
+  margin-top: 4px;
+  font-size: 0.85rem;
+  color: #1B6F8A;
+}
+
+/* --- Donate button injected by donations.v1.js --- */
+.fund-donate-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 14px;
+  padding: 10px 24px;
+  min-height: 44px;
+  background: #2f6f4e;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: normal;
+  text-align: center;
+  overflow-wrap: anywhere;
+  transition: background 0.15s ease;
+}
+
+.fund-donate-btn:hover {
+  background: #245a3e;
+}
+
+.fund-donate-btn:active {
+  background: #1e4d35;
+}
+
+.fund-donate-btn:focus-visible {
+  outline: 2px solid #2f6f4e;
+  outline-offset: 3px;
+}
+
+/* Squarespace native donate button */
+.sqs-donate-button {
+  background-color: #2f6f4e !important;
+  color: #ffffff !important;
+  font-size: 1.2rem !important;
+  font-weight: 700 !important;
+  padding: 14px 40px !important;
+  border-radius: 8px !important;
+  min-height: 54px !important;
+  letter-spacing: 0.02em !important;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2) !important;
+  transition: background-color 0.15s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+}
+
+.sqs-donate-button:hover {
+  background-color: #245a3e !important;
+}
+
+.sqs-donate-button:focus-visible {
+  outline: 3px solid #2f6f4e !important;
+  outline-offset: 3px !important;
+}
+
+/* --- Reduced motion --- */
+@media (prefers-reduced-motion: reduce) {
+  .greenbar { transition: none !important; }
+}
+
+/* --- Mobile --- */
+@media (max-width: 767px) {
+  .fund-bar       { padding: 12px 14px; }
+  .fund-donate-btn { width: 100%; }
+  .fund-bar--tails .fund-title { font-size: 1rem; }
+  .fund-bar--tails .fund-match { font-size: 0.8rem; }
+}

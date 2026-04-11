@@ -4,6 +4,9 @@
   "version": "0.0.0",
   "description": "Browser QA tooling for northaventrail.org asset-backed pages",
   "scripts": {
+    "build:assets": "node scripts/build-assets.js",
+    "check:generated": "node scripts/check-generated.js",
+    "prepare": "simple-git-hooks",
     "qa": "node qa/run-all.js",
     "qa:contracts": "node qa/contracts.js",
     "qa:smoke": "node qa/smoke-pages.js",
@@ -14,6 +17,12 @@
     "puppeteer": "^24.7.1"
   },
   "devDependencies": {
-    "@axe-core/cli": "^4.11.1"
+    "@axe-core/cli": "^4.11.1",
+    "clean-css": "^5.3.3",
+    "simple-git-hooks": "^2.13.1",
+    "terser": "^5.39.0"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "npm run build:assets && git add js css"
   }
 }

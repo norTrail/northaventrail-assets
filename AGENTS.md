@@ -20,8 +20,12 @@ The goal of these files is to create a common UX / UI for MapBox maps and mappin
 
 ## Important
 - Do NOT run a dev server — these are static files only
-- No build step required
+- JS and CSS now use a source/generated workflow
 - Changes go live when committed and pushed to GitHub
+- Edit only files in `src/js/` and `src/css/`
+- Files in `js/` and `css/` are generated deploy artifacts — do NOT hand-edit them
+- Run `npm run build:assets` after changing JS/CSS source files, or let the pre-commit hook do it
+- Run `npm run check:generated` if you need to verify generated assets match `src/`
 
 ## JS File → Page Mapping
 - `northaven-utils.v1.js` — shared utility library, must load FIRST on every page
@@ -38,6 +42,12 @@ The goal of these files is to create a common UX / UI for MapBox maps and mappin
 All scripts reference shared utilities via `window.NorthavenUtils.*` (NOT a direct import).
 Guard pattern: `if (window.NorthavenUtils) { ... }` or optional chaining `window.NorthavenUtils?.fn()`.
 `northaven-utils.v1.js` must be loaded before all consumer scripts on every page.
+
+## Source Of Truth
+- `src/js/` and `src/css/` are the only human-edited JS/CSS files
+- `js/` and `css/` are generated from `src/` and should only change via `npm run build:assets`
+- Keep page URLs pointed at the existing `js/` and `css/` paths; do not reference `src/` in production
+- Treat generated file banners as authoritative: if a generated file says to edit `src/`, follow it
 
 ## QA — Run These Before Any Browser Audit
 ```bash
