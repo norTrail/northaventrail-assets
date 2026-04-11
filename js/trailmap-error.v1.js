@@ -408,8 +408,8 @@ function attachErrorLogging(map, opts = {}) {
   };
 
   // ---- Mapbox error event
-  if (map && typeof map.on === "function") {
-    map.on("error", (e) => {
+  if (map && typeof map.on === "function" && !map.__trailErrorMapHandler) {
+    map.__trailErrorMapHandler = (e) => {
       console.log("MAPBOX_ERROR", e?.error?.message || e);
       __trailErrorState.crumbs.add("mapbox:error", {
         sourceId: e?.sourceId,
@@ -426,7 +426,8 @@ function attachErrorLogging(map, opts = {}) {
           tile: e?.tile
         }
       });
-    });
+    };
+    map.on("error", map.__trailErrorMapHandler);
   }
 
   // ---- WebGL context loss / restore
@@ -581,8 +582,13 @@ function installWebglAutoRecovery({
 function installSafariMapKeepAlive_(initialMap, { rebuildMap } = {}) {
   if (!initialMap || typeof initialMap.getCanvas !== "function") return;
 
+  window.__trailKeepAliveController?.dispose?.();
+
   let currentMap = initialMap;
   let container = currentMap.getContainer();
+  let resizeDebounce = null;
+  let recoverTimer = null;
+  let disposed = false;
 
   function isMapVisible_() {
     if (!container || !container.isConnected) return false;
@@ -597,6 +603,7 @@ function installSafariMapKeepAlive_(initialMap, { rebuildMap } = {}) {
   }
 
   function softRecover_() {
+    if (disposed) return;
     try {
       currentMap.resize();
       currentMap.triggerRepaint?.();
@@ -604,12 +611,13 @@ function installSafariMapKeepAlive_(initialMap, { rebuildMap } = {}) {
   }
 
   async function hardRecover_(reason) {
-    if (typeof rebuildMap !== "function") return;
+    if (disposed || typeof rebuildMap !== "function") return;
 
     try {
       try { currentMap.remove(); } catch { }
 
       const newMap = rebuildMap();
+      if (!newMap) return;
 
       // update references
       currentMap = newMap;
@@ -617,7 +625,7 @@ function installSafariMapKeepAlive_(initialMap, { rebuildMap } = {}) {
 
       // ✅ wait for style/load before handing off
       const notify = () => {
-        if (typeof window.onMapReinit === "function") {
+        if (!disposed && typeof window.onMapReinit === "function") {
           window.onMapReinit(newMap, { reason });
         }
       };
@@ -634,19 +642,57 @@ function installSafariMapKeepAlive_(initialMap, { rebuildMap } = {}) {
   }
 
   function checkAndRecover_(reason) {
-    if (document.visibilityState !== "visible") return;
+    if (disposed || document.visibilityState !== "visible") return;
 
     const visible = isMapVisible_();
     const alive = canvasLooksAlive_();
 
     if (visible && alive) return softRecover_();
 
-    setTimeout(() => {
+    clearTimeout(recoverTimer);
+    recoverTimer = setTimeout(() => {
+      if (disposed) return;
       const visible2 = isMapVisible_();
       const alive2 = canvasLooksAlive_();
       if (visible2 && alive2) softRecover_();
       else hardRecover_(reason + ":hard");
     }, 350);
+  }
+
+  function onVisibilityChange() {
+    checkAndRecover_("visibilitychange");
+  }
+
+  function onPageShow(e) {
+    checkAndRecover_(e.persisted ? "pageshow:bfcache" : "pageshow");
+  }
+
+  function onFocus() {
+    checkAndRecover_("focus");
+  }
+
+  function onResize() {
+    clearTimeout(resizeDebounce);
+    resizeDebounce = setTimeout(() => checkAndRecover_("resize"), 200);
+  }
+
+  function onOrientationChange() {
+    checkAndRecover_("orientationchange");
+  }
+
+  function dispose() {
+    if (disposed) return;
+    disposed = true;
+    clearTimeout(resizeDebounce);
+    clearTimeout(recoverTimer);
+    document.removeEventListener("visibilitychange", onVisibilityChange);
+    window.removeEventListener("pageshow", onPageShow);
+    window.removeEventListener("focus", onFocus);
+    window.removeEventListener("resize", onResize);
+    window.removeEventListener("orientationchange", onOrientationChange);
+    if (window.__trailKeepAliveController?.dispose === dispose) {
+      delete window.__trailKeepAliveController;
+    }
   }
 
   try {
@@ -656,15 +702,13 @@ function installSafariMapKeepAlive_(initialMap, { rebuildMap } = {}) {
     }
   } catch (_) { }
 
-  document.addEventListener("visibilitychange", () => checkAndRecover_("visibilitychange"), { passive: true });
-  window.addEventListener("pageshow", (e) => checkAndRecover_(e.persisted ? "pageshow:bfcache" : "pageshow"), { passive: true });
-  window.addEventListener("focus", () => checkAndRecover_("focus"), { passive: true });
-  let _resizeDebounce = null;
-  window.addEventListener("resize", () => {
-    clearTimeout(_resizeDebounce);
-    _resizeDebounce = setTimeout(() => checkAndRecover_("resize"), 200);
-  }, { passive: true });
-  window.addEventListener("orientationchange", () => checkAndRecover_("orientationchange"), { passive: true });
+  document.addEventListener("visibilitychange", onVisibilityChange, { passive: true });
+  window.addEventListener("pageshow", onPageShow, { passive: true });
+  window.addEventListener("focus", onFocus, { passive: true });
+  window.addEventListener("resize", onResize, { passive: true });
+  window.addEventListener("orientationchange", onOrientationChange, { passive: true });
+
+  window.__trailKeepAliveController = { dispose };
 }
 
 function addDebugButtons_({ onRebuild, onKeepAlive } = {}) {

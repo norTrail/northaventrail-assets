@@ -124,6 +124,16 @@
     });
   }
 
+  function replaceObserver(target, key, setup) {
+    if (!target || !window.MutationObserver) return null;
+    try {
+      target[key]?.disconnect?.();
+    } catch (_) { }
+    const observer = setup();
+    target[key] = observer;
+    return observer;
+  }
+
   function ensureSkipLink(options = {}) {
     const {
       id = "nt-skip-link",
@@ -165,8 +175,11 @@
 
       ensureInDom();
       if (observe && window.MutationObserver) {
-        const observer = new MutationObserver(ensureInDom);
-        observer.observe(mount, { childList: true });
+        replaceObserver(mount, "__ntSkipLinkObserver", () => {
+          const observer = new MutationObserver(ensureInDom);
+          observer.observe(mount, { childList: true });
+          return observer;
+        });
       }
     });
   }
@@ -204,8 +217,11 @@
 
       applyPatches();
       if (window.MutationObserver) {
-        const observer = new MutationObserver(applyPatches);
-        observer.observe(document.body, { childList: true, subtree: false });
+        replaceObserver(document.body, "__ntSquarespaceA11yObserver", () => {
+          const observer = new MutationObserver(applyPatches);
+          observer.observe(document.body, { childList: true, subtree: false });
+          return observer;
+        });
       }
     });
   }
@@ -224,8 +240,11 @@
       }
       patchLinks();
       if (window.MutationObserver) {
-        const observer = new MutationObserver(patchLinks);
-        observer.observe(document.body, { childList: true, subtree: true });
+        replaceObserver(document.body, "__ntNewWindowAriaObserver", () => {
+          const observer = new MutationObserver(patchLinks);
+          observer.observe(document.body, { childList: true, subtree: true });
+          return observer;
+        });
       }
     });
   }

@@ -38,6 +38,12 @@ const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 let zoomEndTimeout = null;
 const ZOOM_DEBOUNCE_MS = 50;
 let maxZoomRequired = 0;
+const valentinesRuntime = window.__valentinesRuntime || {
+  cleanupFns: [],
+  globalHandlersBound: false,
+  pageLifecycleBound: false
+};
+window.__valentinesRuntime = valentinesRuntime;
 
 // -------------------- GeoJSON state --------------------
 let currentClingGeojson = null;                // last loaded FeatureCollection
@@ -62,6 +68,34 @@ const carouselState = {
 
 const prefersReducedMotion =
   window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function addValentinesCleanup(fn) {
+  if (typeof fn === "function") valentinesRuntime.cleanupFns.push(fn);
+}
+
+function cleanupValentinesPage() {
+  stopClingRefresh();
+  stopCarousel();
+  if (zoomEndTimeout) {
+    clearTimeout(zoomEndTimeout);
+    zoomEndTimeout = null;
+  }
+
+  while (valentinesRuntime.cleanupFns.length) {
+    const fn = valentinesRuntime.cleanupFns.pop();
+    try {
+      fn();
+    } catch (_) { }
+  }
+
+  try { closeActivePopup(); } catch (_) { }
+  try { map?.remove?.(); } catch (_) { }
+  document.getElementById("val-hamburger")?.remove?.();
+  document.getElementById("val-hamburger-controls")?.remove?.();
+  document.getElementById("val-find-nearest-wrap")?.remove?.();
+  document.getElementById("val-bottom-sheet")?.remove?.();
+  map = null;
+}
 
 // ================== CLING FILTERING ==================
 /**
@@ -1310,6 +1344,11 @@ function closeBottomSheet() {
 // Map setup
 // ---------------------------------------------------------------------
 function loadWindow() {
+  cleanupValentinesPage();
+
+  const mapEl = document.getElementById("map");
+  if (!mapEl) return;
+
   map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/wdawso/cjok8zmkc2mld2tlkh2qvbuej',
@@ -1424,14 +1463,21 @@ function loadWindow() {
     // Initial data load + start refresh based on visibility
     handleVisibilityChange();
     document.addEventListener('visibilitychange', handleVisibilityChange);
+    addValentinesCleanup(() => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    });
 
     // Zoom behavior: update filters (and the "zoom in" message)
-    map.on('zoomend', () => {
+    const onZoomEnd = () => {
       if (zoomEndTimeout) clearTimeout(zoomEndTimeout);
       zoomEndTimeout = setTimeout(() => {
         updateZoomHintText();
         setClingLayerFiltersForZoom();
       }, ZOOM_DEBOUNCE_MS);
+    };
+    map.on('zoomend', onZoomEnd);
+    addValentinesCleanup(() => {
+      try { map?.off?.('zoomend', onZoomEnd); } catch (_) { }
     });
 
     // Initial zoom hint text
@@ -1662,30 +1708,6 @@ function injectFindNearestButton() {
   });
 }
 
-// ---------------------------------------------------------------------
-// Popstate: clear active + popup, then re-open based on URL
-// ---------------------------------------------------------------------
-window.addEventListener('popstate', () => {
-  clearActiveFeatureState();
-  closeActivePopup();
-  goToParamFeature();
-}, { passive: true });
-
-document.addEventListener('click', (event) => {
-  const copyButton = event.target?.closest?.('.copyLocationButton');
-  if (copyButton) {
-    event.preventDefault();
-    copyID(copyButton.dataset.copyId || '');
-    return;
-  }
-
-  const popupImage = event.target?.closest?.('.popUpClingImage');
-  if (popupImage) {
-    event.preventDefault();
-    showModal(popupImage);
-  }
-});
-
 // Clipboard tooltip helpers (unchanged)
 function copyID(copyID) {
   navigator.clipboard.writeText(copyID);
@@ -1699,4 +1721,35 @@ function outFunc() {
 }
 
 loadLegendVisibilityFromStorage();
+if (!valentinesRuntime.globalHandlersBound) {
+  valentinesRuntime.globalHandlersBound = true;
+
+  window.addEventListener('popstate', () => {
+    clearActiveFeatureState();
+    closeActivePopup();
+    goToParamFeature();
+  }, { passive: true });
+
+  document.addEventListener('click', (event) => {
+    const copyButton = event.target?.closest?.('.copyLocationButton');
+    if (copyButton) {
+      event.preventDefault();
+      copyID(copyButton.dataset.copyId || '');
+      return;
+    }
+
+    const popupImage = event.target?.closest?.('.popUpClingImage');
+    if (popupImage) {
+      event.preventDefault();
+      showModal(popupImage);
+    }
+  });
+}
+
+if (!valentinesRuntime.pageLifecycleBound) {
+  valentinesRuntime.pageLifecycleBound = true;
+  window.addEventListener('pagehide', cleanupValentinesPage, { passive: true });
+  window.addEventListener('beforeunload', cleanupValentinesPage, { passive: true });
+}
+
 loadWindow();

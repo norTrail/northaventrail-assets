@@ -10,6 +10,9 @@
       return;
     }
 
+    if (map.__monarchWayInitialized) return;
+    map.__monarchWayInitialized = true;
+
     // Monarch Way
     const URL_MONARCH_WAY =
       'https://api.mapbox.com/datasets/v1/wdawso/cmjrr91ci3euv1pli54602esn/features?access_token=' +
