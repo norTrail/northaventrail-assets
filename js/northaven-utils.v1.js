@@ -101,11 +101,19 @@
       })
       .then((svgText) => {
         if (document.getElementById(id)) return;
+
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(svgText, "image/svg+xml");
+        const svgElement = doc.querySelector("svg");
+
+        if (!svgElement) throw new Error("Could not parse SVG content");
+        if (svgElement.querySelector("script")) throw new Error("Malicious script detected in SVG");
+
         const wrapper = document.createElement("div");
         wrapper.id = id;
         wrapper.setAttribute("aria-hidden", "true");
         wrapper.style.cssText = "position:absolute;width:0;height:0;overflow:hidden";
-        wrapper.innerHTML = svgText;
+        wrapper.appendChild(svgElement);
         document.body.insertAdjacentElement("afterbegin", wrapper);
       })
       .catch((error) => {

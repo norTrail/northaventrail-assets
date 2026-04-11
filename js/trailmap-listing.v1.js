@@ -35,9 +35,13 @@ if ('scrollRestoration' in history) {
   const escHtml = (s) => window.NorthavenUtils.escapeHtml(s);
 
   function htmlToText(html) {
-    const div = document.createElement("div");
-    div.innerHTML = String(html ?? "");
-    return (div.textContent || "").replace(/\s+/g, " ").trim();
+    try {
+      const doc = new DOMParser().parseFromString(String(html ?? ""), "text/html");
+      return (doc.body.textContent || "").replace(/\s+/g, " ").trim();
+    } catch (_) {
+      // Fallback for environments where DOMParser is unavailable or fails
+      return String(html ?? "").replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+    }
   }
 
   function stopRowLinkPropagation(tbody) {

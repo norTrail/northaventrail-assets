@@ -29,7 +29,15 @@
 
   const escHtml = (s) => {
     const utils = getUtils();
-    return typeof utils.escapeHtml === "function" ? utils.escapeHtml(s) : String(s ?? "");
+    if (typeof utils.escapeHtml === "function") return utils.escapeHtml(s);
+    const str = String(s ?? "");
+    return str.replace(/[&<>"']/g, (c) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    }[c]));
   };
   const safeOnReady = (fn) => {
     const utils = getUtils();
