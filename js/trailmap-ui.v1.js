@@ -1571,6 +1571,21 @@ function typeKeysForLabels_(data, labels) {
   return Array.from(buildAllowedTypeKeySetByLabels_(data, setLower));
 }
 
+function resolveLegendIconUrl_(iconValue) {
+  const raw = String(iconValue || "").trim();
+  if (!raw) return "";
+
+  if (/^(https?:)?\/\//i.test(raw) || raw.startsWith("/")) {
+    return raw;
+  }
+
+  if (/\.[a-z0-9]+$/i.test(raw)) {
+    return normalizeSquarespaceAssetUrl(raw);
+  }
+
+  return normalizeSquarespaceAssetUrl(`${raw}.svg`);
+}
+
 // Build the legend from the json data
 function buildFilterableLegendItemsFromTypes_(data, options = {}) {
   const {
@@ -1604,8 +1619,8 @@ function buildFilterableLegendItemsFromTypes_(data, options = {}) {
     const iconRaw = String(def.i || "").trim();   // NEW: your json "i" property
     if (requireIcon && !iconRaw) continue;
 
-    // normalize Squarespace-style asset keys/paths into a usable URL
-    const iconUrl = iconRaw ? normalizeSquarespaceAssetUrl(iconRaw) : "";
+    // Support both legacy filenames like "parking.svg" and optimized sprite names like "parking".
+    const iconUrl = resolveLegendIconUrl_(iconRaw);
 
     // sort: prefer def.s, else label
     const sort = (def.s !== undefined && def.s !== null && def.s !== "")
