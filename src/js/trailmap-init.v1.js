@@ -749,8 +749,6 @@ function applyMarkerPayload_(m, payload) {
   poiData = payload;
   const types = payload?.defs?.types || {};
 
-  console.log(`[Trailmap] Optimization v5.1 Active. Data Version: ${payload?.scriptVersion || "legacy"}`);
-
   // Re-hydrate features: individual feature properties override type-level defaults.
   // This ensures that deduplicated JSON remains small over the wire while 
   // Mapbox expressions (using ["get", "i"] etc.) find all necessary styling data.
