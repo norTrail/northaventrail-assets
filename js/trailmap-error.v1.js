@@ -135,7 +135,7 @@ function describeRejectionReason_(reason) {
     return {
       type: "object",
       keys: Object.keys(reason).slice(0, 30),
-      preview: safeJson(reason, 2000),
+      preview: reason,
     };
   } catch {
     return { type: "object", message: Object.prototype.toString.call(reason) };
@@ -194,10 +194,10 @@ function buildBasePayload_(kind) {
   const state = __trailErrorState;
   const base = {
     kind,
-    app: state.appName || window.APP_NAME || getAppNameFromUrl_("unknown"),
+    app: state.appName,
     ts: new Date().toISOString(),
     page: normalizeUrl(location.href),
-    ref: normalizeUrl(document.referrer || ""),
+    ref: document.referrer ? normalizeUrl(document.referrer) : "",
     ua: navigator.userAgent,
     lang: navigator.language,
     vp: { w: window.innerWidth, h: window.innerHeight, dpr: window.devicePixelRatio },
@@ -286,7 +286,6 @@ function installGlobalHandlersOnce_() {
   if (window.__trailGlobalHandlersInstalled) return;
   window.__trailGlobalHandlersInstalled = true;
 
-  // JS runtime errors
   window.addEventListener("error", (e) => {
     // Skip resource load errors — the second handler below captures those
     if (e.target && e.target !== window) return;
@@ -315,7 +314,6 @@ function installGlobalHandlersOnce_() {
     });
   });
 
-  // Resource load errors (script/css/img)
   window.addEventListener("error", (e) => {
     const el = e.target;
     const isRes =
@@ -346,7 +344,6 @@ function installGlobalHandlersOnce_() {
     });
   }, true);
 
-  // Unhandled promise rejections
   window.addEventListener("unhandledrejection", (e) => {
     const detail = describeRejectionReason_(e.reason);
 
@@ -464,9 +461,6 @@ function attachErrorLogging(map, opts = {}) {
   // Helpful breadcrumbs you can sprinkle in your app:
   __trailErrorState.crumbs.add("logger:attached");
 
-  // Remove
-  //console.log("Error logging loaded")
-
   return { crumbs: __trailErrorState.crumbs };
 }
 
@@ -580,8 +574,6 @@ function installWebglAutoRecovery({
     return map;
   }
 
-  //console.log("Crash recovery loaded")
-
   return { attach, recover };
 }
 
@@ -604,7 +596,7 @@ function installSafariMapKeepAlive_(initialMap, { rebuildMap } = {}) {
     return canvas.width > 0 && canvas.height > 0;
   }
 
-  function softRecover_(reason) {
+  function softRecover_() {
     try {
       currentMap.resize();
       currentMap.triggerRepaint?.();
@@ -644,25 +636,15 @@ function installSafariMapKeepAlive_(initialMap, { rebuildMap } = {}) {
   function checkAndRecover_(reason) {
     if (document.visibilityState !== "visible") return;
 
-    /*const rect = container?.getBoundingClientRect?.();
-    const canvas = currentMap.getCanvas?.();
-
-    console.log("[keepalive]", reason, {
-      visible: !!rect && rect.width > 40 && rect.height > 40,
-      rect: rect ? { w: rect.width, h: rect.height } : null,
-      canvasConnected: !!canvas?.isConnected,
-      canvasSize: canvas ? { w: canvas.width, h: canvas.height } : null
-    });*/
-
     const visible = isMapVisible_();
     const alive = canvasLooksAlive_();
 
-    if (visible && alive) return softRecover_(reason);
+    if (visible && alive) return softRecover_();
 
     setTimeout(() => {
       const visible2 = isMapVisible_();
       const alive2 = canvasLooksAlive_();
-      if (visible2 && alive2) softRecover_(reason + ":delayed");
+      if (visible2 && alive2) softRecover_();
       else hardRecover_(reason + ":hard");
     }, 350);
   }
