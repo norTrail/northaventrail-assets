@@ -52,13 +52,31 @@ async function assertMapsMenuToggle(page, options = {}) {
     label = "Maps menu"
   } = options;
 
-  await page.waitForSelector(buttonSelector, { visible: true, timeout: 30000 });
-  await page.$eval(buttonSelector, (el) => {
+  const resolvedButtonSelector = await page.waitForFunction(
+    (sel) => {
+      const buttons = Array.from(document.querySelectorAll(sel));
+      const visible = buttons.find((el) => {
+        const style = window.getComputedStyle(el);
+        const rect = el.getBoundingClientRect();
+        return style.display !== "none" &&
+          style.visibility !== "hidden" &&
+          rect.width > 0 &&
+          rect.height > 0;
+      });
+      if (!visible) return null;
+      if (!visible.id) return sel;
+      return `#${CSS.escape(visible.id)}`;
+    },
+    { timeout: 30000 },
+    buttonSelector
+  ).then((handle) => handle.jsonValue());
+
+  await page.$eval(resolvedButtonSelector, (el) => {
     el.scrollIntoView({ block: "center" });
     el.click();
   });
 
-  await waitForMenuState_(page, buttonSelector, menuSelector, true);
+  await waitForMenuState_(page, resolvedButtonSelector, menuSelector, true);
 
   const menuState = await page.evaluate((btnSel, menuSel) => {
     const btn = document.querySelector(btnSel);
@@ -75,7 +93,7 @@ async function assertMapsMenuToggle(page, options = {}) {
       rowIsActive: row?.classList.contains("is-active") || false,
       items
     };
-  }, buttonSelector, menuSelector);
+  }, resolvedButtonSelector, menuSelector);
 
   assert.equal(menuState.expanded, "true", `${label} button should be expanded`);
   assert.equal(menuState.rowActive, true, `${label} button should mark its row active`);
@@ -92,18 +110,18 @@ async function assertMapsMenuToggle(page, options = {}) {
     `${label} Apple Maps item should open in a new tab`
   );
 
-  await page.$eval(buttonSelector, (el) => el.click());
-  await waitForMenuState_(page, buttonSelector, menuSelector, false);
+  await page.$eval(resolvedButtonSelector, (el) => el.click());
+  await waitForMenuState_(page, resolvedButtonSelector, menuSelector, false);
 
-  await page.$eval(buttonSelector, (el) => el.click());
-  await waitForMenuState_(page, buttonSelector, menuSelector, true);
+  await page.$eval(resolvedButtonSelector, (el) => el.click());
+  await waitForMenuState_(page, resolvedButtonSelector, menuSelector, true);
 
   await page.keyboard.press("Escape");
-  await waitForMenuState_(page, buttonSelector, menuSelector, false);
+  await waitForMenuState_(page, resolvedButtonSelector, menuSelector, false);
 
-  await page.focus(buttonSelector);
+  await page.focus(resolvedButtonSelector);
   await page.keyboard.press("Enter");
-  await waitForMenuState_(page, buttonSelector, menuSelector, true);
+  await waitForMenuState_(page, resolvedButtonSelector, menuSelector, true);
 
   const keyboardState = await page.evaluate((btnSel) => {
     const btn = document.querySelector(btnSel);
@@ -112,13 +130,13 @@ async function assertMapsMenuToggle(page, options = {}) {
       rowActive: row?.classList.contains("active") || false,
       rowIsActive: row?.classList.contains("is-active") || false
     };
-  }, buttonSelector);
+  }, resolvedButtonSelector);
 
   assert.equal(keyboardState.rowActive, true, `${label} keyboard open should keep row active`);
   assert.equal(keyboardState.rowIsActive, true, `${label} keyboard open should keep row is-active`);
 
   await page.keyboard.press("Escape");
-  await waitForMenuState_(page, buttonSelector, menuSelector, false);
+  await waitForMenuState_(page, resolvedButtonSelector, menuSelector, false);
 }
 
 async function openTrailmapSearch(page, term) {

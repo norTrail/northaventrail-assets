@@ -87,7 +87,7 @@ function validateManifest(manifestName) {
 
 function validateTrailPoiPayload(payload, label) {
   assertFeatureCollection(payload, label);
-  assert.equal(payload.v, 2, `${label}.v should be 2`);
+  assert.equal(String(payload.v), "6.2", `${label}.v should be 6.2`);
   assert.equal(typeof payload?.defs?.types, "object", `${label}.defs.types must exist`);
   assert.ok(Object.keys(payload.defs.types).length > 0, `${label}.defs.types must not be empty`);
   assert.ok(payload.features.length > 0, `${label}.features must not be empty`);
