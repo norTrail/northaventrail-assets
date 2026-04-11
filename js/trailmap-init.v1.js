@@ -754,20 +754,30 @@ function applyMarkerPayload_(m, payload) {
     const tKey = f.properties?.t;
     const typeDef = types[tKey] || {};
 
-    // Bridge label logic: defaults use 'l' (label), but layers often use 'b' (label).
+    // 1. Prepare defaults: Bridge 'l' to 'b' and strip .svg from icon
     const defaults = Object.assign({ b: typeDef.l }, typeDef);
+    if (defaults.i) defaults.i = String(defaults.i).replace(/\.svg$/i, "");
 
-    // Merge feature props over defaults
-    const combined = Object.assign({}, defaults, f.properties);
+    // 2. Prepare feature props: strip .svg from icon if present
+    const fProps = Object.assign({}, f.properties);
+    if (fProps.i) fProps.i = String(fProps.i).replace(/\.svg$/i, "");
+
+    // 3. Merge: Feature properties override type defaults
+    const combined = Object.assign({}, defaults, fProps);
     const clean = {};
 
-    // Final pass: strip nulls, undefined, and empty strings.
-    // This provides "null-safety" for strict Mapbox styling expressions.
+    // 4. Final pass: strip nulls, undefined, and empty strings.
+    // Also ensure 's' (sort key) is a number to satisfy strict Mapbox expressions.
     Object.keys(combined).forEach((k) => {
-      const v = combined[k];
-      if (v !== null && v !== undefined && v !== "") {
-        clean[k] = v;
+      let v = combined[k];
+      if (v === null || v === undefined || v === "") return;
+
+      if (k === "s" || k === "s2") {
+        const n = Number(v);
+        v = Number.isFinite(n) ? n : 10;
       }
+
+      clean[k] = v;
     });
 
     return { ...f, properties: clean };
