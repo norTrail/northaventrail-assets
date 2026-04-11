@@ -241,7 +241,7 @@
 
         document.querySelectorAll(".skip-main").forEach((link) => {
           link.classList.add("skip-link");
-        }
+        });
 
         document.querySelectorAll(".sr-only-map-image[aria-hidden='true']").forEach((el) => {
           el.removeAttribute("aria-hidden");
