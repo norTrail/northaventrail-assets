@@ -753,9 +753,14 @@ function applyMarkerPayload_(m, payload) {
   const rehydratedFeatures = (payload?.features || []).map((f) => {
     const tKey = f.properties?.t;
     const typeDef = types[tKey] || {};
+    
+    // Bridge the gap: type definitions use 'l' (label), but Mapbox layers 
+    // often use 'b' (label). Ensure defaults cover both keys.
+    const defaults = Object.assign({ b: typeDef.l }, typeDef);
+
     return {
       ...f,
-      properties: Object.assign({}, typeDef, f.properties)
+      properties: Object.assign({}, defaults, f.properties)
     };
   });
 
