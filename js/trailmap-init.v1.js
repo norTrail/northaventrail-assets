@@ -745,12 +745,24 @@ function _fetchAndApplyMarkerData(reqId, mapAtStart, dataUrls, index = 0) {
 function applyMarkerPayload_(m, payload) {
   // payload = { type, name, v, defs:{types:{}}, features:[...] }
   poiData = payload;
+  const types = payload?.defs?.types || {};
 
-  // Mapbox source must receive a valid GeoJSON FeatureCollection
+  // Re-hydrate features: individual feature properties override type-level defaults.
+  // This ensures that deduplicated JSON remains small over the wire while 
+  // Mapbox expressions (using ["get", "i"] etc.) find all necessary styling data.
+  const rehydratedFeatures = (payload?.features || []).map((f) => {
+    const tKey = f.properties?.t;
+    const typeDef = types[tKey] || {};
+    return {
+      ...f,
+      properties: Object.assign({}, typeDef, f.properties)
+    };
+  });
+
   const geojson = {
     type: "FeatureCollection",
     name: payload?.name || "Markers",
-    features: payload?.features || []
+    features: rehydratedFeatures
   };
 
   // Create/update the GeoJSON source
