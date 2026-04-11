@@ -500,6 +500,10 @@ const isSamePageUrl = (u) => window.NorthavenUtils.isSamePageUrl(u);
 const isExternalDomain = (u) => window.NorthavenUtils.isExternalDomain(u);
 const driveThumbFromId = (id, w) => window.NorthavenUtils.driveThumbFromId(id, w);
 const normalizeSquarespaceAssetUrl = (u) => window.NorthavenUtils.normalizeSquarespaceAssetUrl(u);
+
+function getPoiIconKey_(obj) {
+  return String(obj?.sp || obj?.i || "").trim();
+}
 const isApple = () => window.NorthavenUtils.isApple();
 const isMobile = () => window.NorthavenUtils.isMobile();
 
@@ -683,7 +687,7 @@ function createPopUp(currentFeature) {
   const typeKey = p.t;
   const typeDef = typeKey && poiData?.defs?.types ? poiData.defs.types[typeKey] : null;
 
-  const iconName = String(typeDef?.i || "");
+  const iconName = getPoiIconKey_(typeDef);
   const labelName = String(p.l || typeDef?.l || '');
   const mapLatLng = `${lat},${lng}`;
 
@@ -852,7 +856,7 @@ function resolvePoi_(feature, data) {
 
   const keywords = [p.k, td.k].filter(Boolean).map(String).join(" ").trim();
 
-  const iconName = String(p.i || td.i || "").trim();
+  const iconName = getPoiIconKey_(p) || getPoiIconKey_(td);
   const color = String(p.c || td.c || "").trim();
   const sort = (p.s !== undefined && p.s !== null && p.s !== "")
     ? Number(p.s)
@@ -1616,7 +1620,7 @@ function buildFilterableLegendItemsFromTypes_(data, options = {}) {
 
     if (onlySet && !onlySet.has(label.toLowerCase())) continue;
 
-    const iconRaw = String(def.i || "").trim();   // NEW: your json "i" property
+    const iconRaw = getPoiIconKey_(def);
     if (requireIcon && !iconRaw) continue;
 
     // Support both legacy filenames like "parking.svg" and optimized sprite names like "parking".

@@ -656,7 +656,7 @@ function typeKeysForIcons_(payload, icons) {
   const types = payload?.defs?.types || {};
 
   for (const [tKey, def] of Object.entries(types)) {
-    const icon = String(def?.i || "").trim().toLowerCase();
+    const icon = String(def?.sp || def?.i || "").trim().toLowerCase();
     if (icon && iconSet.has(icon)) out.push(tKey);
   }
   return out;
@@ -758,8 +758,12 @@ function applyMarkerPayload_(m, payload) {
     const tKey = f.properties?.t;
     const typeDef = types[tKey] || {};
 
-    // 1. Prepare defaults: Bridge 'l' to 'b'
-    const defaults = Object.assign({ b: typeDef.l }, typeDef);
+    // 1. Prepare defaults: Bridge 'l' to 'b' and 'sp' to runtime icon key 'i'
+    const defaults = Object.assign(
+      { b: typeDef.l },
+      typeDef.sp ? { i: typeDef.sp } : null,
+      typeDef
+    );
 
     // 2. Merge: Feature properties override type defaults
     const combined = Object.assign({}, defaults, f.properties);
@@ -780,6 +784,8 @@ function applyMarkerPayload_(m, payload) {
       if (k === "i") {
         v = String(v).replace(/\.svg$/i, "");
       }
+
+      if (k === "sp") return;
 
       clean[k] = v;
     });
