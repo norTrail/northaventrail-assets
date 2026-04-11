@@ -758,27 +758,27 @@ function applyMarkerPayload_(m, payload) {
     const tKey = f.properties?.t;
     const typeDef = types[tKey] || {};
 
-    // 1. Prepare defaults: Bridge 'l' to 'b' and strip .svg from icon
+    // 1. Prepare defaults: Bridge 'l' to 'b'
     const defaults = Object.assign({ b: typeDef.l }, typeDef);
-    if (defaults.i) defaults.i = String(defaults.i).replace(/\.svg$/i, "");
 
-    // 2. Prepare feature props: strip .svg from icon if present
-    const fProps = Object.assign({}, f.properties);
-    if (fProps.i) fProps.i = String(fProps.i).replace(/\.svg$/i, "");
-
-    // 3. Merge: Feature properties override type defaults
-    const combined = Object.assign({}, defaults, fProps);
+    // 2. Merge: Feature properties override type defaults
+    const combined = Object.assign({}, defaults, f.properties);
     const clean = {};
 
-    // 4. Final pass: strip nulls, undefined, and empty strings.
-    // Also ensure 's' (sort key) is a number to satisfy strict Mapbox expressions.
+    // 3. Final pass: Clean up values and normalize icons
     Object.keys(combined).forEach((k) => {
       let v = combined[k];
       if (v === null || v === undefined || v === "") return;
 
+      // Force numeric types for keys Mapbox expects as numbers
       if (k === "s" || k === "s2") {
         const n = Number(v);
         v = Number.isFinite(n) ? n : 10;
+      }
+
+      // Force all icon names to be extensionless for Mapbox sprite compatibility
+      if (k === "i") {
+        v = String(v).replace(/\.svg$/i, "");
       }
 
       clean[k] = v;
