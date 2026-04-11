@@ -753,15 +753,24 @@ function applyMarkerPayload_(m, payload) {
   const rehydratedFeatures = (payload?.features || []).map((f) => {
     const tKey = f.properties?.t;
     const typeDef = types[tKey] || {};
-    
-    // Bridge the gap: type definitions use 'l' (label), but Mapbox layers 
-    // often use 'b' (label). Ensure defaults cover both keys.
+
+    // Bridge label logic: defaults use 'l' (label), but layers often use 'b' (label).
     const defaults = Object.assign({ b: typeDef.l }, typeDef);
 
-    return {
-      ...f,
-      properties: Object.assign({}, defaults, f.properties)
-    };
+    // Merge feature props over defaults
+    const combined = Object.assign({}, defaults, f.properties);
+    const clean = {};
+
+    // Final pass: strip nulls, undefined, and empty strings.
+    // This provides "null-safety" for strict Mapbox styling expressions.
+    Object.keys(combined).forEach((k) => {
+      const v = combined[k];
+      if (v !== null && v !== undefined && v !== "") {
+        clean[k] = v;
+      }
+    });
+
+    return { ...f, properties: clean };
   });
 
   const geojson = {
