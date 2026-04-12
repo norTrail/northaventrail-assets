@@ -1512,7 +1512,7 @@ function loadWindow() {
       const url = shareBtn.getAttribute('share-url') || window.location.href;
 
       navigator.share({ title, text, url }).catch((error) => {
-        if (error && error.name !== 'AbortError') console.log('Error sharing', error);
+        if (error && error.name !== 'AbortError') console.warn('Error sharing', error);
       });
     }, { passive: true });
 

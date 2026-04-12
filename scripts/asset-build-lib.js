@@ -11,11 +11,7 @@ const assetGroups = [
   { type: "css", srcDir: path.join(projectRoot, "src", "css"), outDir: path.join(projectRoot, "css") }
 ];
 
-function bannerFor(type, relativeSourcePath) {
-  if (type === "js") {
-    return `/* GENERATED FILE - DO NOT EDIT.\n * Source: ${relativeSourcePath}\n */\n`;
-  }
-
+function bannerFor(relativeSourcePath) {
   return `/* GENERATED FILE - DO NOT EDIT.\n * Source: ${relativeSourcePath}\n */\n`;
 }
 
@@ -53,7 +49,7 @@ async function buildAsset(type, sourceFilePath) {
   return {
     fileName,
     relativeSourcePath,
-    output: `${bannerFor(type, relativeSourcePath)}${minified}\n`
+    output: `${bannerFor(relativeSourcePath)}${minified}\n`
   };
 }
 
@@ -67,22 +63,17 @@ async function listSourceFiles(srcDir) {
 }
 
 async function buildAllAssets() {
-  const outputs = [];
-
-  for (const group of assetGroups) {
+  const groupResults = await Promise.all(assetGroups.map(async (group) => {
     const sourceFiles = await listSourceFiles(group.srcDir);
+    const built = await Promise.all(sourceFiles.map((sourceFilePath) => buildAsset(group.type, sourceFilePath)));
+    return built.map((asset) => ({
+      ...asset,
+      type: group.type,
+      targetPath: path.join(group.outDir, asset.fileName)
+    }));
+  }));
 
-    for (const sourceFilePath of sourceFiles) {
-      const built = await buildAsset(group.type, sourceFilePath);
-      outputs.push({
-        ...built,
-        type: group.type,
-        targetPath: path.join(group.outDir, built.fileName)
-      });
-    }
-  }
-
-  return outputs;
+  return groupResults.flat();
 }
 
 async function writeBuiltAssets(outputs) {

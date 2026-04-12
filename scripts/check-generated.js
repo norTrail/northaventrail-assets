@@ -6,14 +6,15 @@ const { buildAllAssets, projectRoot } = require("./asset-build-lib");
 
 async function main() {
   const outputs = await buildAllAssets();
-  const mismatches = [];
-
-  for (const asset of outputs) {
-    const current = await fs.readFile(asset.targetPath, "utf8");
-    if (current !== asset.output) {
-      mismatches.push(path.relative(projectRoot, asset.targetPath).replaceAll(path.sep, "/"));
-    }
-  }
+  const results = await Promise.all(
+    outputs.map(async (asset) => {
+      const current = await fs.readFile(asset.targetPath, "utf8");
+      return current !== asset.output
+        ? path.relative(projectRoot, asset.targetPath).replaceAll(path.sep, "/")
+        : null;
+    })
+  );
+  const mismatches = results.filter(Boolean);
 
   if (mismatches.length > 0) {
     console.error("Generated assets are out of date:");

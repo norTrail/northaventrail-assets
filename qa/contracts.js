@@ -189,14 +189,45 @@ function validateSheepLocationsPayload(payload, label) {
   }
 }
 
+function checkNoConsoleLogs() {
+  const srcJsDir = path.join(REPO_ROOT, "src", "js");
+  const files = fs.readdirSync(srcJsDir).filter((f) => f.endsWith(".js"));
+  const violations = [];
+
+  for (const file of files) {
+    const filePath = path.join(srcJsDir, file);
+    const content = fs.readFileSync(filePath, "utf8");
+    const lines = content.split("\n");
+    for (let i = 0; i < lines.length; i++) {
+      // Skip lines that are comments
+      const trimmed = lines[i].trimStart();
+      if (trimmed.startsWith("//") || trimmed.startsWith("*")) continue;
+      if (/console\.log\s*\(/.test(lines[i])) {
+        violations.push(`${file}:${i + 1}: ${lines[i].trim()}`);
+      }
+    }
+  }
+
+  assert.equal(
+    violations.length,
+    0,
+    `console.log found in source JS (remove before committing):\n  ${violations.join("\n  ")}`
+  );
+
+  return { checked: files.length };
+}
+
 function main() {
   const manifestNames = Object.keys(MANIFEST_VALIDATORS).sort();
   const results = manifestNames.map(validateManifest);
+
+  const logCheck = checkNoConsoleLogs();
 
   console.log("Contract checks passed:");
   for (const result of results) {
     console.log(`- ${result.manifestName} (${result.checkedPayloads} payload file(s), version ${result.version})`);
   }
+  console.log(`- no console.log in src/js (${logCheck.checked} file(s) checked)`);
 }
 
 try {

@@ -410,7 +410,7 @@ function attachErrorLogging(map, opts = {}) {
   // ---- Mapbox error event
   if (map && typeof map.on === "function" && !map.__trailErrorMapHandler) {
     map.__trailErrorMapHandler = (e) => {
-      console.log("MAPBOX_ERROR", e?.error?.message || e);
+      console.warn("MAPBOX_ERROR", e?.error?.message || e);
       __trailErrorState.crumbs.add("mapbox:error", {
         sourceId: e?.sourceId,
         tile: e?.tile,

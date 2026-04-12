@@ -414,10 +414,10 @@ function loadWindow() {
             if (typeof recovery?.recover === "function") {
               recovery.recover(map);
             } else {
-              console.warn("[debug] recovery not available");
+              console.warn("recovery not available");
             }
           } catch (e) {
-            console.warn("[debug] recovery error:", e);
+            console.warn("recovery error:", e);
           } finally {
             setTimeout(() => { __rebuildInProgress = false; }, 1500);
           }
@@ -440,7 +440,7 @@ function loadWindow() {
             if (typeof window.__trailKeepAliveCheck === "function") {
               window.__trailKeepAliveCheck("debug-button");
             } else {
-              console.warn("[debug] keep-alive hook not installed");
+              console.warn("keep-alive hook not installed");
             }
           } finally {
             setTimeout(() => { __rebuildInProgress = false; }, 1500);
