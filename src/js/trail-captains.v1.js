@@ -96,19 +96,21 @@
   }
 
   // ------------------------------------------------------------------
-  // Count total and vacant segments across all sections
+  // Count total segments and total open captain slots across all sections
   // ------------------------------------------------------------------
 
   function countVacancies(sections) {
-    let total = 0, vacant = 0;
+    let total = 0, openSlots = 0;
     Object.keys(sections).forEach(function (key) {
       const segs = Array.isArray(sections[key].segments) ? sections[key].segments : [];
       total += segs.length;
       segs.forEach(function (seg) {
-        if (!seg.captains || seg.captains.length === 0) vacant++;
+        const required = seg.numberRequired || 1;
+        const filled = Array.isArray(seg.captains) ? seg.captains.length : 0;
+        openSlots += Math.max(0, required - filled);
       });
     });
-    return { total: total, vacant: vacant };
+    return { total: total, vacant: openSlots };
   }
 
   // ------------------------------------------------------------------
@@ -128,7 +130,9 @@
       if (!s) return "";
       const segs = Array.isArray(s.segments) ? s.segments : [];
       const hasVacancy = segs.some(function (seg) {
-        return !seg.captains || seg.captains.length === 0;
+        const required = seg.numberRequired || 1;
+        const filled = Array.isArray(seg.captains) ? seg.captains.length : 0;
+        return filled < required;
       });
       return (
         '<a class="tc-nav-link' + (hasVacancy ? " tc-nav-link--vacant" : "") + '" href="#tc-' + escHtml(key) + '">' +
@@ -156,10 +160,12 @@
     const range    = sectionData.range || "";
     const segments = Array.isArray(sectionData.segments) ? sectionData.segments : [];
 
-    // Count vacancies for this section
-    const vacantCount = segments.filter(function (s) {
-      return !s.captains || s.captains.length === 0;
-    }).length;
+    // Count open captain slots for this section
+    const vacantCount = segments.reduce(function (sum, s) {
+      const required = s.numberRequired || 1;
+      const filled = Array.isArray(s.captains) ? s.captains.length : 0;
+      return sum + Math.max(0, required - filled);
+    }, 0);
 
     const captionText =
       escHtml(label) +
@@ -190,13 +196,17 @@
     const fragment = document.createDocumentFragment();
 
     segments.forEach(function (seg) {
-      const segName  = String(seg.segment || "");
-      const captains = Array.isArray(seg.captains) ? seg.captains : [];
-      const isVacant = captains.length === 0;
+      const segName    = String(seg.segment || "");
+      const captains   = Array.isArray(seg.captains) ? seg.captains : [];
+      const required   = seg.numberRequired || 1;
+      const openSlots  = Math.max(0, required - captains.length);
+      const isVacant   = captains.length === 0 && openSlots > 0;
+      const isPartial  = captains.length > 0 && openSlots > 0;
 
       const tr = document.createElement("tr");
 
-      if (isVacant) {
+      if (isVacant && required === 1) {
+        // Original single-vacancy rendering — unchanged
         tr.className = "tc-vacant";
         const mailtoHref = buildMailtoHref(label, segName);
         tr.innerHTML =
@@ -208,7 +218,32 @@
           ' aria-label="Adopt the ' + escHtml(segName) + ' segment as Trail Captain">' +
           "Adopt this segment \u2192</a>" +
           "</td>";
+      } else if (isVacant || isPartial) {
+        // Multiple open slots, or partially filled — render a list
+        tr.className = isVacant ? "tc-vacant" : "tc-partial";
+        const mailtoHref = buildMailtoHref(label, segName);
+        const openSlotHtml = '<li class="tc-open-slot">' +
+          '<span class="tc-vacant-label">Captain Needed</span> ' +
+          '<a class="tc-signup-link"' +
+          ' href="' + escHtml(mailtoHref) + '"' +
+          ' aria-label="Adopt the ' + escHtml(segName) + ' segment as Trail Captain">' +
+          "Adopt this segment \u2192</a>" +
+          "</li>";
+
+        const captainItems = captains.map(function (name) {
+          return "<li>" + escHtml(name) + "</li>";
+        }).join("");
+
+        const openSlotItems = Array(openSlots).fill(openSlotHtml).join("");
+
+        const captainLabel = (captains.length + openSlots) === 1 ? "Trail Captain" : "Trail Captains";
+        tr.innerHTML =
+          '<td data-label="Trail Segment">' + escHtml(segName) + "</td>" +
+          '<td data-label="' + captainLabel + '">' +
+          '<ul class="tc-captain-list">' + captainItems + openSlotItems + "</ul>" +
+          "</td>";
       } else {
+        // Fully staffed
         const captainLabel = captains.length === 1 ? "Trail Captain" : "Trail Captains";
         const captainHtml  = captains.length === 1
           ? escHtml(captains[0])
