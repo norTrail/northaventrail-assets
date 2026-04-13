@@ -861,7 +861,7 @@ if ('scrollRestoration' in history) {
     const p = feature?.properties || {};
 
     // b = bucket / category key (authoritative)
-    const b = String(p.b || "").trim();
+    const b = String(p.b ?? "").trim();
     if (b) return normalizeCategoryKey_(b);
 
     return "other";
