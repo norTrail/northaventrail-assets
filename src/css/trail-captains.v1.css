@@ -7,6 +7,11 @@
      Provides: .sr-only, .nt-cta-btn, .sqs-block-content fix
    ============================================================ */
 
+/* ---- Footer block ---- */
+.tc-footer {
+  margin-top: 24px;
+}
+
 /* ---- Global box-sizing reset for all tc-* components ---- */
 [class^="tc-"], [class*=" tc-"], 
 [class^="tc-"] *, [class*=" tc-"] * {

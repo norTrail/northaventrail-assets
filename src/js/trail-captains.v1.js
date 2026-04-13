@@ -126,8 +126,10 @@
       : "<strong>" + counts.vacant + "</strong> of " + counts.total + " trail segment" + (counts.total === 1 ? "" : "s") + " need" + (counts.total === 1 ? "s" : "") + " a captain.";
 
     footerEl.innerHTML =
-      '<p class="tc-summary-text">' + summaryHtml + "</p>" +
-      '<a class="nt-cta-btn" href="' + escHtml(buildMailtoHref()) + '">Volunteer for a segment \u2192</a>';
+      '<div class="tc-header-bar">' +
+        '<p class="tc-summary-text">' + summaryHtml + "</p>" +
+        '<a class="nt-cta-btn" href="' + escHtml(buildMailtoHref()) + '">Volunteer for a segment \u2192</a>' +
+      "</div>";
   }
 
   // ------------------------------------------------------------------
