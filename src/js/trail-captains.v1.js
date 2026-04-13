@@ -114,6 +114,23 @@
   }
 
   // ------------------------------------------------------------------
+  // Render the footer block: vacancy summary + CTA
+  // Injected into .tc-footer if present on the page
+  // ------------------------------------------------------------------
+
+  function renderFooter(footerEl, sections) {
+    const counts = countVacancies(sections);
+
+    const summaryHtml = counts.vacant === 0
+      ? "All <strong>" + counts.total + "</strong> trail segments are currently staffed."
+      : "<strong>" + counts.vacant + "</strong> of " + counts.total + " trail segment" + (counts.total === 1 ? "" : "s") + " need" + (counts.total === 1 ? "s" : "") + " a captain.";
+
+    footerEl.innerHTML =
+      '<p class="tc-summary-text">' + summaryHtml + "</p>" +
+      '<a class="nt-cta-btn" href="' + escHtml(buildMailtoHref()) + '">Volunteer for a segment \u2192</a>';
+  }
+
+  // ------------------------------------------------------------------
   // Render the header block: vacancy summary + CTA + section jump nav
   // Injected into .tc-header if present on the page
   // ------------------------------------------------------------------
@@ -299,6 +316,12 @@
         const headerEl = document.querySelector(".tc-header");
         if (headerEl) {
           renderHeader(headerEl, sections, sectionOrder);
+        }
+
+        // Render footer block (summary + CTA) if present
+        const footerEl = document.querySelector(".tc-footer");
+        if (footerEl) {
+          renderFooter(footerEl, sections);
         }
 
         // Render each section table and set anchor ID for jump nav
