@@ -174,13 +174,17 @@ html, body {
   outline-offset: 2px;
 }
 
-/* Shared minimum target sizes for map controls. */
+/* Override Mapbox GL's 44px default button size. Mapbox GL injects its CSS
+   dynamically (after our CSS loads), so !important is required here. Do not
+   remove !important or change these sizes — without them Mapbox GL wins. */
 .mapboxgl-ctrl-group button,
 .mapboxgl-ctrl-attrib-button,
 .search-custom-control,
 .satellite-custom-control {
-  min-width: 30px;
-  min-height: 30px;
+  width: 29px !important;
+  height: 29px !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
 }
 
 .mapboxgl-ctrl-group button,
