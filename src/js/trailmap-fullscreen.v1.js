@@ -120,9 +120,7 @@
 
       document.removeEventListener("keydown", this._onKeyDown);
 
-      if (this._container?.parentNode) {
-        this._container.parentNode.removeChild(this._container);
-      }
+      this._container?.remove();
 
       this._map = null;
     }

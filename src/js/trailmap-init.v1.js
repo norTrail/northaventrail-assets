@@ -403,9 +403,7 @@ function loadWindow() {
 
       addDebugButtons_({
         onRebuild: () => {
-          //console.log("[debug] rebuild clicked");
           if (__rebuildInProgress) {
-            //console.log("[debug] rebuild already in progress — skipping");
             return;
           }
 
@@ -424,10 +422,7 @@ function loadWindow() {
         },
 
         onKeepAlive: () => {
-          //console.log("[debug] keep-alive clicked");
-
           if (__rebuildInProgress) {
-            //console.log("[debug] rebuild already in progress — skipping");
             return;
           }
 
@@ -986,7 +981,7 @@ function installMapControls_() {
       return this.container;
     }
     onRemove() {
-      this.container.parentNode.removeChild(this.container);
+      this.container.remove();
       this.map = undefined;
     }
   }
@@ -1063,7 +1058,7 @@ function installMapControls_() {
     }
 
     onRemove() {
-      this.container.parentNode.removeChild(this.container);
+      this.container.remove();
       this.map = undefined;
     }
   }
