@@ -4,6 +4,9 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
+const puppeteer = require("puppeteer");
+
+const CHROME_PATH = puppeteer.executablePath();
 
 const PAGES = [
   "https://northaventrail.org/trailmap",
@@ -28,6 +31,8 @@ function runAxe(url, outputDir) {
       "3000",
       "--timeout",
       "120",
+      "--chrome-path",
+      CHROME_PATH,
       "--chrome-options",
       "no-sandbox,disable-setuid-sandbox"
     ],
