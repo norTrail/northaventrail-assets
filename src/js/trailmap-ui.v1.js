@@ -1621,7 +1621,7 @@ function buildFilterableLegendItemsFromTypes_(data, options = {}) {
 
     if (onlySet && !onlySet.has(label.toLowerCase())) continue;
 
-    const iconRaw = getPoiIconKey_(def);
+    const iconRaw = String(def.i || "").trim();
     if (requireIcon && !iconRaw) continue;
 
     const labelKey = label.toLowerCase();
