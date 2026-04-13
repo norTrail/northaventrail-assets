@@ -713,8 +713,9 @@ function _fetchAndApplyMarkerData(reqId, mapAtStart, dataUrls, index = 0) {
         return;
       }
 
-      applyMarkerPayload_(mapAtStart, payload);
-      __markerManifestCurrent = dataUrl;
+      return applyMarkerPayload_(mapAtStart, payload).then(() => {
+        __markerManifestCurrent = dataUrl;
+      });
     })
     .catch((err) => {
       clearTimeout(timeoutId);
@@ -739,6 +740,75 @@ function _fetchAndApplyMarkerData(reqId, mapAtStart, dataUrls, index = 0) {
     });
 }
 
+function resolvePoiMapIconUrl_(iconValue) {
+  const raw = String(iconValue || "").trim();
+  if (!raw) return "";
+
+  if (/^(https?:)?\/\//i.test(raw) || raw.startsWith("/")) {
+    return raw;
+  }
+
+  if (/\.[a-z0-9]+$/i.test(raw)) {
+    return normalizeSquarespaceAssetUrl(raw);
+  }
+
+  return normalizeSquarespaceAssetUrl(`${raw}.svg`);
+}
+
+function loadMapImageElement_(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error(`Failed to load icon image: ${url}`));
+    img.src = url;
+  });
+}
+
+function ensurePoiImages_(m, payload, features) {
+  if (!m?.addImage || !m?.hasImage) return Promise.resolve();
+
+  const types = payload?.defs?.types || {};
+  const iconUrlsByKey = new Map();
+
+  Object.values(types).forEach((def) => {
+    const iconKey = String(def?.sp || def?.i || "").trim().replace(/\.svg$/i, "");
+    if (!iconKey || iconUrlsByKey.has(iconKey)) return;
+
+    const iconUrl = resolvePoiMapIconUrl_(def?.i || def?.sp);
+    if (iconUrl) iconUrlsByKey.set(iconKey, iconUrl);
+  });
+
+  const neededKeys = new Set();
+  (features || []).forEach((feature) => {
+    const iconKey = String(feature?.properties?.sp || feature?.properties?.i || "").trim();
+    if (iconKey) neededKeys.add(iconKey);
+  });
+
+  const loaders = Array.from(neededKeys).map((iconKey) => {
+    if (m.hasImage(iconKey)) return Promise.resolve();
+
+    const iconUrl = iconUrlsByKey.get(iconKey);
+    if (!iconUrl) return Promise.resolve();
+
+    return loadMapImageElement_(iconUrl)
+      .then((img) => {
+        try {
+          if (!m.hasImage(iconKey)) {
+            m.addImage(iconKey, img);
+          }
+        } catch (err) {
+          console.warn(`[Trailmap] Could not register icon "${iconKey}"`, err);
+        }
+      })
+      .catch((err) => {
+        console.warn(`[Trailmap] Could not load icon "${iconKey}" from ${iconUrl}`, err);
+      });
+  });
+
+  return Promise.all(loaders).then(() => undefined);
+}
+
 function applyMarkerPayload_(m, payload) {
   // payload = { type, name, v, scriptVersion, defs:{types:{}}, features:[...] }
   poiData = payload;
@@ -751,11 +821,8 @@ function applyMarkerPayload_(m, payload) {
     const tKey = f.properties?.t;
     const typeDef = types[tKey] || {};
 
-    // 1. Prepare defaults: bridge 'sp' to runtime icon key 'i'
-    const defaults = Object.assign(
-      typeDef.sp ? { i: typeDef.sp } : {},
-      typeDef
-    );
+    // 1. Prepare defaults from the type definition
+    const defaults = Object.assign({}, typeDef);
 
     // 2. Merge: Feature properties override type defaults
     const combined = Object.assign({}, defaults, f.properties);
@@ -773,11 +840,9 @@ function applyMarkerPayload_(m, payload) {
       }
 
       // Force all icon names to be extensionless for Mapbox sprite compatibility
-      if (k === "i") {
+      if (k === "i" || k === "sp") {
         v = String(v).replace(/\.svg$/i, "");
       }
-
-      if (k === "sp") return;
 
       clean[k] = v;
     });
@@ -791,116 +856,118 @@ function applyMarkerPayload_(m, payload) {
     features: rehydratedFeatures
   };
 
-  // Create/update the GeoJSON source
-  const existingSrc = m.getSource("trail_markers_source");
-  if (!existingSrc) {
-    m.addSource("trail_markers_source", {
-      type: "geojson",
-      data: geojson
-    });
-  } else {
-    // if you ever re-call getMarkerData(), keep source current
-    existingSrc.setData(geojson);
-  }
+  return ensurePoiImages_(m, payload, rehydratedFeatures).then(() => {
+    // Create/update the GeoJSON source
+    const existingSrc = m.getSource("trail_markers_source");
+    if (!existingSrc) {
+      m.addSource("trail_markers_source", {
+        type: "geojson",
+        data: geojson
+      });
+    } else {
+      // if you ever re-call getMarkerData(), keep source current
+      existingSrc.setData(geojson);
+    }
 
-  const effLabel = ["coalesce", ["get", "b"], "Marker"];
-  const effIcon = ["coalesce", ["get", "i"], "road"];
-  const effColor = ["coalesce", ["get", "c"], "#1f7291"];
+    const effLabel = ["coalesce", ["get", "b"], "Marker"];
+    const effIcon = ["coalesce", ["get", "sp"], ["get", "i"], "road"];
+    const effColor = ["coalesce", ["get", "c"], "#1f7291"];
 
-  // Add the markers layer once
-  if (!m.getLayer("trail_markers")) {
-    m.addLayer({
-      id: "trail_markers",
-      type: "symbol",
-      source: "trail_markers_source",
-      layout: {
-        // label now comes from defs.types via properties.t
-        "text-field": effLabel,
-        "text-variable-anchor": ["top", "bottom-right", "bottom-left"],
-        "text-justify": "auto",
+    // Add the markers layer once
+    if (!m.getLayer("trail_markers")) {
+      m.addLayer({
+        id: "trail_markers",
+        type: "symbol",
+        source: "trail_markers_source",
+        layout: {
+          // label now comes from defs.types via properties.t
+          "text-field": effLabel,
+          "text-variable-anchor": ["top", "bottom-right", "bottom-left"],
+          "text-justify": "auto",
 
-        // icon now comes from defs.types via properties.t
-        "icon-image": effIcon,
+          // icon now comes from defs.types via properties.t
+          "icon-image": effIcon,
 
-        "icon-offset": [0, -23],
-        "text-offset": [0.5, -0.25],
-        "icon-padding": 1.1,
-        "icon-size": 0.5,
+          "icon-offset": [0, -23],
+          "text-offset": [0.5, -0.25],
+          "icon-padding": 1.1,
+          "icon-size": 0.5,
 
-        // sortKey now comes from defs.types via properties.t
-        "symbol-sort-key": ["number", ["coalesce", ["get", "s"], 10], 10]
-      },
-      paint: {
-        "text-color": effColor,
-        "text-opacity": [
-          "case",
-          ["boolean", ["feature-state", "active"], false],
-          1,
-          0.85
-        ],
-        "text-halo-color": [
-          "case",
-          ["boolean", ["feature-state", "active"], false],
-          effColor,
-          "white"
-        ],
-        "text-halo-width": [
-          "case",
-          ["boolean", ["feature-state", "active"], false],
-          0.35,
-          2
-        ],
-        "text-halo-blur": [
-          "case",
-          ["boolean", ["feature-state", "active"], false],
-          0,
-          2
-        ]
-      }
-    });
-  }
+          // sortKey now comes from defs.types via properties.t
+          "symbol-sort-key": ["number", ["coalesce", ["get", "s"], 10], 10]
+        },
+        paint: {
+          "text-color": effColor,
+          "text-opacity": [
+            "case",
+            ["boolean", ["feature-state", "active"], false],
+            1,
+            0.85
+          ],
+          "text-halo-color": [
+            "case",
+            ["boolean", ["feature-state", "active"], false],
+            effColor,
+            "white"
+          ],
+          "text-halo-width": [
+            "case",
+            ["boolean", ["feature-state", "active"], false],
+            0.35,
+            2
+          ],
+          "text-halo-blur": [
+            "case",
+            ["boolean", ["feature-state", "active"], false],
+            0,
+            2
+          ]
+        }
+      });
+    }
 
-  // Filtering (unchanged), BUT your filterData() must now use properties.n (name)
-  const params = (typeof getURLParams === 'function') ? getURLParams() : {};
+    // Filtering (unchanged), BUT your filterData() must now use properties.n (name)
+    const params = (typeof getURLParams === 'function') ? getURLParams() : {};
 
-  if (typeof ONLY_SHOW_LIST !== "undefined" && ONLY_SHOW_LIST !== null) {
-    const onlyShow = normalizeOnlyShowListLabels_(ONLY_SHOW_LIST);
+    if (typeof ONLY_SHOW_LIST !== "undefined" && ONLY_SHOW_LIST !== null) {
+      const onlyShow = normalizeOnlyShowListLabels_(ONLY_SHOW_LIST);
 
-    if (onlyShow?.length) {
-      // ONLY_SHOW_LIST contains type labels like "Parking Lot" / "Garden"
-      const matchingTypeKeys = typeKeysForLabels_(poiData, onlyShow);
+      if (onlyShow?.length) {
+        // ONLY_SHOW_LIST contains type labels like "Parking Lot" / "Garden"
+        const matchingTypeKeys = typeKeysForLabels_(poiData, onlyShow);
 
-      if (matchingTypeKeys.length) {
-        startupFilter = ["in", ["coalesce", ["get", "t"], ""], ["literal", matchingTypeKeys]];
-        m.setFilter("trail_markers", startupFilter);
+        if (matchingTypeKeys.length) {
+          startupFilter = ["in", ["coalesce", ["get", "t"], ""], ["literal", matchingTypeKeys]];
+          m.setFilter("trail_markers", startupFilter);
+        } else {
+          // nothing matches -> hide all
+          startupFilter = ["==", ["get", "t"], "__no_match__"];
+          m.setFilter("trail_markers", startupFilter);
+        }
       } else {
-        // nothing matches -> hide all
-        startupFilter = ["==", ["get", "t"], "__no_match__"];
-        m.setFilter("trail_markers", startupFilter);
+        m.setFilter("trail_markers", null);
       }
     } else {
-      m.setFilter("trail_markers", null);
+      filterData(params[GROUP_FILTER_PARAM]);
     }
-  } else {
-    filterData(params[GROUP_FILTER_PARAM]);
-  }
 
-  forcedClosePopup = true;
-  goToElement();
-  forcedClosePopup = false;
+    forcedClosePopup = true;
+    goToElement();
+    forcedClosePopup = false;
 
-  installMapControls_();
-  wireMapEventsAfterMarkers_();
-  wireCustomSearchUI_();
-  wirePopupEscapeOnce?.();
+    installMapControls_();
+    wireMapEventsAfterMarkers_();
+    wireCustomSearchUI_();
+    wirePopupEscapeOnce?.();
 
-  m.once("idle", () => {
-    buildSearchIndex_(poiData);
+    m.once("idle", () => {
+      buildSearchIndex_(poiData);
+    });
+
+    loadSvgSpriteOnce();
+
+    setShareButton();
   });
-
-  loadSvgSpriteOnce();
-
-  setShareButton();
 }
 
 /* ---------- Controls: kept (and only added after marker load like your original) ---------- */
