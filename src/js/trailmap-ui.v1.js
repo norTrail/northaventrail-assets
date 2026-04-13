@@ -1620,7 +1620,7 @@ function buildFilterableLegendItemsFromTypes_(data, options = {}) {
 
     if (onlySet && !onlySet.has(label.toLowerCase())) continue;
 
-    const iconRaw = getPoiIconKey_(def);
+    const iconRaw = String(def.i || "").trim();
     if (requireIcon && !iconRaw) continue;
 
     // Support both legacy filenames like "parking.svg" and optimized sprite names like "parking".
