@@ -753,7 +753,7 @@ function applyMarkerPayload_(m, payload) {
 
     // 1. Prepare defaults: bridge 'sp' to runtime icon key 'i'
     const defaults = Object.assign(
-      typeDef.sp ? { i: typeDef.sp } : null,
+      typeDef.sp ? { i: typeDef.sp } : {},
       typeDef
     );
 
