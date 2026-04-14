@@ -17,6 +17,7 @@ if ('scrollRestoration' in history) {
     emptyMessage: "No locations found.",
     errorMessage: "Unable to load locations at this time.",
     tableClass: "listing-table",
+    locationParam: "loc",
     // Manifest URL — resolves to current versioned data file at runtime.
     dataUrl:
       "https://assets.northaventrail.org/json/trail-poi.latest.json",
@@ -779,7 +780,7 @@ if ('scrollRestoration' in history) {
 
           // Highlight from URL
           const params = getURLParamsSafe();
-          const LOCATION_PARM = window.LOCATION_PARM || "loc";
+          const LOCATION_PARM = window.LOCATION_PARM || DEFAULTS.locationParam;
           const locId = params && params[LOCATION_PARM] ? String(params[LOCATION_PARM]) : "";
           if (locId) highlightFeature_(locId, tableClass);
         })
@@ -824,7 +825,7 @@ if ('scrollRestoration' in history) {
 
     highlightFeature_(idStr, tableClass);
 
-    const LOCATION_PARM = window.LOCATION_PARM || "loc";
+    const LOCATION_PARM = window.LOCATION_PARM || DEFAULTS.locationParam;
     const hasEmbeddedMap =
       !!document.getElementById("map") &&
       typeof window.goToElement === "function" &&
@@ -1335,7 +1336,7 @@ if ('scrollRestoration' in history) {
 
           // Highlight from URL if present
           const params = getURLParamsSafe();
-          const LOCATION_PARM = window.LOCATION_PARM || "loc";
+          const LOCATION_PARM = window.LOCATION_PARM || DEFAULTS.locationParam;
           const locId = params && params[LOCATION_PARM] ? String(params[LOCATION_PARM]) : "";
           if (locId) {
             document.querySelectorAll("table tbody tr").forEach((row) => {
