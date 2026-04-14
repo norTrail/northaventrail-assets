@@ -7,6 +7,7 @@ const { spawnSync } = require("node:child_process");
 const puppeteer = require("puppeteer");
 
 const CHROME_PATH = puppeteer.executablePath();
+const AXE_CLI_PATH = path.join(__dirname, "..", "node_modules", ".bin", "axe");
 
 const PAGES = [
   "https://northaventrail.org/trailmap",
@@ -21,9 +22,8 @@ function runAxe(url, outputDir) {
   const slug = new URL(url).pathname.replace(/^\/+/, "").replace(/[^\w-]+/g, "-") || "home";
   const outputFile = `${slug}.json`;
   const result = spawnSync(
-    "npx",
+    AXE_CLI_PATH,
     [
-      "axe",
       url,
       "--save",
       outputFile,
