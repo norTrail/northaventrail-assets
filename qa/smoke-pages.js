@@ -33,6 +33,7 @@ function launchBrowser() {
 function isIgnorableRequestFailure(url) {
   return [
     "google-analytics.com/g/collect",
+    "youtube.com/s/",
     "youtube.com/embed/",
     "youtube.com/youtubei/v1/log_event",
     "googleads.g.doubleclick.net/pagead/id",
