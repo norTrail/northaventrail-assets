@@ -272,7 +272,7 @@
 
 }
 
-/* Fix Squarespace form required-field label contrast (Squarespace renders #8b8b8b = 3.4:1) */
+/* Fix Squarespace form required-field label contrast (Squarespace renders #8b8b8b = 3.4:1; needs !important to beat Squarespace's deep selector chain) */
 .description.required {
-  color: #666;
+  color: #666 !important;
 }
