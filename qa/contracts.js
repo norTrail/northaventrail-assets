@@ -217,17 +217,52 @@ function checkNoConsoleLogs() {
   return { checked: files.length };
 }
 
+// Regression guard for: setActiveFeature_ used a hardcoded "loc" fallback instead of
+// DEFAULTS.locationParam, causing the URL parameter name to diverge from the canonical
+// value if DEFAULTS.locationParam was ever changed. Fix: add locationParam to DEFAULTS
+// and use it at every call site. (identified 2026-04-14, fix in be3bb4d)
+function checkLocationParamConsistency() {
+  const filePath = path.join(REPO_ROOT, "src", "js", "trailmap-listing.v1.js");
+  const content = fs.readFileSync(filePath, "utf8");
+  const lines = content.split("\n");
+
+  // DEFAULTS must declare locationParam so every call site can reference it
+  assert.ok(
+    /\blocationParam\s*:/.test(content),
+    "trailmap-listing.v1.js: DEFAULTS must define locationParam (regression guard — raw \"loc\" fallbacks diverge from the canonical default)"
+  );
+
+  // No LOCATION_PARM initialisation should fall back to a raw string literal
+  const violations = [];
+  for (let i = 0; i < lines.length; i++) {
+    const trimmed = lines[i].trimStart();
+    if (trimmed.startsWith("//") || trimmed.startsWith("*")) continue;
+    if (/\bLOCATION_PARM\s*=\s*window\.LOCATION_PARM\s*\|\|\s*["']/.test(lines[i])) {
+      violations.push(`trailmap-listing.v1.js:${i + 1}: ${trimmed}`);
+    }
+  }
+  assert.equal(
+    violations.length,
+    0,
+    `LOCATION_PARM must fall back to DEFAULTS.locationParam, not a raw string literal:\n  ${violations.join("\n  ")}`
+  );
+
+  return { checked: 1 };
+}
+
 function main() {
   const manifestNames = Object.keys(MANIFEST_VALIDATORS).sort();
   const results = manifestNames.map(validateManifest);
 
   const logCheck = checkNoConsoleLogs();
+  const locationParamCheck = checkLocationParamConsistency();
 
   console.log("Contract checks passed:");
   for (const result of results) {
     console.log(`- ${result.manifestName} (${result.checkedPayloads} payload file(s), version ${result.version})`);
   }
   console.log(`- no console.log in src/js (${logCheck.checked} file(s) checked)`);
+  console.log(`- LOCATION_PARM uses DEFAULTS.locationParam (${locationParamCheck.checked} file(s) checked)`);
 }
 
 try {

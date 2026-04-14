@@ -708,7 +708,9 @@ function _fetchAndApplyMarkerData(reqId, mapAtStart, dataUrls, index = 0) {
         mapAtStart.once("idle", () => {
           if (reqId !== __markerReqId) return;
           if (!mapAtStart || map !== mapAtStart || mapAtStart._removed) return;
-          applyMarkerPayload_(mapAtStart, payload);
+          applyMarkerPayload_(mapAtStart, payload).then(() => {
+            __markerManifestCurrent = dataUrl;
+          });
         });
         return;
       }
