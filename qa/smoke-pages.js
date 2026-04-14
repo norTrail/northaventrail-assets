@@ -33,6 +33,7 @@ function launchBrowser() {
 function isIgnorableRequestFailure(url) {
   return [
     "google-analytics.com/g/collect",
+    "api.mapbox.com/styles/v1/",
     "youtube.com/s/",
     "youtube.com/embed/",
     "youtube.com/youtubei/v1/log_event",
