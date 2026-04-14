@@ -14,6 +14,9 @@ const AXE_SOURCE = fs.readFileSync(require.resolve("axe-core/axe.min.js"), "utf8
 const PAGES = [
   "https://northaventrail.org/trailmap",
   "https://northaventrail.org/map-points-of-interest",
+  "https://northaventrail.org/where-to-park",
+  "https://northaventrail.org/adoptgarden",
+  "https://northaventrail.org/hawk-lights",
   "https://northaventrail.org/report-trail-issue",
   "https://northaventrail.org/tails-2026",
   "https://northaventrail.org/valentine-cling-map-2027",
