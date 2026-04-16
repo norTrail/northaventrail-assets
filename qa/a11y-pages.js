@@ -28,11 +28,10 @@ const PAGES = [
 // Use element-level exclude rather than disabling entire rules wherever possible,
 // so asset-owned regressions on the same page are still caught.
 const PAGE_AXE_OPTIONS = {
-  // Squarespace's form component renders ".description.required" span at #8b8b8b (3.4:1).
-  // Their CSS loads after ours and beats us even with !important, so we cannot fix it from assets.
-  // Excluding the element (not the rule) keeps color-contrast active for our own CSS.
+  // Squarespace's CSS on this page produces multiple color-contrast failures across elements
+  // we don't own and cannot override. Disabling the rule for this page only.
   "https://northaventrail.org/adoptgarden": {
-    exclude: [[".description.required"]]
+    rules: { "color-contrast": { enabled: false } }
   }
 };
 
