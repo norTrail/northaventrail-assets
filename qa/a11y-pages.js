@@ -23,13 +23,16 @@ const PAGES = [
   "https://northaventrail.org/trail-captains"
 ];
 
-// Per-page rule overrides — used when the host Squarespace shell causes violations
+// Per-page axe run-options — used when the host Squarespace shell causes violations
 // that are outside our asset scope. Keep these as narrow as possible.
-const PAGE_RULE_OVERRIDES = {
-  // Squarespace's form component renders "(required)" labels at #8b8b8b (3.4:1).
-  // Their CSS uses !important and loads after ours, so we cannot override it from assets.
+// Use element-level exclude rather than disabling entire rules wherever possible,
+// so asset-owned regressions on the same page are still caught.
+const PAGE_AXE_OPTIONS = {
+  // Squarespace's form component renders ".description.required" span at #8b8b8b (3.4:1).
+  // Their CSS loads after ours and beats us even with !important, so we cannot fix it from assets.
+  // Excluding the element (not the rule) keeps color-contrast active for our own CSS.
   "https://northaventrail.org/adoptgarden": {
-    "color-contrast": { enabled: false }
+    exclude: [[".description.required"]]
   }
 };
 
@@ -48,20 +51,20 @@ async function runAxe(page, url) {
 
   await page.addScriptTag({ content: AXE_SOURCE });
 
-  const pageOverrides = PAGE_RULE_OVERRIDES[url] || {};
+  const pageOptions = PAGE_AXE_OPTIONS[url] || {};
 
-  const result = await page.evaluate(async (overrides) => {
-    return window.axe.run(document, {
-      rules: Object.assign({
+  const result = await page.evaluate(async (extraOptions) => {
+    return window.axe.run(document, Object.assign({
+      rules: {
         // These pages inherit duplicate landmark structure from the host shell,
         // and some dynamic search/map widgets expose transient container roles
         // before their child options mount. Keep CI focused on asset-owned regressions.
         region: { enabled: false },
         "landmark-unique": { enabled: false },
         "aria-required-children": { enabled: false }
-      }, overrides)
-    });
-  }, pageOverrides);
+      }
+    }, extraOptions));
+  }, pageOptions);
 
   return {
     url,

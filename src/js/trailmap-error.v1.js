@@ -17,7 +17,12 @@ function isSquarespaceHost_() {
 }
 
 function isLikelyAutomatedClient_(ua = navigator.userAgent || "") {
-  return /bot|bingbot|crawler|spider|ahrefs|bingpreview|storebot|facebookexternalhit|meta-externalads|slurp|duckduckbot|yandex|semrush|headless/i.test(ua);
+  if (/bot|bingbot|crawler|spider|ahrefs|bingpreview|storebot|facebookexternalhit|meta-externalads|slurp|duckduckbot|yandex|semrush|headless|twitterbot|linkedinbot|whatsapp|telegrambot|applebot/i.test(ua)) return true;
+  // Reject impossible Chrome build numbers (e.g. Chrome/44–51 in 2026 = scanner/fuzzer).
+  // Real Chrome 44–51 cannot render Mapbox GL; spoofed UAs are always security tools.
+  const m = ua.match(/Chrome\/(\d+)\./);
+  if (m && Number(m[1]) < 60) return true;
+  return false;
 }
 
 function isIgnorableWindowError_(e) {
@@ -590,6 +595,13 @@ function installSafariMapKeepAlive_(initialMap, { rebuildMap } = {}) {
   let recoverTimer = null;
   let disposed = false;
 
+  // Rate-limit hard recoveries to prevent reinit storms (e.g. rapid resize
+  // on iOS Chrome where each new map instance immediately loses WebGL context).
+  let hardRecoverCount = 0;
+  let lastHardRecoverAt = 0;
+  const MAX_HARD_RECOVERS = 3;
+  const HARD_RECOVER_COOLDOWN_MS = 5000;
+
   function isMapVisible_() {
     if (!container || !container.isConnected) return false;
     const r = container.getBoundingClientRect();
@@ -612,6 +624,12 @@ function installSafariMapKeepAlive_(initialMap, { rebuildMap } = {}) {
 
   async function hardRecover_(reason) {
     if (disposed || typeof rebuildMap !== "function") return;
+
+    const now = Date.now();
+    if (hardRecoverCount >= MAX_HARD_RECOVERS) return;
+    if (now - lastHardRecoverAt < HARD_RECOVER_COOLDOWN_MS) return;
+    hardRecoverCount++;
+    lastHardRecoverAt = now;
 
     try {
       try { currentMap.remove(); } catch { }
