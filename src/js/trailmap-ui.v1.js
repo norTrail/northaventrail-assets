@@ -1936,7 +1936,7 @@ function wirePopupEscapeOnce() {
     if (e.key !== "Escape") return;
 
     const lightBox = document.getElementById(MAP_LIGHT_BOX_ID);
-    if (lightBox && lightBox.style.display === "block") return;
+    if (lightBox && lightBox.style.display && lightBox.style.display !== "none") return;
     if (!document.querySelector(".mapboxgl-popup")) return;
 
     e.stopPropagation();
