@@ -575,11 +575,32 @@ function flyToMarker(currentFeature, zoomLevel, coords) {
   });
 }
 
+function generate911SignSvg_(ntCode) {
+  const label = escapeHtmlAttr(String(ntCode || '').trim());
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="48" fill="#1a7a3a" stroke="white" stroke-width="5"/>
+    <text x="50" y="25" text-anchor="middle" fill="white" font-family="Arial,Helvetica,sans-serif" font-size="12" font-weight="bold">Your</text>
+    <text x="50" y="51" text-anchor="middle" fill="white" font-family="Arial,Helvetica,sans-serif" font-size="27" font-weight="900">911</text>
+    <text x="50" y="65" text-anchor="middle" fill="white" font-family="Arial,Helvetica,sans-serif" font-size="11">location is</text>
+    <text x="50" y="86" text-anchor="middle" fill="white" font-family="Arial,Helvetica,sans-serif" font-size="19" font-weight="bold">${label}</text>
+  </svg>`;
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
 function getPropertyDetails(prop, feature = null, payload = poiData) {
   if (!prop) return {};
 
   const typeKey = String(prop.t || '').trim();
   const typeDef = typeKey && payload?.defs?.types ? payload.defs.types[typeKey] : null;
+
+  // 911 sign: generate SVG from the NT code in p.l
+  if (typeKey === 'em') {
+    const ntCode = String(prop.l || '').trim();
+    return {
+      d: escapeHtml('Share this code with 911 dispatchers in an emergency.'),
+      icon: generate911SignSvg_(ntCode)
+    };
+  }
 
   // Effective description (POI overrides type)
   const desc = String(prop.d || typeDef?.d || '').trim();
@@ -703,6 +724,7 @@ function createPopUp(currentFeature) {
   // If Listing Table is there:
   window.TrailmapListing?.highlightFeature?.(idStr);
 
+  const isSvgIcon = imageURL.startsWith('data:image/svg+xml');
   const html = `
   <div class="map-popup ${imageURL ? "has-image" : "no-image"}">
     <div class="map-popup-row">
@@ -715,6 +737,7 @@ function createPopUp(currentFeature) {
                  aria-label="Open larger image for ${escapeHtmlAttr(labelName || "Marker")}"
                >
                  <img src="${escapeHtmlAttr(imageURL)}" width="64" height="64"
+                      class="${isSvgIcon ? 'svg-icon' : ''}"
                       alt="${escapeHtml(labelName || "Marker")}" loading="lazy">
                </button>
              </div>`
