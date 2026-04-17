@@ -599,7 +599,7 @@ function getPropertyDetails(prop, feature = null, payload = poiData) {
     driveThumbFromId(typeDef?.m, 400);
 
   // Build body HTML (desc + optional link)
-  let bodyHtml = desc;
+  let bodyHtml = escapeHtml(desc);
   if (includeLink && linkUrl) {
     const target = external ? ' target="_blank" rel="noopener noreferrer"' : '';
     const text = linkText || 'Learn more';
@@ -727,7 +727,7 @@ function createPopUp(currentFeature) {
       : ""
     }
         ${body
-      ? `<div class="map-popup-text">${escapeHtml(body)}</div>`
+      ? `<div class="map-popup-text">${body}</div>`
       : ""
     }
       </div>
