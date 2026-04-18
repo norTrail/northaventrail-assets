@@ -217,6 +217,89 @@ function checkNoConsoleLogs() {
   return { checked: files.length };
 }
 
+// Regression guard for: escape handler checked lightBox.style.display === "block" but
+// the lightbox uses display:flex — so the guard was always falsy and Escape closed the
+// popup while the lightbox was open. Fix: check display !== "none". (2026-04-17, e4f2f8f)
+function checkLightboxEscapeCondition() {
+  const content = fs.readFileSync(
+    path.join(REPO_ROOT, "src", "js", "trailmap-ui.v1.js"), "utf8"
+  );
+  assert.ok(
+    /lightBox\.style\.display\s*&&\s*lightBox\.style\.display\s*!==\s*["']none["']/.test(content),
+    "trailmap-ui: lightbox escape guard must use display !== 'none' (not === 'block') — lightbox renders as flex, so the block check was always falsy and let Escape close the popup"
+  );
+  return { checked: 1 };
+}
+
+// Regression guard for: search used a single haystackLower.includes(query) call, so
+// multi-word queries like "mural bridge" failed to match "Mural on Northaven Trail Bridge"
+// because the substring doesn't appear contiguously. Fix: split on whitespace and use
+// .every(). (2026-04-17, 410699c)
+function checkSearchTokenization() {
+  const content = fs.readFileSync(
+    path.join(REPO_ROOT, "src", "js", "trailmap-ui.v1.js"), "utf8"
+  );
+  assert.ok(
+    /const\s+tokens\s*=\s*query\.split\s*\(/.test(content),
+    "trailmap-ui: search must split query into tokens (regression guard — single includes() missed multi-word queries)"
+  );
+  assert.ok(
+    /tokens\.every\s*\(\s*t\s*=>/.test(content),
+    "trailmap-ui: search must use tokens.every() to match all words (regression guard — see 410699c)"
+  );
+  return { checked: 1 };
+}
+
+// Regression guard for: .mapboxgl-popup-close-button lacked a minimum tap target size,
+// making the ✕ very difficult to tap on mobile. Fix: min-width/height 44px, flex center.
+// (2026-04-17, 447bbb1)
+function checkPopupCloseButtonTouchTarget() {
+  const content = fs.readFileSync(
+    path.join(REPO_ROOT, "src", "css", "trailmap.v1.css"), "utf8"
+  );
+  assert.ok(
+    /\.mapboxgl-popup-close-button\s*\{[^}]*min-width\s*:\s*44px/.test(content),
+    "trailmap.v1.css: .mapboxgl-popup-close-button must declare min-width: 44px for a reachable tap target"
+  );
+  assert.ok(
+    /\.mapboxgl-popup-close-button\s*\{[^}]*min-height\s*:\s*44px/.test(content),
+    "trailmap.v1.css: .mapboxgl-popup-close-button must declare min-height: 44px for a reachable tap target"
+  );
+  return { checked: 1 };
+}
+
+// Regression guard for: .mapboxgl-popup-content used symmetric padding (8px 10px),
+// causing popup text to slide under the absolute-positioned close button. Fix: add
+// 44px right padding to reserve space for the button. (2026-04-17, 3d7db30)
+function checkPopupContentReservesCloseButtonSpace() {
+  const content = fs.readFileSync(
+    path.join(REPO_ROOT, "src", "css", "trailmap.v1.css"), "utf8"
+  );
+  assert.ok(
+    /\.mapboxgl-popup-content\s*\{[^}]*padding\s*:[^;]*\b44px\b/.test(content),
+    "trailmap.v1.css: .mapboxgl-popup-content must include 44px right padding to prevent text overlapping the close button"
+  );
+  return { checked: 1 };
+}
+
+// Regression guard for: popup desc was passed through escapeHtml(), stripping <br> and
+// other HTML tags that GAS embeds in descriptions. Fix: assign desc directly — it comes
+// from GAS-generated JSON which is a trusted internal source. (2026-04-17, 447bbb1)
+function checkPopupDescRendersHtml() {
+  const content = fs.readFileSync(
+    path.join(REPO_ROOT, "src", "js", "trailmap-ui.v1.js"), "utf8"
+  );
+  assert.ok(
+    !/let\s+bodyHtml\s*=\s*escapeHtml\s*\(\s*desc\s*\)/.test(content),
+    "trailmap-ui: popup bodyHtml must NOT be escapeHtml(desc) — GAS descriptions may contain intentional HTML like <br>"
+  );
+  assert.ok(
+    /let\s+bodyHtml\s*=\s*desc\s*;/.test(content),
+    "trailmap-ui: popup bodyHtml must be assigned directly from desc (not escaped)"
+  );
+  return { checked: 1 };
+}
+
 // Regression guard for: setActiveFeature_ used a hardcoded "loc" fallback instead of
 // DEFAULTS.locationParam, causing the URL parameter name to diverge from the canonical
 // value if DEFAULTS.locationParam was ever changed. Fix: add locationParam to DEFAULTS
@@ -256,6 +339,11 @@ function main() {
 
   const logCheck = checkNoConsoleLogs();
   const locationParamCheck = checkLocationParamConsistency();
+  const lightboxEscapeCheck = checkLightboxEscapeCondition();
+  const searchTokenCheck = checkSearchTokenization();
+  const closeButtonCheck = checkPopupCloseButtonTouchTarget();
+  const popupPaddingCheck = checkPopupContentReservesCloseButtonSpace();
+  const descHtmlCheck = checkPopupDescRendersHtml();
 
   console.log("Contract checks passed:");
   for (const result of results) {
@@ -263,6 +351,11 @@ function main() {
   }
   console.log(`- no console.log in src/js (${logCheck.checked} file(s) checked)`);
   console.log(`- LOCATION_PARM uses DEFAULTS.locationParam (${locationParamCheck.checked} file(s) checked)`);
+  console.log(`- lightbox escape guard uses display !== 'none' (${lightboxEscapeCheck.checked} file(s) checked)`);
+  console.log(`- search uses token splitting with .every() (${searchTokenCheck.checked} file(s) checked)`);
+  console.log(`- popup close button has 44px min touch target (${closeButtonCheck.checked} file(s) checked)`);
+  console.log(`- popup content reserves 44px for close button (${popupPaddingCheck.checked} file(s) checked)`);
+  console.log(`- popup desc renders HTML from GAS without escaping (${descHtmlCheck.checked} file(s) checked)`);
 }
 
 try {

@@ -198,6 +198,21 @@ async function trailmapPopupLightboxFlow(browser) {
     assert.equal(lightboxState.hasImage, true, "Lightbox should contain an image");
     assert.ok(lightboxState.imgSrc.length > 0, "Lightbox image should have a src");
 
+    // Regression: escape handler checked display === "block" but lightbox uses flex,
+    // so the guard was always falsy — Escape closed the popup while lightbox was open.
+    // Fix (e4f2f8f): check display !== "none" instead.
+    await page.keyboard.press("Escape");
+    await page.waitForFunction(() => {
+      const lb = document.getElementById("lightbox-map");
+      return !lb || !lb.style.display || lb.style.display === "none";
+    }, { timeout: 10000 });
+
+    const popupStillOpen = await page.evaluate(() => !!document.querySelector(".mapboxgl-popup"));
+    assert.equal(popupStillOpen, true, "Escape while lightbox open should close lightbox but keep the popup open");
+
+    await page.keyboard.press("Escape");
+    await page.waitForFunction(() => !document.querySelector(".mapboxgl-popup"), { timeout: 10000 });
+
     console.log("trailmap popup lightbox: pass");
   } finally {
     await page.close();
@@ -238,6 +253,16 @@ async function trailmapSearchFlow(browser) {
 
     await page.keyboard.press("Escape");
     await page.waitForFunction(() => !document.querySelector(".mapboxgl-popup"), { timeout: 10000 });
+
+    // Regression: search used a single includes(query) check, so "mural bridge" failed to
+    // match "Mural on Northaven Trail Bridge" because the substring isn't contiguous.
+    // Fix (410699c): split query into tokens and require all tokens to match individually.
+    await openTrailmapSearch(page, "mural bridge");
+    const hasMultiWordPopup = await page.waitForSelector(".mapboxgl-popup", {
+      visible: true,
+      timeout: 15000
+    }).then(() => true).catch(() => false);
+    assert.equal(hasMultiWordPopup, true, "Multi-word search 'mural bridge' should open a popup (both tokens must match independently)");
 
     console.log("trailmap search: pass");
   } finally {
