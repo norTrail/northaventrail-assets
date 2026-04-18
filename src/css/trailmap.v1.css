@@ -161,7 +161,13 @@ html, body {
 }
 
 .mapboxgl-popup-close-button {
-  padding: 2px 6px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
   line-height: 1;
 }
 
@@ -294,14 +300,26 @@ html, body {
   display: block;
   font-family: proxima-nova, "Helvetica Neue", Arial, Helvetica, sans-serif;
   font-size: 15px;
-  font-weight: 400;
+  font-weight: 600;
   line-height: 18px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
+  letter-spacing: 0.3px;
   color: rgb(16, 132, 82);
-  margin: 0 0 7.5px 0;
+  margin: 0 0 4px 0;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: subpixel-antialiased;
+}
+
+.map-popup-category {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  color: #108452;
+  background: #e8f4ee;
+  border-radius: 10px;
+  padding: 1px 7px;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .map-popup-row {

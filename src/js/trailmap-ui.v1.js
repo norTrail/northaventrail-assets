@@ -624,7 +624,8 @@ function getPropertyDetails(prop, feature = null, payload = poiData) {
     driveThumbFromId(typeDef?.m, 400);
 
   // Build body HTML (desc + optional link)
-  let bodyHtml = escapeHtml(desc);
+  // desc comes from GAS-generated JSON (trusted source), so HTML tags like <br> are intentional
+  let bodyHtml = desc;
   if (includeLink && linkUrl) {
     const target = external ? ' target="_blank" rel="noopener noreferrer"' : '';
     const text = linkText || 'Learn more';
@@ -719,6 +720,8 @@ function createPopUp(currentFeature) {
   const propertyDetails = getPropertyDetails(p);
   const imageURL = propertyDetails.icon || "";
   const body = propertyDetails.d || String(p.d || "").trim() || "";
+  const category = String(p.b || typeDef?.l || '').trim();
+  const showCategory = category && category.toLowerCase() !== title.toLowerCase();
 
   const googleHref = `${GOOGLE_MAP_URL}${mapLatLng}`;
   const appleHref = `${APPLE_MAP_URL}${mapLatLng}`;
@@ -751,6 +754,10 @@ function createPopUp(currentFeature) {
       <div class="map-popup-body">
         ${title
       ? `<div class="map-popup-header">${escapeHtml(title)}</div>`
+      : ""
+    }
+        ${showCategory
+      ? `<div class="map-popup-category">${escapeHtml(category)}</div>`
       : ""
     }
         ${body
