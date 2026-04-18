@@ -712,159 +712,34 @@ function createPopUp(currentFeature) {
   const coords = fullFeature?.geometry?.coordinates;
   if (!Array.isArray(coords) || coords.length !== 2) return;
 
-  const lng = Number(coords[0]);
-  const lat = Number(coords[1]);
-
-  const p = fullFeature.properties || {};
+  const p     = fullFeature.properties || {};
   const title = String(p.l || p.n || '').trim();
-  const typeKey = p.t;
-  const typeDef = typeKey && poiData?.defs?.types ? poiData.defs.types[typeKey] : null;
 
-  const iconName = getPoiIconKey_(typeDef);
-  const labelName = String(p.l || typeDef?.l || '');
-  const mapLatLng = `${lat},${lng}`;
-
-  const propertyDetails = getPropertyDetails(p);
-  const imageURL = propertyDetails.icon || "";
-  const body = propertyDetails.d || String(p.d || "").trim() || "";
-  const category = String(p.b || typeDef?.l || '').trim();
-  const showCategory = category && category.toLowerCase() !== title.toLowerCase();
-
-  const googleHref = `${GOOGLE_MAP_URL}${mapLatLng}`;
-  const appleHref = `${APPLE_MAP_URL}${mapLatLng}`;
-
-  const showNav = true;
-
-  // If Listing Table is there:
+  // Sync listing table highlight
   window.TrailmapListing?.highlightFeature?.(idStr);
 
-  const isSvgIcon = imageURL.startsWith('data:image/svg+xml');
-  const html = `
-  <div class="map-popup ${imageURL ? "has-image" : "no-image"}">
-    <div class="map-popup-row">
-      ${imageURL
-      ? `<div class="map-popup-image">
-               <button
-                 type="button"
-                 class="lightboxable map-popup-image-trigger"
-                 data-image-url="${escapeHtmlAttr(imageURL)}"
-                 aria-label="Open larger image for ${escapeHtmlAttr(labelName || "Marker")}"
-               >
-                 <img src="${escapeHtmlAttr(imageURL)}" width="64" height="64"
-                      ${isSvgIcon ? 'class="svg-icon"' : ''}
-                      alt="${escapeHtml(labelName || "Marker")}" loading="lazy">
-               </button>
-             </div>`
-      : ""
-    }
-
-      <div class="map-popup-body">
-        ${title
-      ? `<div class="map-popup-header">${escapeHtml(title)}</div>`
-      : ""
-    }
-        ${showCategory
-      ? `<div class="map-popup-category">${escapeHtml(category)}</div>`
-      : ""
-    }
-        ${body
-      ? `<div class="map-popup-text">${body}</div>`
-      : ""
-    }
-      </div>
-    </div>
-
-    ${showNav
-      ? `<div class="map-popup-actions" tabindex="-1">
-             <a tabindex="-1" style="display:none"></a>
-             <a class="popupIconLink" title="Open in Google Maps" aria-label="Open in Google Maps" href="${googleHref}" target="_blank" rel="noopener noreferrer">
-               <svg aria-hidden="true" class="popupIcon googleMapButton"><use href="#google-logo"></use></svg>
-             </a>
-             <a class="popupIconLink" title="Open in Apple Maps" aria-label="Open in Apple Maps" href="${appleHref}" target="_blank" rel="noopener noreferrer">
-               <svg aria-hidden="true" class="popupIcon"><use href="#apple-logo"></use></svg>
-             </a>
-             <button class="popupIconLink shareButton" type="button" title="Share" aria-label="Share">
-                <svg aria-hidden="true" class="popupIcon">
-                  <use href="#share-icon"></use>
-                </svg>
-              </button>
-           </div>`
-      : ""
-    }
-  </div>
-`;
-
-  const popup = new mapboxgl.Popup({
-    closeOnClick: false,
-    focusAfterOpen: false,
-    offset: POP_UP_OFFSET,
-    maxWidth: POP_UP_MAX_WIDTH
-  });
-
-  const safe = toLngLat_(coords, null);
-  if (!safe) return;
-  popup.setLngLat(safe);
-  popup.setHTML(html);
-
-  popup.on("open", () => {
-    // We removed document.activeElement.blur() to allow focus to flow normally 
-    // for keyboard and screen reader users.
-
-    const popupEl = popup.getElement();
-    if (!popupEl) return;
-
-    window.NorthavenUtils?.focusFirstPopupElement?.(popup);
-
-    // prevent double-binding if something weird re-triggers open
-    if (popupEl.dataset.shareWired === "1") return;
-    popupEl.dataset.shareWired = "1";
-
-    // Delegate: catches clicks on <a>, <svg>, <use>, etc.
-    popupEl.addEventListener("click", (e) => {
-      const lightboxTrigger = e.target?.closest?.(".map-popup-image-trigger");
-      if (lightboxTrigger) {
-        e.preventDefault();
-        e.stopPropagation();
-        showLargeImage(lightboxTrigger.getAttribute("data-image-url") || "");
-        return;
-      }
-
-      const share = e.target?.closest?.(".shareButton");
-      if (!share) return;
-
-      e.preventDefault();
-      e.stopPropagation();
-
-      // Use real values (don't rely on inline onclick="clickShare()")
+  window.NorthavenCard.show(fullFeature, poiData, map, {
+    onShare: () => {
       clickShare(
-        "Northaven Trail Map",
-        title ? `${title} on the Northaven Trail` : "Northaven Trail Map",
+        'Northaven Trail Map',
+        title ? `${title} on the Northaven Trail` : 'Northaven Trail Map',
         buildURL({ markerID: idStr, markerTitle: title }, true)
       );
-    }, { passive: false });
+    },
+    onClose: () => {
+      if (activeFeatureID) {
+        map.setFeatureState(
+          { source: 'trail_markers_source', id: activeFeatureID },
+          { active: false }
+        );
+      }
+      activeFeatureID = null;
+      popupFeature    = null;
+      window.TrailmapListing?.clearActiveFeature?.();
+      if (!forcedClosePopup) resetPageDetails();
+      removeActive();
+    },
   });
-
-  popup.on("close", () => {
-    if (activeFeatureID) {
-      map.setFeatureState(
-        { source: "trail_markers_source", id: activeFeatureID },
-        { active: false }
-      );
-    }
-    activeFeatureID = null;
-    popupFeature = null;
-
-    // If Listing Table is there:
-    window.TrailmapListing?.clearActiveFeature?.();
-
-    if (!forcedClosePopup) {
-      resetPageDetails();
-    }
-
-    removeActive();
-  })
-
-  popup.addTo(map);
 }
 
 /* ---------- URL + filter helpers (kept) ---------- */
@@ -1384,6 +1259,7 @@ function clickShare(title, text, url) {
 /* ------------------------------------------------------------ */
 
 function forceClosePopups() {
+  window.NorthavenCard?.hide?.({ silent: true });
   const popups = document.getElementsByClassName('mapboxgl-popup');
   while (popups.length) {
     forcedClosePopup = true;
