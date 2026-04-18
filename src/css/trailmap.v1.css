@@ -157,7 +157,7 @@ html, body {
 }
 
 .mapboxgl-popup-content {
-  padding: 8px 10px; /* tightened */
+  padding: 8px 44px 8px 10px; /* right side reserved for 44px close button */
 }
 
 .mapboxgl-popup-close-button {
