@@ -342,9 +342,11 @@ function wireCustomSearchUI_() {
     const query = (q || "").trim().toLowerCase();
     if (!query) return SEARCH_INDEX.slice(0, SEARCH_MAX_OPTIONS);
 
+    const tokens = query.split(/\s+/).filter(Boolean);
+
     const out = [];
     for (const item of SEARCH_INDEX) {
-      if (item.haystackLower.includes(query)) {
+      if (tokens.every(t => item.haystackLower.includes(t))) {
         out.push(item);
         if (out.length >= SEARCH_MAX_OPTIONS) break;
       }
@@ -575,11 +577,36 @@ function flyToMarker(currentFeature, zoomLevel, coords) {
   });
 }
 
+function generate911SignSvg_(ntCode) {
+  const label = escapeHtmlAttr(String(ntCode || '').trim());
+  // Top half: green background, white text. Bottom half: white background, green text.
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="47" fill="white"/>
+    <path d="M 3,50 A 47,47 0 0,1 97,50 Z" fill="#1a7a3a"/>
+    <circle cx="50" cy="50" r="47" fill="none" stroke="#1a7a3a" stroke-width="4"/>
+    <line x1="3" y1="50" x2="97" y2="50" stroke="#1a7a3a" stroke-width="2"/>
+    <text x="50" y="20" text-anchor="middle" fill="white" font-family="Arial,Helvetica,sans-serif" font-size="11" font-weight="bold">Your</text>
+    <text x="50" y="38" text-anchor="middle" fill="white" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="900">911</text>
+    <text x="50" y="48" text-anchor="middle" fill="white" font-family="Arial,Helvetica,sans-serif" font-size="9.5">location is</text>
+    <text x="50" y="76" text-anchor="middle" fill="#1a7a3a" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="bold">${label}</text>
+  </svg>`;
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
 function getPropertyDetails(prop, feature = null, payload = poiData) {
   if (!prop) return {};
 
   const typeKey = String(prop.t || '').trim();
   const typeDef = typeKey && payload?.defs?.types ? payload.defs.types[typeKey] : null;
+
+  // 911 sign: generate SVG from the NT code in p.l
+  if (typeKey === 'em') {
+    const ntCode = String(prop.l || '').trim();
+    return {
+      d: escapeHtml('Share this code with 911 dispatchers in an emergency.'),
+      icon: generate911SignSvg_(ntCode)
+    };
+  }
 
   // Effective description (POI overrides type)
   const desc = String(prop.d || typeDef?.d || '').trim();
@@ -599,6 +626,7 @@ function getPropertyDetails(prop, feature = null, payload = poiData) {
     driveThumbFromId(typeDef?.m, 400);
 
   // Build body HTML (desc + optional link)
+  // desc comes from GAS-generated JSON (trusted source), so HTML tags like <br> are intentional
   let bodyHtml = desc;
   if (includeLink && linkUrl) {
     const target = external ? ' target="_blank" rel="noopener noreferrer"' : '';
@@ -694,6 +722,8 @@ function createPopUp(currentFeature) {
   const propertyDetails = getPropertyDetails(p);
   const imageURL = propertyDetails.icon || "";
   const body = propertyDetails.d || String(p.d || "").trim() || "";
+  const category = String(p.b || typeDef?.l || '').trim();
+  const showCategory = category && category.toLowerCase() !== title.toLowerCase();
 
   const googleHref = `${GOOGLE_MAP_URL}${mapLatLng}`;
   const appleHref = `${APPLE_MAP_URL}${mapLatLng}`;
@@ -703,6 +733,7 @@ function createPopUp(currentFeature) {
   // If Listing Table is there:
   window.TrailmapListing?.highlightFeature?.(idStr);
 
+  const isSvgIcon = imageURL.startsWith('data:image/svg+xml');
   const html = `
   <div class="map-popup ${imageURL ? "has-image" : "no-image"}">
     <div class="map-popup-row">
@@ -715,6 +746,7 @@ function createPopUp(currentFeature) {
                  aria-label="Open larger image for ${escapeHtmlAttr(labelName || "Marker")}"
                >
                  <img src="${escapeHtmlAttr(imageURL)}" width="64" height="64"
+                      class="${isSvgIcon ? 'svg-icon' : ''}"
                       alt="${escapeHtml(labelName || "Marker")}" loading="lazy">
                </button>
              </div>`
@@ -726,8 +758,12 @@ function createPopUp(currentFeature) {
       ? `<div class="map-popup-header">${escapeHtml(title)}</div>`
       : ""
     }
+        ${showCategory
+      ? `<div class="map-popup-category">${escapeHtml(category)}</div>`
+      : ""
+    }
         ${body
-      ? `<div class="map-popup-text">${escapeHtml(body)}</div>`
+      ? `<div class="map-popup-text">${body}</div>`
       : ""
     }
       </div>
@@ -1936,7 +1972,7 @@ function wirePopupEscapeOnce() {
     if (e.key !== "Escape") return;
 
     const lightBox = document.getElementById(MAP_LIGHT_BOX_ID);
-    if (lightBox && lightBox.style.display === "block") return;
+    if (lightBox && lightBox.style.display && lightBox.style.display !== "none") return;
     if (!document.querySelector(".mapboxgl-popup")) return;
 
     e.stopPropagation();

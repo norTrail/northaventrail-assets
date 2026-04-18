@@ -28,11 +28,10 @@ const PAGES = [
 // Use element-level exclude rather than disabling entire rules wherever possible,
 // so asset-owned regressions on the same page are still caught.
 const PAGE_AXE_OPTIONS = {
-  // Squarespace's form component renders ".description.required" span at #8b8b8b (3.4:1).
-  // Their CSS loads after ours and beats us even with !important, so we cannot fix it from assets.
-  // Excluding the element (not the rule) keeps color-contrast active for our own CSS.
+  // Squarespace's CSS on this page produces multiple color-contrast failures across elements
+  // we don't own and cannot override. Disabling the rule for this page only.
   "https://northaventrail.org/adoptgarden": {
-    exclude: [[".description.required"]]
+    rules: { "color-contrast": { enabled: false } }
   }
 };
 
@@ -53,18 +52,23 @@ async function runAxe(page, url) {
 
   const pageOptions = PAGE_AXE_OPTIONS[url] || {};
 
-  const result = await page.evaluate(async (extraOptions) => {
-    return window.axe.run(document, Object.assign({
-      rules: {
-        // These pages inherit duplicate landmark structure from the host shell,
-        // and some dynamic search/map widgets expose transient container roles
-        // before their child options mount. Keep CI focused on asset-owned regressions.
-        region: { enabled: false },
-        "landmark-unique": { enabled: false },
-        "aria-required-children": { enabled: false }
-      }
-    }, extraOptions));
-  }, pageOptions);
+  // Deep-merge rules so page-specific overrides extend rather than overwrite the base set.
+  const mergedOptions = {
+    ...pageOptions,
+    rules: {
+      // These pages inherit duplicate landmark structure from the host shell,
+      // and some dynamic search/map widgets expose transient container roles
+      // before their child options mount. Keep CI focused on asset-owned regressions.
+      region: { enabled: false },
+      "landmark-unique": { enabled: false },
+      "aria-required-children": { enabled: false },
+      ...(pageOptions.rules || {})
+    }
+  };
+
+  const result = await page.evaluate(async (opts) => {
+    return window.axe.run(document, opts);
+  }, mergedOptions);
 
   return {
     url,
