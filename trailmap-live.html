@@ -715,6 +715,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <script src="https://assets.northaventrail.org/js/northaven-utils.v1.js?v=2" defer></script>
 
+<!-- Error logging (required — trailmap-init blocks on window.TrailmapError) -->
+<script
+  defer
+  src="https://assets.northaventrail.org/js/trailmap-error.v1.js?v=2"
+  crossorigin="anonymous">
+</script>
+
 <!-- POI Card (must load before trailmap-ui) -->
 <script
   defer
@@ -750,9 +757,16 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   crossorigin="anonymous">
 </script>
 
+<!-- Trail Listing -->
+<script
+  defer
+  src="https://assets.northaventrail.org/js/trailmap-listing.v1.js?v=2"
+  crossorigin="anonymous">
+</script>
+
 <!-- Trail Map Core -->
-<script 
-  defer 
+<script
+  defer
   src="https://assets.northaventrail.org/js/trailmap-init.v1.js?v=2"
   crossorigin="anonymous">
 </script>
