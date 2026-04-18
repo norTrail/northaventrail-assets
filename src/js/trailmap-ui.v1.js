@@ -342,9 +342,11 @@ function wireCustomSearchUI_() {
     const query = (q || "").trim().toLowerCase();
     if (!query) return SEARCH_INDEX.slice(0, SEARCH_MAX_OPTIONS);
 
+    const tokens = query.split(/\s+/).filter(Boolean);
+
     const out = [];
     for (const item of SEARCH_INDEX) {
-      if (item.haystackLower.includes(query)) {
+      if (tokens.every(t => item.haystackLower.includes(t))) {
         out.push(item);
         if (out.length >= SEARCH_MAX_OPTIONS) break;
       }
