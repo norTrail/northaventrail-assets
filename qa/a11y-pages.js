@@ -52,18 +52,23 @@ async function runAxe(page, url) {
 
   const pageOptions = PAGE_AXE_OPTIONS[url] || {};
 
-  const result = await page.evaluate(async (extraOptions) => {
-    return window.axe.run(document, Object.assign({
-      rules: {
-        // These pages inherit duplicate landmark structure from the host shell,
-        // and some dynamic search/map widgets expose transient container roles
-        // before their child options mount. Keep CI focused on asset-owned regressions.
-        region: { enabled: false },
-        "landmark-unique": { enabled: false },
-        "aria-required-children": { enabled: false }
-      }
-    }, extraOptions));
-  }, pageOptions);
+  // Deep-merge rules so page-specific overrides extend rather than overwrite the base set.
+  const mergedOptions = {
+    ...pageOptions,
+    rules: {
+      // These pages inherit duplicate landmark structure from the host shell,
+      // and some dynamic search/map widgets expose transient container roles
+      // before their child options mount. Keep CI focused on asset-owned regressions.
+      region: { enabled: false },
+      "landmark-unique": { enabled: false },
+      "aria-required-children": { enabled: false },
+      ...(pageOptions.rules || {})
+    }
+  };
+
+  const result = await page.evaluate(async (opts) => {
+    return window.axe.run(document, opts);
+  }, mergedOptions);
 
   return {
     url,
