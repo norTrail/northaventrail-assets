@@ -10,6 +10,7 @@
   const SHEET_BODY_ID     = 'nc-sheet-body';
   const GOOGLE_MAP_URL    = 'https://www.google.com/maps/search/?api=1&query=';
   const APPLE_MAP_URL     = 'https://maps.apple.com/?q=';
+  const PEEK_HEIGHT       = 36; // px of sheet visible in peek (handle bar only)
 
   const AMENITY_LABELS = {
     'water-human':         'Drinking Water',
@@ -40,14 +41,47 @@
       .replace(/"/g, '&quot;');
   }
 
-  function resolveImage(p, td) {
+  function resolveImage(p, td, size) {
     const u = window.NorthavenUtils;
     if (!u) return '';
+    const sz = size || 200;
     return u.normalizeSquarespaceAssetUrl(p.u)
-        || u.driveThumbFromId(p.m, 200)
-        || u.driveThumbFromId(td?.m, 200)
+        || u.driveThumbFromId(p.m, sz)
+        || u.driveThumbFromId(td?.m, sz)
         || u.normalizeSquarespaceAssetUrl(td?.u)
         || '';
+  }
+
+  // ── Lightbox ──────────────────────────────────────────────────
+
+  let _lightbox = null;
+
+  function openLightbox(src) {
+    if (_lightbox) { _lightbox.remove(); _lightbox = null; }
+
+    const el = document.createElement('div');
+    el.className = 'nc-lightbox';
+    el.innerHTML = `
+      <img class="nc-lightbox-img" src="${esc(src)}" alt="">
+      <button class="nc-lightbox-close" aria-label="Close">&#x2715;</button>`;
+
+    el.addEventListener('click', (e) => {
+      if (!e.target.closest('.nc-lightbox-img')) closeLightbox();
+    });
+    document.addEventListener('keydown', _lbKeydown);
+    document.body.appendChild(el);
+    _lightbox = el;
+  }
+
+  function closeLightbox() {
+    if (!_lightbox) return;
+    _lightbox.remove();
+    _lightbox = null;
+    document.removeEventListener('keydown', _lbKeydown);
+  }
+
+  function _lbKeydown(e) {
+    if (e.key === 'Escape') closeLightbox();
   }
 
   // ── Card HTML ─────────────────────────────────────────────────
@@ -74,15 +108,16 @@
     const coords = feature.geometry?.coordinates;
     const lat = coords?.[1];
     const lng = coords?.[0];
-    const mapQuery  = lat && lng ? `${lat},${lng}` : '';
+    const mapQuery   = lat && lng ? `${lat},${lng}` : '';
     const googleHref = mapQuery ? esc(GOOGLE_MAP_URL + mapQuery) : '';
     const appleHref  = mapQuery ? esc(APPLE_MAP_URL  + mapQuery) : '';
 
-    const imgUrl = resolveImage(p, td);
+    const imgUrl      = resolveImage(p, td, 200);
+    const imgHiresUrl = resolveImage(p, td, 1200);
 
-    // Thumbnail (left of header)
+    // Thumbnail — data-hires triggers lightbox on click
     const thumbHtml = imgUrl ? `
-      <div class="nc-thumb-wrap">
+      <div class="nc-thumb-wrap"${imgHiresUrl ? ` data-hires="${esc(imgHiresUrl)}"` : ''}>
         <img class="nc-thumb" src="${esc(imgUrl)}" alt="" aria-hidden="true"
              width="72" height="72" loading="lazy"
              onerror="this.closest('.nc-thumb-wrap').remove()">
@@ -146,12 +181,33 @@
 </div>`;
   }
 
-  // ── Bottom sheet ──────────────────────────────────────────────
+  // ── Bottom sheet state machine ────────────────────────────────
+  // States: 'hidden' | 'peek' | 'open'
+  // Transforms managed via inline style so drag feels instantaneous.
 
-  let _sheetEventsWired = false;
+  let _sheetState = 'hidden';
+  let _dragData   = null; // { startY, startTime, startPx }
+
+  function _sheetEl() {
+    return document.getElementById(SHEET_ID);
+  }
+
+  function _stateToY(state, h) {
+    if (state === 'open') return 0;
+    if (state === 'peek') return h - PEEK_HEIGHT;
+    return h * 1.1; // hidden — fully below screen
+  }
+
+  function _animateTo(state) {
+    const el = _sheetEl();
+    if (!el) return;
+    el.style.transition = 'transform 220ms ease';
+    el.style.transform  = `translateY(${_stateToY(state, el.offsetHeight)}px)`;
+    _sheetState = state;
+  }
 
   function ensureSheet() {
-    let el = document.getElementById(SHEET_ID);
+    let el = _sheetEl();
     if (el) return el;
 
     el = document.createElement('div');
@@ -167,14 +223,65 @@
       <div id="${SHEET_BODY_ID}" class="nc-sheet-body"></div>`;
     document.body.appendChild(el);
 
-    // Event delegation — wired once on the sheet element
+    // Start fully off-screen
+    el.style.transition = 'none';
+    el.style.transform  = 'translateY(110%)';
+
+    // ── Click delegation ──────────────────────────────────────
     el.addEventListener('click', (e) => {
-      if (e.target.closest('.nc-close-btn'))  { hide();                    return; }
-      if (e.target.closest('.nc-share-btn'))  { _opts?.onShare?.();        return; }
+      const tw = e.target.closest('.nc-thumb-wrap[data-hires]');
+      if (tw)                                  { openLightbox(tw.dataset.hires); return; }
+      if (e.target.closest('.nc-close-btn'))   { hide();                         return; }
+      if (e.target.closest('.nc-share-btn'))   { _opts?.onShare?.();             return; }
     });
 
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && el.classList.contains('nc-sheet--open')) hide();
+      if (e.key === 'Escape' && _sheetState !== 'hidden') hide();
+    });
+
+    // ── Drag to peek ↔ open ↔ dismiss ────────────────────────
+    el.addEventListener('touchstart', (e) => {
+      // When open, only begin drag from the handle row to avoid blocking body scroll
+      const onHandle = !!e.target.closest('.nc-sheet-handle-row');
+      if (_sheetState === 'open' && !onHandle) return;
+      _dragData = {
+        startY:  e.touches[0].clientY,
+        startTime: Date.now(),
+        startPx: _stateToY(_sheetState, el.offsetHeight),
+      };
+    }, { passive: true });
+
+    el.addEventListener('touchmove', (e) => {
+      if (!_dragData) return;
+      e.preventDefault();
+      const dy   = e.touches[0].clientY - _dragData.startY;
+      const newY = Math.max(0, _dragData.startPx + dy);
+      el.style.transition = 'none';
+      el.style.transform  = `translateY(${newY}px)`;
+    }, { passive: false });
+
+    el.addEventListener('touchend', (e) => {
+      if (!_dragData) return;
+      const dy  = e.changedTouches[0].clientY - _dragData.startY;
+      const vel = dy / Math.max(1, Date.now() - _dragData.startTime); // px/ms, + = downward
+      _dragData = null;
+
+      let target;
+      if (vel > 0.4 || dy > el.offsetHeight * 0.25) {
+        // Swiped / dragged down
+        target = _sheetState === 'open' ? 'peek' : 'hidden';
+      } else if (vel < -0.4 || dy < -60) {
+        // Swiped / dragged up
+        target = 'open';
+      } else {
+        target = _sheetState; // snap back
+      }
+
+      _animateTo(target);
+      if (target === 'hidden') {
+        if (!_silentHide) _opts?.onClose?.();
+        _opts = null;
+      }
     });
 
     return el;
@@ -183,12 +290,17 @@
   function showSheet(html) {
     const sheet = ensureSheet();
     document.getElementById(SHEET_BODY_ID).innerHTML = html;
-    sheet.classList.add('nc-sheet--open');
-    sheet.querySelector('.nc-name')?.focus?.();
+
+    // Jump to below-screen position without animation, then animate to peek
+    sheet.style.transition = 'none';
+    sheet.style.transform  = `translateY(${sheet.offsetHeight * 1.1}px)`;
+    sheet.offsetHeight; // force reflow so next transition fires
+    _animateTo('peek');
   }
 
   function hideSheet() {
-    document.getElementById(SHEET_ID)?.classList.remove('nc-sheet--open');
+    if (_sheetState === 'hidden') return;
+    _animateTo('hidden');
   }
 
   // ── State ─────────────────────────────────────────────────────
@@ -214,8 +326,8 @@
       if (!coords) return;
 
       _popup = new mapboxgl.Popup({
-        closeButton:   false,
-        closeOnClick:  false,
+        closeButton:    false,
+        closeOnClick:   false,
         focusAfterOpen: false,
         offset:   8,
         maxWidth: '360px',
@@ -227,8 +339,10 @@
       // Event delegation on popup element
       const popupEl = _popup.getElement();
       popupEl?.addEventListener('click', (e) => {
-        if (e.target.closest('.nc-close-btn')) { hide(); return; }
-        if (e.target.closest('.nc-share-btn')) { _opts?.onShare?.(); }
+        const tw = e.target.closest('.nc-thumb-wrap[data-hires]');
+        if (tw)                                { openLightbox(tw.dataset.hires); return; }
+        if (e.target.closest('.nc-close-btn')) { hide();                         return; }
+        if (e.target.closest('.nc-share-btn')) { _opts?.onShare?.();             return; }
       });
 
       _popup.on('close', () => {

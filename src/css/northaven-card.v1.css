@@ -22,8 +22,13 @@
   flex-direction: column;
 }
 
+/* JS manages transforms via inline style; these classes are CSS-only fallbacks */
 .nc-sheet--open {
   transform: translateY(0);
+}
+
+.nc-sheet--peek {
+  transform: translateY(calc(100% - 36px));
 }
 
 .nc-sheet-handle-row {
@@ -31,6 +36,7 @@
   justify-content: center;
   padding: 10px 0 2px;
   flex-shrink: 0;
+  touch-action: none;
 }
 
 .nc-sheet-handle {
@@ -68,6 +74,10 @@
 
 .nc-thumb-wrap {
   flex-shrink: 0;
+}
+
+.nc-thumb-wrap[data-hires] {
+  cursor: zoom-in;
 }
 
 .nc-thumb {
@@ -279,6 +289,48 @@
   color: #fff;
 }
 
+/* ── Lightbox ────────────────────────────────────────────────── */
+
+.nc-lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nc-lightbox-img {
+  max-width: 92vw;
+  max-height: 88vh;
+  border-radius: 8px;
+  object-fit: contain;
+  display: block;
+}
+
+.nc-lightbox-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nc-lightbox-close:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
 /* ── Desktop: inside Mapbox popup ────────────────────────────── */
 
 @media (min-width: 768px) {
@@ -289,6 +341,20 @@
 
   .mapboxgl-popup .nc-card {
     min-width: 260px;
+    position: relative;
+  }
+
+  /* Room for the absolutely-positioned top-left buttons */
+  .mapboxgl-popup .nc-header {
+    padding-top: 44px;
+  }
+
+  /* Move share + close to top-left of the popup card */
+  .mapboxgl-popup .nc-header-btns {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    margin-top: 0;
   }
 
   .mapboxgl-popup .nc-name {
