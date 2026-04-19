@@ -34,9 +34,12 @@
 .nc-sheet-handle-row {
   display: flex;
   justify-content: center;
-  padding: 10px 0 2px;
+  padding: 10px 0 6px;
   flex-shrink: 0;
   touch-action: none;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .nc-sheet-handle {
@@ -44,6 +47,7 @@
   height: 4px;
   border-radius: 999px;
   background: #ddd;
+  pointer-events: none;
 }
 
 .nc-sheet-body {

@@ -308,7 +308,7 @@
 
   let _sheetState = 'hidden';
   let _peekY      = 0;
-  let _dragData   = null;  // { startY, startTime, startPx, h }
+  let _dragData   = null;  // { startY, startTime, startPx, h, pointerId }
 
   function _sheetEl() {
     return document.getElementById(SHEET_ID);
@@ -337,6 +337,59 @@
     return h + 30;
   }
 
+  function _dragPointY(e) {
+    if (typeof e.clientY === 'number') return e.clientY;
+    if (e.touches && e.touches[0]) return e.touches[0].clientY;
+    if (e.changedTouches && e.changedTouches[0]) return e.changedTouches[0].clientY;
+    return null;
+  }
+
+  function _beginDrag(el, clientY, pointerId) {
+    if (_sheetState === 'hidden' || typeof clientY !== 'number') return;
+    var h = el.offsetHeight;
+    _dragData = {
+      startY: clientY,
+      startTime: Date.now(),
+      startPx: _stateY(_sheetState, h),
+      h: h,
+      pointerId: pointerId,
+    };
+    el.style.transition = 'none';
+    el.style.transform = 'translateY(' + _dragData.startPx + 'px)';
+  }
+
+  function _moveDrag(el, clientY) {
+    if (!_dragData || typeof clientY !== 'number') return;
+    var dy = clientY - _dragData.startY;
+    var newY = Math.max(0, Math.min(_dragData.startPx + dy, _dragData.h + 30));
+    el.style.transform = 'translateY(' + newY + 'px)';
+  }
+
+  function _endDrag(el, clientY) {
+    if (!_dragData || typeof clientY !== 'number') return;
+    var dy  = clientY - _dragData.startY;
+    var vel = dy / Math.max(1, Date.now() - _dragData.startTime); // px/ms, +ve = down
+    var h   = _dragData.h;
+    _dragData = null;
+
+    var target;
+    if (vel > 0.4 || dy > h * 0.3) {
+      target = _sheetState === 'open' ? 'peek' : 'hidden';
+    } else if (vel < -0.4 || dy < -50) {
+      target = 'open';
+    } else {
+      target = _sheetState;
+    }
+
+    _animate(el, _stateY(target, h), '300ms cubic-bezier(0.32, 0.72, 0, 1)');
+    _sheetState = target;
+
+    if (target === 'hidden') {
+      if (!_silentHide && _opts && _opts.onClose) _opts.onClose();
+      _opts = null;
+    }
+  }
+
   function ensureSheet() {
     var el = _sheetEl();
     if (el) return el;
@@ -354,6 +407,8 @@
       '<div id="' + SHEET_BODY_ID + '" class="nc-sheet-body"></div>';
     document.body.appendChild(el);
 
+    var handleRow = el.querySelector('.nc-sheet-handle-row');
+
     el.style.transition = 'none';
     el.style.transform  = 'translateY(' + (window.innerHeight + 30) + 'px)';
 
@@ -370,57 +425,37 @@
     });
 
     // ── Drag to expand / collapse ─────────────────────────────
-    // Start drags from the handle only so taps on the hero, links,
-    // share button, and content stay reliable on touch devices.
-    el.addEventListener('touchstart', function(e) {
-      if (_sheetState === 'hidden') return;
-      var onHandle = !!e.target.closest('.nc-sheet-handle-row');
-      if (!onHandle) return;
-
-      e.preventDefault();
-      var h = el.offsetHeight;
-      _dragData = {
-        startY:    e.touches[0].clientY,
-        startTime: Date.now(),
-        startPx:   _stateY(_sheetState, h),
-        h:         h,
-      };
-      el.style.transition = 'none';
-      el.style.transform  = 'translateY(' + _dragData.startPx + 'px)';
-    }, { passive: false });
-
-    el.addEventListener('touchmove', function(e) {
+    function onPointerMove(e) {
       if (!_dragData) return;
+      if (_dragData.pointerId != null && e.pointerId !== _dragData.pointerId) return;
       e.preventDefault();
-      var dy   = e.touches[0].clientY - _dragData.startY;
-      var newY = Math.max(0, Math.min(_dragData.startPx + dy, _dragData.h + 30));
-      el.style.transform = 'translateY(' + newY + 'px)';
-    }, { passive: false });
+      _moveDrag(el, _dragPointY(e));
+    }
 
-    el.addEventListener('touchend', function(e) {
+    function onPointerEnd(e) {
       if (!_dragData) return;
-      var dy  = e.changedTouches[0].clientY - _dragData.startY;
-      var vel = dy / Math.max(1, Date.now() - _dragData.startTime); // px/ms, +ve = down
-      var h   = _dragData.h;
-      _dragData = null;
+      if (_dragData.pointerId != null && e.pointerId !== _dragData.pointerId) return;
+      e.preventDefault();
+      _endDrag(el, _dragPointY(e));
+    }
 
-      var target;
-      if (vel > 0.4 || dy > h * 0.3) {
-        target = _sheetState === 'open' ? 'peek' : 'hidden';
-      } else if (vel < -0.4 || dy < -50) {
-        target = 'open';
-      } else {
-        target = _sheetState;
-      }
+    if (handleRow) {
+      handleRow.addEventListener('pointerdown', function(e) {
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        e.preventDefault();
+        _beginDrag(el, _dragPointY(e), e.pointerId);
+      });
 
-      _animate(el, _stateY(target, h), '300ms cubic-bezier(0.32, 0.72, 0, 1)');
-      _sheetState = target;
+      handleRow.addEventListener('click', function() {
+        if (_dragData || _sheetState !== 'peek') return;
+        _animate(el, 0, '300ms cubic-bezier(0.32, 0.72, 0, 1)');
+        _sheetState = 'open';
+      });
+    }
 
-      if (target === 'hidden') {
-        if (!_silentHide && _opts && _opts.onClose) _opts.onClose();
-        _opts = null;
-      }
-    });
+    window.addEventListener('pointermove', onPointerMove, { passive: false });
+    window.addEventListener('pointerup', onPointerEnd, { passive: false });
+    window.addEventListener('pointercancel', onPointerEnd, { passive: false });
 
     return el;
   }
