@@ -300,6 +300,33 @@ function checkPopupDescRendersHtml() {
   return { checked: 1 };
 }
 
+// Regression guard for: trailmap-live.html was missing trailmap-error.v1.js and
+// trailmap-listing.v1.js. trailmap-init.v1.js polls for window.TrailmapError via
+// bootWhenReady(), so the map never initialized without it. (2026-04-18, 395864d)
+function checkTrailmapLiveHtmlScripts() {
+  const htmlPath = path.join(REPO_ROOT, "trailmap-live.html");
+  const content = fs.readFileSync(htmlPath, "utf8");
+
+  assert.ok(
+    /trailmap-error\.v1\.js/.test(content),
+    "trailmap-live.html must include trailmap-error.v1.js — trailmap-init polls for window.TrailmapError in bootWhenReady() and never initializes without it"
+  );
+
+  assert.ok(
+    /trailmap-listing\.v1\.js/.test(content),
+    "trailmap-live.html must include trailmap-listing.v1.js (required per CLAUDE.md file map)"
+  );
+
+  const errorPos = content.indexOf("trailmap-error.v1.js");
+  const initPos = content.indexOf("trailmap-init.v1.js");
+  assert.ok(
+    errorPos !== -1 && initPos !== -1 && errorPos < initPos,
+    "trailmap-live.html: trailmap-error.v1.js must appear before trailmap-init.v1.js — init polls for window.TrailmapError"
+  );
+
+  return { checked: 1 };
+}
+
 // Regression guard for: setActiveFeature_ used a hardcoded "loc" fallback instead of
 // DEFAULTS.locationParam, causing the URL parameter name to diverge from the canonical
 // value if DEFAULTS.locationParam was ever changed. Fix: add locationParam to DEFAULTS
@@ -338,6 +365,7 @@ function main() {
   const results = manifestNames.map(validateManifest);
 
   const logCheck = checkNoConsoleLogs();
+  const trailmapLiveHtmlCheck = checkTrailmapLiveHtmlScripts();
   const locationParamCheck = checkLocationParamConsistency();
   const lightboxEscapeCheck = checkLightboxEscapeCondition();
   const searchTokenCheck = checkSearchTokenization();
@@ -350,6 +378,7 @@ function main() {
     console.log(`- ${result.manifestName} (${result.checkedPayloads} payload file(s), version ${result.version})`);
   }
   console.log(`- no console.log in src/js (${logCheck.checked} file(s) checked)`);
+  console.log(`- trailmap-live.html includes trailmap-error + trailmap-listing before trailmap-init (${trailmapLiveHtmlCheck.checked} file(s) checked)`);
   console.log(`- LOCATION_PARM uses DEFAULTS.locationParam (${locationParamCheck.checked} file(s) checked)`);
   console.log(`- lightbox escape guard uses display !== 'none' (${lightboxEscapeCheck.checked} file(s) checked)`);
   console.log(`- search uses token splitting with .every() (${searchTokenCheck.checked} file(s) checked)`);
