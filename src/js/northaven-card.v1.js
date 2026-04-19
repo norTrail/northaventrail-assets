@@ -5,12 +5,17 @@
 (function () {
   'use strict';
 
-  const MOBILE_BREAKPOINT = 768;
-  const SHEET_ID          = 'nc-bottom-sheet';
-  const SHEET_BODY_ID     = 'nc-sheet-body';
-  const GOOGLE_MAP_URL    = 'https://www.google.com/maps/search/?api=1&query=';
-  const APPLE_MAP_URL     = 'https://maps.apple.com/?q=';
-  const PEEK_HEIGHT       = 36; // px of sheet visible in peek (handle bar only)
+  const MOBILE_BREAKPOINT  = 768;
+  const SHEET_ID           = 'nc-bottom-sheet';
+  const SHEET_BODY_ID      = 'nc-sheet-body';
+  const GOOGLE_MAP_URL     = 'https://www.google.com/maps/search/?api=1&query=';
+  const APPLE_MAP_URL      = 'https://maps.apple.com/?q=';
+  const PEEK_HEIGHT        = 36;   // px of sheet visible in peek state (handle bar only)
+
+  // Mapillary Graph API — client token, read-only
+  const MAPILLARY_TOKEN    = 'MLY|26456749190653210|c432ace1542e35cd80e00c3f15daccb8';
+  const MAPILLARY_API      = 'https://graph.mapillary.com/';
+  const MAPILLARY_VIEW     = 'https://www.mapillary.com/app/?pKey=';
 
   const AMENITY_LABELS = {
     'water-human':         'Drinking Water',
@@ -41,6 +46,8 @@
       .replace(/"/g, '&quot;');
   }
 
+  // Resolves the thumbnail/photo for a POI.
+  // Falls back to the type-level legend icon (i field) when no photo exists.
   function resolveImage(p, td, size) {
     const u = window.NorthavenUtils;
     if (!u) return '';
@@ -49,6 +56,7 @@
         || u.driveThumbFromId(p.m, sz)
         || u.driveThumbFromId(td?.m, sz)
         || u.normalizeSquarespaceAssetUrl(td?.u)
+        || u.normalizeSquarespaceAssetUrl(td?.i)   // legend icon as last resort
         || '';
   }
 
@@ -58,13 +66,11 @@
 
   function openLightbox(src) {
     if (_lightbox) { _lightbox.remove(); _lightbox = null; }
-
     const el = document.createElement('div');
     el.className = 'nc-lightbox';
     el.innerHTML = `
       <img class="nc-lightbox-img" src="${esc(src)}" alt="">
       <button class="nc-lightbox-close" aria-label="Close">&#x2715;</button>`;
-
     el.addEventListener('click', (e) => {
       if (!e.target.closest('.nc-lightbox-img')) closeLightbox();
     });
@@ -84,6 +90,37 @@
     if (e.key === 'Escape') closeLightbox();
   }
 
+  // ── Mapillary ─────────────────────────────────────────────────
+
+  function isValidMid(mid) {
+    const s = String(mid || '').trim();
+    return s && s !== 'NONE' && s !== 'TBD';
+  }
+
+  // After the card HTML is injected into the DOM, call this to lazily
+  // fetch the Mapillary thumbnail and reveal the hero slot.
+  function loadMapillaryHero(mId, scope) {
+    const heroEl = scope?.querySelector('.nc-hero');
+    if (!heroEl) return;
+
+    const encodedToken = MAPILLARY_TOKEN.replace(/\|/g, '%7C');
+    const url = `${MAPILLARY_API}${mId}?fields=thumb_1024_url&access_token=${encodedToken}`;
+
+    fetch(url)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(data => {
+        const src = data?.thumb_1024_url;
+        if (!src) { heroEl.remove(); return; }
+        const img = heroEl.querySelector('.nc-hero-img');
+        if (img) {
+          img.src = src;
+          img.onload  = () => heroEl.classList.add('nc-hero--loaded');
+          img.onerror = () => heroEl.remove();
+        }
+      })
+      .catch(() => heroEl.remove());
+  }
+
   // ── Card HTML ─────────────────────────────────────────────────
 
   function buildHTML(feature, poiData) {
@@ -91,16 +128,17 @@
     const td = poiData?.defs?.types?.[p.t] || null;
     const u  = window.NorthavenUtils;
 
-    const name     = esc(String(p.l  || td?.l  || '').trim());
-    const near     = esc(String(p.r  || '').trim());
-    const hours    = esc(String(p.h  || td?.h  || '').trim());
-    const category = esc(String(p.b  || td?.l  || '').trim());
-    const desc     =     String(p.d  || td?.d  || '').trim();
-    const linkText = esc(String(p.e  || td?.e  || '').trim());
-    const linkUrl  =     String(p.f  || td?.f  || '').trim();
-    const ctaLabel = esc(String(p.cta_label || '').trim());
-    const ctaUrl   =     String(p.cta_url   || '').trim();
-    const amenities =    String(p.am || td?.am || '').trim();
+    const name      = esc(String(p.l   || td?.l   || '').trim());
+    const near      = esc(String(p.r   || '').trim());
+    const hours     = esc(String(p.hr  || td?.hr  || '').trim());   // hr = hours (not h)
+    const category  = esc(String(p.b   || td?.l   || '').trim());
+    const desc      =     String(p.d   || td?.d   || '').trim();
+    const linkText  = esc(String(p.e   || td?.e   || '').trim());
+    const linkUrl   =     String(p.f   || td?.f   || '').trim();
+    const ctaLabel  = esc(String(p.cta_label || '').trim());
+    const ctaUrl    =     String(p.cta_url   || '').trim();
+    const amenities =     String(p.am  || td?.am  || '').trim();
+    const mId       =     String(p.m_id || '').trim();
 
     const resolvedLink = u ? u.normalizeAbsUrl(linkUrl) : linkUrl;
     const resolvedCta  = u ? u.normalizeAbsUrl(ctaUrl)  : ctaUrl;
@@ -115,7 +153,16 @@
     const imgUrl      = resolveImage(p, td, 200);
     const imgHiresUrl = resolveImage(p, td, 1200);
 
-    // Thumbnail — data-hires triggers lightbox on click
+    // ── Mapillary hero (full-width, lazy-loaded) ──────────────
+    const heroHtml = isValidMid(mId) ? `
+  <div class="nc-hero">
+    <a class="nc-hero-link" href="${esc(MAPILLARY_VIEW + mId)}" target="_blank" rel="noopener noreferrer" aria-label="View street-level photo on Mapillary">
+      <img class="nc-hero-img" alt="Street-level photo">
+    </a>
+    <span class="nc-hero-badge">Street View</span>
+  </div>` : '';
+
+    // ── Thumbnail (left of header) ────────────────────────────
     const thumbHtml = imgUrl ? `
       <div class="nc-thumb-wrap"${imgHiresUrl ? ` data-hires="${esc(imgHiresUrl)}"` : ''}>
         <img class="nc-thumb" src="${esc(imgUrl)}" alt="" aria-hidden="true"
@@ -123,7 +170,7 @@
              onerror="this.closest('.nc-thumb-wrap').remove()">
       </div>` : '';
 
-    // Amenity pills
+    // ── Amenity pills ─────────────────────────────────────────
     const pills = amenities
       .split(/[\s,]+/)
       .filter(t => t && AMENITY_LABELS[t])
@@ -131,7 +178,7 @@
       .join('');
     const amenityHtml = pills ? `<div class="nc-amenities">${pills}</div>` : '';
 
-    // Footer action buttons
+    // ── Footer action buttons ─────────────────────────────────
     const footerBtns = [
       googleHref && `<a class="nc-action" href="${googleHref}" target="_blank" rel="noopener noreferrer" aria-label="Open in Google Maps">
         <svg class="nc-action-icon" aria-hidden="true"><use href="#google-logo"></use></svg>
@@ -146,6 +193,8 @@
 
     return `
 <div class="nc-card">
+
+  ${heroHtml}
 
   <div class="nc-header">
     ${thumbHtml}
@@ -169,9 +218,9 @@
   <hr class="nc-divider">
 
   <div class="nc-body">
-    ${category    ? `<span class="nc-badge">${category}</span>`           : ''}
+    ${category    ? `<span class="nc-badge">${category}</span>`            : ''}
     ${amenityHtml}
-    ${desc        ? `<div class="nc-desc">${desc}</div>`                  : ''}
+    ${desc        ? `<div class="nc-desc">${desc}</div>`                   : ''}
     ${resolvedLink && linkText
         ? `<a class="nc-link" href="${esc(resolvedLink)}">${linkText}</a>` : ''}
   </div>
@@ -183,10 +232,11 @@
 
   // ── Bottom sheet state machine ────────────────────────────────
   // States: 'hidden' | 'peek' | 'open'
-  // Transforms managed via inline style so drag feels instantaneous.
+  // Peek shows only the drag handle bar (PEEK_HEIGHT px).
+  // Drag up from handle expands to open; drag down collapses back or dismisses.
 
   let _sheetState = 'hidden';
-  let _dragData   = null; // { startY, startTime, startPx }
+  let _dragData   = null; // { startY, startTime, startPx, h }
 
   function _sheetEl() {
     return document.getElementById(SHEET_ID);
@@ -198,11 +248,18 @@
     return h * 1.1; // hidden — fully below screen
   }
 
-  function _animateTo(state) {
+  // Apply a state using CSS classes so the browser's CSS transition fires.
+  // Called after drag ends or when programmatically changing state.
+  function _applyState(state) {
     const el = _sheetEl();
     if (!el) return;
-    el.style.transition = 'transform 220ms ease';
-    el.style.transform  = `translateY(${_stateToY(state, el.offsetHeight)}px)`;
+    // Clear any inline transform left from dragging so CSS transition
+    // can animate from the current computed position to the target class position.
+    el.style.transform  = '';
+    el.style.transition = '';
+    el.classList.remove('nc-sheet--open', 'nc-sheet--peek');
+    if (state === 'peek') el.classList.add('nc-sheet--peek');
+    if (state === 'open') el.classList.add('nc-sheet--open');
     _sheetState = state;
   }
 
@@ -223,10 +280,6 @@
       <div id="${SHEET_BODY_ID}" class="nc-sheet-body"></div>`;
     document.body.appendChild(el);
 
-    // Start fully off-screen
-    el.style.transition = 'none';
-    el.style.transform  = 'translateY(110%)';
-
     // ── Click delegation ──────────────────────────────────────
     el.addEventListener('click', (e) => {
       const tw = e.target.closest('.nc-thumb-wrap[data-hires]');
@@ -239,45 +292,54 @@
       if (e.key === 'Escape' && _sheetState !== 'hidden') hide();
     });
 
-    // ── Drag to peek ↔ open ↔ dismiss ────────────────────────
+    // ── Drag to expand / collapse ─────────────────────────────
+    // Non-passive so we can preventDefault() from touchstart onward,
+    // preventing iOS Safari from committing the gesture as a page scroll.
     el.addEventListener('touchstart', (e) => {
-      // When open, only begin drag from the handle row to avoid blocking body scroll
       const onHandle = !!e.target.closest('.nc-sheet-handle-row');
+      // When fully open, only drag from the handle to keep body scroll working.
       if (_sheetState === 'open' && !onHandle) return;
+
+      e.preventDefault(); // take ownership of this touch sequence
+      const h = el.offsetHeight;
       _dragData = {
-        startY:  e.touches[0].clientY,
+        startY:    e.touches[0].clientY,
         startTime: Date.now(),
-        startPx: _stateToY(_sheetState, el.offsetHeight),
+        startPx:   _stateToY(_sheetState, h),
+        h,
       };
-    }, { passive: true });
+      // Switch to inline transform so drag updates are instant (no transition).
+      el.style.transition = 'none';
+      el.style.transform  = `translateY(${_dragData.startPx}px)`;
+      el.classList.remove('nc-sheet--open', 'nc-sheet--peek');
+    }, { passive: false });
 
     el.addEventListener('touchmove', (e) => {
       if (!_dragData) return;
       e.preventDefault();
       const dy   = e.touches[0].clientY - _dragData.startY;
-      const newY = Math.max(0, _dragData.startPx + dy);
-      el.style.transition = 'none';
-      el.style.transform  = `translateY(${newY}px)`;
+      const newY = Math.max(0, Math.min(_dragData.startPx + dy, _dragData.h * 1.1));
+      el.style.transform = `translateY(${newY}px)`;
     }, { passive: false });
 
     el.addEventListener('touchend', (e) => {
       if (!_dragData) return;
       const dy  = e.changedTouches[0].clientY - _dragData.startY;
-      const vel = dy / Math.max(1, Date.now() - _dragData.startTime); // px/ms, + = downward
+      const vel = dy / Math.max(1, Date.now() - _dragData.startTime); // px/ms, + = down
+      const { h } = _dragData;
       _dragData = null;
 
       let target;
-      if (vel > 0.4 || dy > el.offsetHeight * 0.25) {
-        // Swiped / dragged down
+      if (vel > 0.4 || dy > h * 0.3) {
         target = _sheetState === 'open' ? 'peek' : 'hidden';
       } else if (vel < -0.4 || dy < -60) {
-        // Swiped / dragged up
         target = 'open';
       } else {
         target = _sheetState; // snap back
       }
 
-      _animateTo(target);
+      _applyState(target);
+
       if (target === 'hidden') {
         if (!_silentHide) _opts?.onClose?.();
         _opts = null;
@@ -290,17 +352,23 @@
   function showSheet(html) {
     const sheet = ensureSheet();
     document.getElementById(SHEET_BODY_ID).innerHTML = html;
+    // Ensure we start from the hidden state (class-driven), then
+    // let the browser paint one frame before animating to peek.
+    sheet.style.transform  = '';
+    sheet.style.transition = '';
+    sheet.classList.remove('nc-sheet--open', 'nc-sheet--peek');
+    _sheetState = 'hidden';
 
-    // Jump to below-screen position without animation, then animate to peek
-    sheet.style.transition = 'none';
-    sheet.style.transform  = `translateY(${sheet.offsetHeight * 1.1}px)`;
-    sheet.offsetHeight; // force reflow so next transition fires
-    _animateTo('peek');
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        _applyState('peek');
+      });
+    });
   }
 
   function hideSheet() {
     if (_sheetState === 'hidden') return;
-    _animateTo('hidden');
+    _applyState('hidden');
   }
 
   // ── State ─────────────────────────────────────────────────────
@@ -313,11 +381,17 @@
 
   function show(feature, poiData, map, opts) {
     _opts = opts || {};
+    const p   = feature.properties || {};
+    const mId = String(p.m_id || '').trim();
     const html = buildHTML(feature, poiData);
 
     if (isMobile()) {
       if (_popup) { _popup.remove(); _popup = null; }
       showSheet(html);
+      // Load Mapillary hero after content is in DOM
+      if (isValidMid(mId)) {
+        loadMapillaryHero(mId, document.getElementById(SHEET_BODY_ID));
+      }
     } else {
       hideSheet();
       if (_popup) { _popup.remove(); _popup = null; }
@@ -336,8 +410,9 @@
       .setHTML(html)
       .addTo(map);
 
-      // Event delegation on popup element
       const popupEl = _popup.getElement();
+
+      // Event delegation on popup element
       popupEl?.addEventListener('click', (e) => {
         const tw = e.target.closest('.nc-thumb-wrap[data-hires]');
         if (tw)                                { openLightbox(tw.dataset.hires); return; }
@@ -349,6 +424,11 @@
         _popup = null;
         if (!_silentHide) _opts?.onClose?.();
       });
+
+      // Load Mapillary hero into the popup
+      if (isValidMid(mId) && popupEl) {
+        loadMapillaryHero(mId, popupEl);
+      }
 
       map.easeTo({
         center:  coords,
