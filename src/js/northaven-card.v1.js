@@ -15,6 +15,19 @@
   const MAPILLARY_TOKEN    = 'MLY|26456749190653210|c432ace1542e35cd80e00c3f15daccb8';
   const MAPILLARY_API      = 'https://graph.mapillary.com/';
   const MAPILLARY_VIEW     = 'https://www.mapillary.com/app/?pKey=';
+  const INVALID_MIDS       = new Set([
+    'NONE',
+    'NULL',
+    'N/A',
+    'NA',
+    'NO',
+    'NOID',
+    'NOTAVAILABLE',
+    'NOT_APPLICABLE',
+    'TBD',
+    'UNKNOWN',
+    'UNSET',
+  ]);
 
   const AMENITY_LABELS = {
     'water-human':         'Drinking Water',
@@ -88,9 +101,31 @@
 
   // ── Mapillary ─────────────────────────────────────────────────
 
+  let _mapillaryLoadToken = 0;
+
+  function normalizeMid(mid) {
+    const raw = String(mid || '').trim().replace(/^['"]+|['"]+$/g, '');
+    if (!raw) return '';
+
+    const pKeyMatch = raw.match(/[?&]pKey=([^&#]+)/i);
+    const normalized = pKeyMatch ? decodeURIComponent(pKeyMatch[1]) : raw;
+    const upper = normalized.replace(/\s+/g, '').toUpperCase();
+
+    if (!normalized || INVALID_MIDS.has(upper)) return '';
+    if (!/^\d+$/.test(normalized)) return '';
+    return normalized;
+  }
+
   function isValidMid(mid) {
-    const s = String(mid || '').trim();
-    return s.length > 0 && s !== 'NONE' && s !== 'TBD';
+    return Boolean(normalizeMid(mid));
+  }
+
+  function syncPeekStateIfNeeded(scope) {
+    const sheet = _sheetEl();
+    if (!sheet || _sheetState !== 'peek' || !scope || !sheet.contains(scope)) return;
+    _peekY = _computePeekY(sheet);
+    sheet.style.transition = 'transform 180ms ease';
+    sheet.style.transform = 'translateY(' + _peekY + 'px)';
   }
 
   // Lazily fetch the Mapillary thumbnail URL and reveal the hero slot.
@@ -98,21 +133,43 @@
   function loadMapillaryHero(mId, scope) {
     const heroEl = scope && scope.querySelector('.nc-hero');
     if (!heroEl) return;
+    const normalizedMid = normalizeMid(mId);
+    if (!normalizedMid) {
+      heroEl.remove();
+      syncPeekStateIfNeeded(scope);
+      return;
+    }
+
+    const loadToken = ++_mapillaryLoadToken;
+    const heroLink = heroEl.querySelector('.nc-hero-link');
+    if (heroLink) heroLink.href = MAPILLARY_VIEW + normalizedMid;
 
     const tok = MAPILLARY_TOKEN.replace(/\|/g, '%7C');
-    fetch(`${MAPILLARY_API}${encodeURIComponent(mId)}?fields=thumb_1024_url&access_token=${tok}`)
+    fetch(`${MAPILLARY_API}${encodeURIComponent(normalizedMid)}?fields=thumb_1024_url&access_token=${tok}`)
       .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
       .then(data => {
+        if (loadToken !== _mapillaryLoadToken || !heroEl.isConnected) return;
         const src = data && data.thumb_1024_url;
-        if (!src) { heroEl.remove(); return; }
+        if (!src) {
+          heroEl.remove();
+          syncPeekStateIfNeeded(scope);
+          return;
+        }
         const img = heroEl.querySelector('.nc-hero-img');
         if (img) {
           img.src     = src;
           img.onload  = () => heroEl.classList.add('nc-hero--loaded');
-          img.onerror = () => heroEl.remove();
+          img.onerror = () => {
+            heroEl.remove();
+            syncPeekStateIfNeeded(scope);
+          };
         }
       })
-      .catch(() => heroEl.remove());
+      .catch(() => {
+        if (loadToken !== _mapillaryLoadToken || !heroEl.isConnected) return;
+        heroEl.remove();
+        syncPeekStateIfNeeded(scope);
+      });
   }
 
   // ── Card HTML ─────────────────────────────────────────────────
@@ -134,7 +191,7 @@
     const ctaLabel  = esc(String((p.cta_label) || '').trim());
     const ctaUrl    =     String((p.cta_url)   || '').trim();
     const amenities =     String(p.am  || (td && td.am) || '').trim();
-    const mId       =     String(p.m_id || '').trim();
+    const mId       =     normalizeMid(p.m_id);
 
     // Legend icon — shown next to the category badge (not as thumbnail)
     const iconRaw   = td && td.i ? String(td.i).trim() : '';
@@ -154,7 +211,7 @@
     const imgHiresUrl = resolveImage(p, td, 1200);
 
     // ── Mapillary hero ────────────────────────────────────────
-    const heroHtml = isValidMid(mId) ? `
+    const heroHtml = mId ? `
   <div class="nc-hero">
     <a class="nc-hero-link" href="${esc(MAPILLARY_VIEW + mId)}" target="_blank" rel="noopener noreferrer" aria-label="View street-level photo on Mapillary">
       <img class="nc-hero-img" alt="Street-level photo">
@@ -313,13 +370,12 @@
     });
 
     // ── Drag to expand / collapse ─────────────────────────────
-    // non-passive touchstart lets us preventDefault immediately,
-    // before iOS Safari can commit the gesture as a page scroll.
+    // Start drags from the handle only so taps on the hero, links,
+    // share button, and content stay reliable on touch devices.
     el.addEventListener('touchstart', function(e) {
       if (_sheetState === 'hidden') return;
       var onHandle = !!e.target.closest('.nc-sheet-handle-row');
-      // When fully open, only drag from the handle (body should scroll freely).
-      if (_sheetState === 'open' && !onHandle) return;
+      if (!onHandle) return;
 
       e.preventDefault();
       var h = el.offsetHeight;
@@ -413,7 +469,7 @@
   function show(feature, poiData, map, opts) {
     _opts = opts || {};
     var p   = feature.properties || {};
-    var mId = String(p.m_id || '').trim();
+    var mId = normalizeMid(p.m_id);
     var html = buildHTML(feature, poiData);
 
     if (isMobile()) {

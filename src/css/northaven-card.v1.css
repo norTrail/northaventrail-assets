@@ -113,7 +113,7 @@
 
 .nc-header-btns {
   display: flex;
-  gap: 2px;
+  gap: 4px;
   flex-shrink: 0;
   margin-top: -4px;
 }
@@ -122,8 +122,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
   border: 0;
   background: transparent;
   border-radius: 50%;
@@ -175,6 +175,20 @@
   flex: 1;
 }
 
+.nc-category-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.nc-category-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
 .nc-badge {
   display: inline-block;
   font-size: 11px;
@@ -185,7 +199,7 @@
   padding: 2px 8px;
   text-transform: uppercase;
   letter-spacing: 0.4px;
-  margin-bottom: 8px;
+  margin-bottom: 0;
 }
 
 .nc-amenities {
@@ -403,6 +417,11 @@
 
   .mapboxgl-popup .nc-hero {
     height: 160px;
+  }
+
+  .mapboxgl-popup .nc-btn {
+    width: 32px;
+    height: 32px;
   }
 
   .mapboxgl-popup .nc-name {
