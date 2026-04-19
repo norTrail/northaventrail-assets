@@ -10,7 +10,6 @@
   const SHEET_BODY_ID      = 'nc-sheet-body';
   const GOOGLE_MAP_URL     = 'https://www.google.com/maps/search/?api=1&query=';
   const APPLE_MAP_URL      = 'https://maps.apple.com/?q=';
-  const PEEK_HEIGHT        = 36;   // px of sheet visible in peek state (handle bar only)
 
   // Mapillary Graph API — client token, read-only
   const MAPILLARY_TOKEN    = 'MLY|26456749190653210|c432ace1542e35cd80e00c3f15daccb8';
@@ -46,8 +45,6 @@
       .replace(/"/g, '&quot;');
   }
 
-  // Resolves the thumbnail/photo for a POI.
-  // Falls back to the type-level legend icon (i field) when no photo exists.
   function resolveImage(p, td, size) {
     const u = window.NorthavenUtils;
     if (!u) return '';
@@ -56,7 +53,6 @@
         || u.driveThumbFromId(p.m, sz)
         || u.driveThumbFromId(td?.m, sz)
         || u.normalizeSquarespaceAssetUrl(td?.u)
-        || u.normalizeSquarespaceAssetUrl(td?.i)   // legend icon as last resort
         || '';
   }
 
@@ -94,26 +90,24 @@
 
   function isValidMid(mid) {
     const s = String(mid || '').trim();
-    return s && s !== 'NONE' && s !== 'TBD';
+    return s.length > 0 && s !== 'NONE' && s !== 'TBD';
   }
 
-  // After the card HTML is injected into the DOM, call this to lazily
-  // fetch the Mapillary thumbnail and reveal the hero slot.
+  // Lazily fetch the Mapillary thumbnail URL and reveal the hero slot.
+  // Called after card HTML is in the DOM.
   function loadMapillaryHero(mId, scope) {
-    const heroEl = scope?.querySelector('.nc-hero');
+    const heroEl = scope && scope.querySelector('.nc-hero');
     if (!heroEl) return;
 
-    const encodedToken = MAPILLARY_TOKEN.replace(/\|/g, '%7C');
-    const url = `${MAPILLARY_API}${mId}?fields=thumb_1024_url&access_token=${encodedToken}`;
-
-    fetch(url)
-      .then(r => r.ok ? r.json() : Promise.reject())
+    const tok = MAPILLARY_TOKEN.replace(/\|/g, '%7C');
+    fetch(`${MAPILLARY_API}${encodeURIComponent(mId)}?fields=thumb_1024_url&access_token=${tok}`)
+      .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
       .then(data => {
-        const src = data?.thumb_1024_url;
+        const src = data && data.thumb_1024_url;
         if (!src) { heroEl.remove(); return; }
         const img = heroEl.querySelector('.nc-hero-img');
         if (img) {
-          img.src = src;
+          img.src     = src;
           img.onload  = () => heroEl.classList.add('nc-hero--loaded');
           img.onerror = () => heroEl.remove();
         }
@@ -125,27 +119,33 @@
 
   function buildHTML(feature, poiData) {
     const p  = feature.properties || {};
-    const td = poiData?.defs?.types?.[p.t] || null;
+    const td = poiData && poiData.defs && poiData.defs.types && poiData.defs.types[p.t]
+             ? poiData.defs.types[p.t]
+             : null;
     const u  = window.NorthavenUtils;
 
-    const name      = esc(String(p.l   || td?.l   || '').trim());
+    const name      = esc(String(p.l   || (td && td.l)  || '').trim());
     const near      = esc(String(p.r   || '').trim());
-    const hours     = esc(String(p.hr  || td?.hr  || '').trim());   // hr = hours (not h)
-    const category  = esc(String(p.b   || td?.l   || '').trim());
-    const desc      =     String(p.d   || td?.d   || '').trim();
-    const linkText  = esc(String(p.e   || td?.e   || '').trim());
-    const linkUrl   =     String(p.f   || td?.f   || '').trim();
-    const ctaLabel  = esc(String(p.cta_label || '').trim());
-    const ctaUrl    =     String(p.cta_url   || '').trim();
-    const amenities =     String(p.am  || td?.am  || '').trim();
+    const hours     = esc(String(p.hr  || (td && td.hr) || '').trim());  // hr = hours
+    const category  = esc(String(p.b   || (td && td.l)  || '').trim());
+    const desc      =     String(p.d   || (td && td.d)  || '').trim();
+    const linkText  = esc(String(p.e   || (td && td.e)  || '').trim());
+    const linkUrl   =     String(p.f   || (td && td.f)  || '').trim();
+    const ctaLabel  = esc(String((p.cta_label) || '').trim());
+    const ctaUrl    =     String((p.cta_url)   || '').trim();
+    const amenities =     String(p.am  || (td && td.am) || '').trim();
     const mId       =     String(p.m_id || '').trim();
+
+    // Legend icon — shown next to the category badge (not as thumbnail)
+    const iconRaw   = td && td.i ? String(td.i).trim() : '';
+    const iconUrl   = iconRaw && u ? u.normalizeSquarespaceAssetUrl(iconRaw) : '';
 
     const resolvedLink = u ? u.normalizeAbsUrl(linkUrl) : linkUrl;
     const resolvedCta  = u ? u.normalizeAbsUrl(ctaUrl)  : ctaUrl;
 
-    const coords = feature.geometry?.coordinates;
-    const lat = coords?.[1];
-    const lng = coords?.[0];
+    const coords = feature.geometry && feature.geometry.coordinates;
+    const lat = coords && coords[1];
+    const lng = coords && coords[0];
     const mapQuery   = lat && lng ? `${lat},${lng}` : '';
     const googleHref = mapQuery ? esc(GOOGLE_MAP_URL + mapQuery) : '';
     const appleHref  = mapQuery ? esc(APPLE_MAP_URL  + mapQuery) : '';
@@ -153,7 +153,7 @@
     const imgUrl      = resolveImage(p, td, 200);
     const imgHiresUrl = resolveImage(p, td, 1200);
 
-    // ── Mapillary hero (full-width, lazy-loaded) ──────────────
+    // ── Mapillary hero ────────────────────────────────────────
     const heroHtml = isValidMid(mId) ? `
   <div class="nc-hero">
     <a class="nc-hero-link" href="${esc(MAPILLARY_VIEW + mId)}" target="_blank" rel="noopener noreferrer" aria-label="View street-level photo on Mapillary">
@@ -162,7 +162,7 @@
     <span class="nc-hero-badge">Street View</span>
   </div>` : '';
 
-    // ── Thumbnail (left of header) ────────────────────────────
+    // ── Thumbnail ─────────────────────────────────────────────
     const thumbHtml = imgUrl ? `
       <div class="nc-thumb-wrap"${imgHiresUrl ? ` data-hires="${esc(imgHiresUrl)}"` : ''}>
         <img class="nc-thumb" src="${esc(imgUrl)}" alt="" aria-hidden="true"
@@ -170,15 +170,22 @@
              onerror="this.closest('.nc-thumb-wrap').remove()">
       </div>` : '';
 
+    // ── Category row: legend icon + badge ─────────────────────
+    const categoryHtml = category ? `
+    <div class="nc-category-row">
+      ${iconUrl ? `<img class="nc-category-icon" src="${esc(iconUrl)}" alt="" aria-hidden="true" onerror="this.remove()">` : ''}
+      <span class="nc-badge">${category}</span>
+    </div>` : '';
+
     // ── Amenity pills ─────────────────────────────────────────
     const pills = amenities
       .split(/[\s,]+/)
-      .filter(t => t && AMENITY_LABELS[t])
-      .map(t => `<span class="nc-tag">${esc(AMENITY_LABELS[t])}</span>`)
+      .filter(function(t) { return t && AMENITY_LABELS[t]; })
+      .map(function(t)    { return `<span class="nc-tag">${esc(AMENITY_LABELS[t])}</span>`; })
       .join('');
     const amenityHtml = pills ? `<div class="nc-amenities">${pills}</div>` : '';
 
-    // ── Footer action buttons ─────────────────────────────────
+    // ── Footer actions ────────────────────────────────────────
     const footerBtns = [
       googleHref && `<a class="nc-action" href="${googleHref}" target="_blank" rel="noopener noreferrer" aria-label="Open in Google Maps">
         <svg class="nc-action-icon" aria-hidden="true"><use href="#google-logo"></use></svg>
@@ -218,7 +225,7 @@
   <hr class="nc-divider">
 
   <div class="nc-body">
-    ${category    ? `<span class="nc-badge">${category}</span>`            : ''}
+    ${categoryHtml}
     ${amenityHtml}
     ${desc        ? `<div class="nc-desc">${desc}</div>`                   : ''}
     ${resolvedLink && linkText
@@ -230,41 +237,51 @@
 </div>`;
   }
 
-  // ── Bottom sheet state machine ────────────────────────────────
+  // ── Bottom sheet ──────────────────────────────────────────────
+  //
   // States: 'hidden' | 'peek' | 'open'
-  // Peek shows only the drag handle bar (PEEK_HEIGHT px).
-  // Drag up from handle expands to open; drag down collapses back or dismisses.
+  //
+  // Peek shows the handle bar + hero (if present) + full header,
+  // stopping right at the .nc-divider — matching Google Maps' compact
+  // card style. _peekY is computed from the live DOM after each card
+  // is injected so it adapts to varying content heights.
+  //
+  // All transforms are managed via inline style so drag updates are
+  // immediate. The base .nc-sheet CSS provides the transition timing.
 
   let _sheetState = 'hidden';
-  let _dragData   = null; // { startY, startTime, startPx, h }
+  let _peekY      = 0;
+  let _dragData   = null;  // { startY, startTime, startPx, h }
 
   function _sheetEl() {
     return document.getElementById(SHEET_ID);
   }
 
-  function _stateToY(state, h) {
-    if (state === 'open') return 0;
-    if (state === 'peek') return h - PEEK_HEIGHT;
-    return h * 1.1; // hidden — fully below screen
+  // Must be called while the sheet has transform: translateY(0px) so that
+  // getBoundingClientRect values are in natural (un-transformed) space.
+  function _computePeekY(el) {
+    var divider = el.querySelector('.nc-divider');
+    if (!divider) return Math.max(el.offsetHeight - 180, 60);
+    var sr = el.getBoundingClientRect();
+    var dr = divider.getBoundingClientRect();
+    var distFromTop = dr.top - sr.top;              // px from sheet top to divider
+    var visible     = distFromTop + divider.offsetHeight + 4; // include divider + buffer
+    return Math.max(el.offsetHeight - visible, 60);
   }
 
-  // Apply a state using CSS classes so the browser's CSS transition fires.
-  // Called after drag ends or when programmatically changing state.
-  function _applyState(state) {
-    const el = _sheetEl();
-    if (!el) return;
-    // Clear any inline transform left from dragging so CSS transition
-    // can animate from the current computed position to the target class position.
-    el.style.transform  = '';
-    el.style.transition = '';
-    el.classList.remove('nc-sheet--open', 'nc-sheet--peek');
-    if (state === 'peek') el.classList.add('nc-sheet--peek');
-    if (state === 'open') el.classList.add('nc-sheet--open');
-    _sheetState = state;
+  function _animate(el, y, easing) {
+    el.style.transition = 'transform ' + (easing || '220ms ease');
+    el.style.transform  = 'translateY(' + y + 'px)';
+  }
+
+  function _stateY(state, h) {
+    if (state === 'open') return 0;
+    if (state === 'peek') return _peekY;
+    return h + 30;
   }
 
   function ensureSheet() {
-    let el = _sheetEl();
+    var el = _sheetEl();
     if (el) return el;
 
     el = document.createElement('div');
@@ -273,75 +290,78 @@
     el.setAttribute('role', 'dialog');
     el.setAttribute('aria-modal', 'true');
     el.setAttribute('aria-label', 'Point of interest details');
-    el.innerHTML = `
-      <div class="nc-sheet-handle-row" aria-hidden="true">
-        <div class="nc-sheet-handle"></div>
-      </div>
-      <div id="${SHEET_BODY_ID}" class="nc-sheet-body"></div>`;
+    el.innerHTML =
+      '<div class="nc-sheet-handle-row" aria-hidden="true">' +
+        '<div class="nc-sheet-handle"></div>' +
+      '</div>' +
+      '<div id="' + SHEET_BODY_ID + '" class="nc-sheet-body"></div>';
     document.body.appendChild(el);
 
+    el.style.transition = 'none';
+    el.style.transform  = 'translateY(' + (window.innerHeight + 30) + 'px)';
+
     // ── Click delegation ──────────────────────────────────────
-    el.addEventListener('click', (e) => {
-      const tw = e.target.closest('.nc-thumb-wrap[data-hires]');
-      if (tw)                                  { openLightbox(tw.dataset.hires); return; }
-      if (e.target.closest('.nc-close-btn'))   { hide();                         return; }
-      if (e.target.closest('.nc-share-btn'))   { _opts?.onShare?.();             return; }
+    el.addEventListener('click', function(e) {
+      var tw = e.target.closest('.nc-thumb-wrap[data-hires]');
+      if (tw)                                { openLightbox(tw.dataset.hires); return; }
+      if (e.target.closest('.nc-close-btn')) { hide();                         return; }
+      if (e.target.closest('.nc-share-btn')) { _opts && _opts.onShare && _opts.onShare(); return; }
     });
 
-    document.addEventListener('keydown', (e) => {
+    document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape' && _sheetState !== 'hidden') hide();
     });
 
     // ── Drag to expand / collapse ─────────────────────────────
-    // Non-passive so we can preventDefault() from touchstart onward,
-    // preventing iOS Safari from committing the gesture as a page scroll.
-    el.addEventListener('touchstart', (e) => {
-      const onHandle = !!e.target.closest('.nc-sheet-handle-row');
-      // When fully open, only drag from the handle to keep body scroll working.
+    // non-passive touchstart lets us preventDefault immediately,
+    // before iOS Safari can commit the gesture as a page scroll.
+    el.addEventListener('touchstart', function(e) {
+      if (_sheetState === 'hidden') return;
+      var onHandle = !!e.target.closest('.nc-sheet-handle-row');
+      // When fully open, only drag from the handle (body should scroll freely).
       if (_sheetState === 'open' && !onHandle) return;
 
-      e.preventDefault(); // take ownership of this touch sequence
-      const h = el.offsetHeight;
+      e.preventDefault();
+      var h = el.offsetHeight;
       _dragData = {
         startY:    e.touches[0].clientY,
         startTime: Date.now(),
-        startPx:   _stateToY(_sheetState, h),
-        h,
+        startPx:   _stateY(_sheetState, h),
+        h:         h,
       };
-      // Switch to inline transform so drag updates are instant (no transition).
       el.style.transition = 'none';
-      el.style.transform  = `translateY(${_dragData.startPx}px)`;
-      el.classList.remove('nc-sheet--open', 'nc-sheet--peek');
+      el.style.transform  = 'translateY(' + _dragData.startPx + 'px)';
     }, { passive: false });
 
-    el.addEventListener('touchmove', (e) => {
+    el.addEventListener('touchmove', function(e) {
       if (!_dragData) return;
       e.preventDefault();
-      const dy   = e.touches[0].clientY - _dragData.startY;
-      const newY = Math.max(0, Math.min(_dragData.startPx + dy, _dragData.h * 1.1));
-      el.style.transform = `translateY(${newY}px)`;
+      var dy   = e.touches[0].clientY - _dragData.startY;
+      var newY = Math.max(0, Math.min(_dragData.startPx + dy, _dragData.h + 30));
+      el.style.transform = 'translateY(' + newY + 'px)';
     }, { passive: false });
 
-    el.addEventListener('touchend', (e) => {
+    el.addEventListener('touchend', function(e) {
       if (!_dragData) return;
-      const dy  = e.changedTouches[0].clientY - _dragData.startY;
-      const vel = dy / Math.max(1, Date.now() - _dragData.startTime); // px/ms, + = down
-      const { h } = _dragData;
+      var dy  = e.changedTouches[0].clientY - _dragData.startY;
+      var vel = dy / Math.max(1, Date.now() - _dragData.startTime); // px/ms, +ve = down
+      var h   = _dragData.h;
       _dragData = null;
 
-      let target;
+      var target;
       if (vel > 0.4 || dy > h * 0.3) {
         target = _sheetState === 'open' ? 'peek' : 'hidden';
-      } else if (vel < -0.4 || dy < -60) {
+      } else if (vel < -0.4 || dy < -50) {
         target = 'open';
       } else {
-        target = _sheetState; // snap back
+        target = _sheetState;
       }
 
-      _applyState(target);
+      _animate(el, _stateY(target, h), '300ms cubic-bezier(0.32, 0.72, 0, 1)');
+      _sheetState = target;
 
       if (target === 'hidden') {
-        if (!_silentHide) _opts?.onClose?.();
+        if (!_silentHide && _opts && _opts.onClose) _opts.onClose();
         _opts = null;
       }
     });
@@ -350,45 +370,55 @@
   }
 
   function showSheet(html) {
-    const sheet = ensureSheet();
+    var sheet = ensureSheet();
     document.getElementById(SHEET_BODY_ID).innerHTML = html;
-    // Ensure we start from the hidden state (class-driven), then
-    // let the browser paint one frame before animating to peek.
-    sheet.style.transform  = '';
-    sheet.style.transition = '';
-    sheet.classList.remove('nc-sheet--open', 'nc-sheet--peek');
+
+    // Step 1 — place at natural position so getBoundingClientRect is accurate.
+    sheet.style.transition = 'none';
+    sheet.style.transform  = 'translateY(0px)';
+    sheet.offsetHeight;                        // force reflow
+
+    // Step 2 — measure where the divider lands → peek position.
+    _peekY = _computePeekY(sheet);
+
+    // Step 3 — jump below screen (no visible flash; browser hasn't painted yet).
+    sheet.style.transform = 'translateY(' + (window.innerHeight + 30) + 'px)';
+    sheet.offsetHeight;                        // force reflow
     _sheetState = 'hidden';
 
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        _applyState('peek');
+    // Step 4 — animate to peek after two frames so the slide-up is always seen.
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() {
+        _animate(sheet, _peekY, '350ms cubic-bezier(0.32, 0.72, 0, 1)');
+        _sheetState = 'peek';
       });
     });
   }
 
   function hideSheet() {
-    if (_sheetState === 'hidden') return;
-    _applyState('hidden');
+    var el = _sheetEl();
+    if (!el || _sheetState === 'hidden') return;
+    _animate(el, el.offsetHeight + 30, '220ms ease');
+    _sheetState = 'hidden';
   }
 
   // ── State ─────────────────────────────────────────────────────
 
-  let _opts       = null;
-  let _popup      = null;
-  let _silentHide = false;
+  var _opts       = null;
+  var _popup      = null;
+  var _silentHide = false;
 
   // ── Public API ────────────────────────────────────────────────
 
   function show(feature, poiData, map, opts) {
     _opts = opts || {};
-    const p   = feature.properties || {};
-    const mId = String(p.m_id || '').trim();
-    const html = buildHTML(feature, poiData);
+    var p   = feature.properties || {};
+    var mId = String(p.m_id || '').trim();
+    var html = buildHTML(feature, poiData);
 
     if (isMobile()) {
       if (_popup) { _popup.remove(); _popup = null; }
       showSheet(html);
-      // Load Mapillary hero after content is in DOM
       if (isValidMid(mId)) {
         loadMapillaryHero(mId, document.getElementById(SHEET_BODY_ID));
       }
@@ -396,7 +426,7 @@
       hideSheet();
       if (_popup) { _popup.remove(); _popup = null; }
 
-      const coords = feature.geometry?.coordinates;
+      var coords = feature.geometry && feature.geometry.coordinates;
       if (!coords) return;
 
       _popup = new mapboxgl.Popup({
@@ -410,25 +440,25 @@
       .setHTML(html)
       .addTo(map);
 
-      const popupEl = _popup.getElement();
+      var popupEl = _popup.getElement();
 
-      // Event delegation on popup element
-      popupEl?.addEventListener('click', (e) => {
-        const tw = e.target.closest('.nc-thumb-wrap[data-hires]');
-        if (tw)                                { openLightbox(tw.dataset.hires); return; }
-        if (e.target.closest('.nc-close-btn')) { hide();                         return; }
-        if (e.target.closest('.nc-share-btn')) { _opts?.onShare?.();             return; }
-      });
+      if (popupEl) {
+        popupEl.addEventListener('click', function(e) {
+          var tw = e.target.closest('.nc-thumb-wrap[data-hires]');
+          if (tw)                                { openLightbox(tw.dataset.hires); return; }
+          if (e.target.closest('.nc-close-btn')) { hide();                         return; }
+          if (e.target.closest('.nc-share-btn')) { _opts && _opts.onShare && _opts.onShare(); return; }
+        });
 
-      _popup.on('close', () => {
-        _popup = null;
-        if (!_silentHide) _opts?.onClose?.();
-      });
-
-      // Load Mapillary hero into the popup
-      if (isValidMid(mId) && popupEl) {
-        loadMapillaryHero(mId, popupEl);
+        if (isValidMid(mId)) {
+          loadMapillaryHero(mId, popupEl);
+        }
       }
+
+      _popup.on('close', function() {
+        _popup = null;
+        if (!_silentHide && _opts && _opts.onClose) _opts.onClose();
+      });
 
       map.easeTo({
         center:  coords,
@@ -439,14 +469,14 @@
   }
 
   function hide(opts) {
-    const silent = opts?.silent || false;
+    var silent = opts && opts.silent ? true : false;
     _silentHide = silent;
     hideSheet();
     if (_popup) { _popup.remove(); _popup = null; }
     _silentHide = false;
-    if (!silent) _opts?.onClose?.();
+    if (!silent && _opts && _opts.onClose) _opts.onClose();
     _opts = null;
   }
 
-  window.NorthavenCard = { show, hide };
+  window.NorthavenCard = { show: show, hide: hide };
 })();
