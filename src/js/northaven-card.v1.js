@@ -368,8 +368,12 @@
         _mapillaryStatusTimer = window.setTimeout(function() {
           if (token !== _mapillaryOpenToken || ready) return;
           hideMapillarySpinner();
-          setMapillaryStatus('Taking longer than expected. Use the link above to open Mapillary directly.', true);
-        }, 5000);
+          // Destroy the viewer so its canvas stops intercepting pointer events,
+          // which otherwise prevents the close button from working.
+          removeMapillaryViewer();
+          if (viewerEl) viewerEl.innerHTML = '';
+          setMapillaryStatus('Street view is temporarily unavailable. Use the link above to open Mapillary directly.', true);
+        }, 8000);
 
         try {
           _mapillaryViewer = new mapillaryLib.Viewer({
@@ -398,11 +402,11 @@
             markReady();
           });
 
-          _mapillaryViewer.on('dataloading', function(event) {
-            if (event && event.loading === false) {
-              markReady();
-            }
-          });
+          // Intentionally not using 'dataloading' as a ready signal: when the
+          // Mapillary API returns 500s, dataloading fires with loading:false
+          // (batch "finished" despite failing), which would trigger markReady()
+          // prematurely — hiding the status and leaving a black canvas that
+          // intercepts pointer events and breaks the close button.
         } catch (_err) {
           console.warn('Mapillary viewer init failed', _err);
           if (_mapillaryStatusTimer) {
