@@ -45,6 +45,14 @@ body.is-map-fullscreen .nc-sheet {
   cursor: grab;
   user-select: none;
   -webkit-user-select: none;
+  border: 0;
+  background: transparent;
+  width: 100%;
+}
+
+.nc-sheet-handle-row:focus-visible {
+  outline: 2px solid #108452;
+  outline-offset: -4px;
 }
 
 .nc-sheet-handle {
@@ -137,9 +145,10 @@ body.is-map-fullscreen .nc-sheet {
   background: transparent;
   border-radius: 50%;
   cursor: pointer;
-  color: #555;
+  color: #333; /* Improved contrast */
   padding: 0;
   line-height: 0;
+  transition: background 150ms ease;
 }
 
 .nc-btn:hover {

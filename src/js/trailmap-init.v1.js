@@ -221,6 +221,7 @@ function loadWindow() {
         container: el,
         style: "mapbox://styles/wdawso/clp9xd8ba002901qj95smdg2f",
         bounds: MAP_BOUNDS,
+        cooperativeGestures: !isMobile,
         maxTileCacheSize: isMobile ? 50 : 200,
         minTileCacheSize: isMobile ? 20 : 100
       });
@@ -333,11 +334,19 @@ function loadWindow() {
         // Fix any property using ["get", "s"] for symbol-sort-key, or other common numeric props
         if (l.layout?.['symbol-sort-key']) {
           const val = l.layout['symbol-sort-key'];
-          // If it's a direct ["get", "s"] or similar, wrap it
           if (Array.isArray(val) && val[0] === 'get' && val[1] === 's') {
             m.setLayoutProperty(l.id, 'symbol-sort-key', ["number", ["coalesce", ["get", "s"], 10], 10]);
           }
         }
+
+        // Fix "len" (length) markers seen in console warnings
+        if (l.layout?.['text-field']) {
+          const val = l.layout['text-field'];
+          if (Array.isArray(val) && val[0] === 'get' && val[1] === 'len') {
+            m.setLayoutProperty(l.id, 'text-field', ["coalesce", ["get", "len"], ""]);
+          }
+        }
+
         // Also icon-size can be problematic if data-driven
         if (l.layout?.['icon-size']) {
           const val = l.layout['icon-size'];

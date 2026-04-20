@@ -360,6 +360,61 @@ function checkLocationParamConsistency() {
   return { checked: 1 };
 }
 
+// Regression guard for: buildHTML read p.h / td.h for the hours field, but the
+// JSON schema uses p.hr / td.hr — hours were silently blank for every POI that
+// had hours set. Fix: updated field key from h to hr. (2026-04-19, 01205ab)
+function checkCardHoursFieldKey() {
+  const content = fs.readFileSync(
+    path.join(REPO_ROOT, "src", "js", "northaven-card.v1.js"), "utf8"
+  );
+  assert.ok(
+    /\bp\.hr\b/.test(content),
+    "northaven-card.v1.js: must reference p.hr — the hours field was renamed from p.h to p.hr in the JSON schema"
+  );
+  const hoursLine = content.split("\n").find((l) => /const\s+hours\s*=/.test(l));
+  assert.ok(hoursLine, "northaven-card.v1.js: must have a 'const hours =' assignment in buildHTML");
+  assert.ok(
+    /\bp\.hr\b/.test(hoursLine),
+    `northaven-card.v1.js: hours assignment must read p.hr, not p.h — p.h was the old key before the JSON schema rename (got: ${hoursLine?.trim()})`
+  );
+  return { checked: 1 };
+}
+
+// Regression guard for: the sheet drag handler registered touchstart with
+// {passive:true}, so e.preventDefault() inside the handler was silently ignored —
+// iOS Safari would steal every upward swipe as a page scroll instead of a sheet drag.
+// Fix: switched to pointer events registered with {passive:false} so preventDefault()
+// takes effect before the browser commits the gesture. (2026-04-19, 01205ab → 72c5b49)
+function checkDragListenerIsNonPassive() {
+  const content = fs.readFileSync(
+    path.join(REPO_ROOT, "src", "js", "northaven-card.v1.js"), "utf8"
+  );
+  assert.ok(
+    /addEventListener\s*\(\s*['"]pointermove['"]\s*,\s*\w+\s*,\s*\{\s*passive\s*:\s*false\s*\}/.test(content),
+    "northaven-card.v1.js: pointermove must be registered with {passive:false} — passive:true silently drops preventDefault() and lets iOS Safari steal the sheet drag as a page scroll"
+  );
+  return { checked: 1 };
+}
+
+// Regression guard for: m_id values like "NONE", "TBD", or empty strings triggered
+// unnecessary Mapillary Graph API fetches that returned 404s and cluttered the network
+// tab. Fix: normalizeMid() rejects known sentinel strings and non-numeric values before
+// any fetch() call is made. (2026-04-19, 9471d82)
+function checkMapillaryMidNormalization() {
+  const content = fs.readFileSync(
+    path.join(REPO_ROOT, "src", "js", "northaven-card.v1.js"), "utf8"
+  );
+  assert.ok(
+    /INVALID_MIDS/.test(content),
+    "northaven-card.v1.js: must define INVALID_MIDS to reject sentinel m_id values (NONE, TBD, etc.) before Mapillary API fetches"
+  );
+  assert.ok(
+    /function\s+normalizeMid\s*\(/.test(content),
+    "northaven-card.v1.js: must define normalizeMid() to validate and sanitize m_id before any Mapillary fetch() call"
+  );
+  return { checked: 1 };
+}
+
 function main() {
   const manifestNames = Object.keys(MANIFEST_VALIDATORS).sort();
   const results = manifestNames.map(validateManifest);
@@ -372,6 +427,9 @@ function main() {
   const closeButtonCheck = checkPopupCloseButtonTouchTarget();
   const popupPaddingCheck = checkPopupContentReservesCloseButtonSpace();
   const descHtmlCheck = checkPopupDescRendersHtml();
+  const cardHoursKeyCheck = checkCardHoursFieldKey();
+  const dragPassiveCheck = checkDragListenerIsNonPassive();
+  const mapillaryMidCheck = checkMapillaryMidNormalization();
 
   console.log("Contract checks passed:");
   for (const result of results) {
@@ -385,6 +443,9 @@ function main() {
   console.log(`- popup close button has 44px min touch target (${closeButtonCheck.checked} file(s) checked)`);
   console.log(`- popup content reserves 44px for close button (${popupPaddingCheck.checked} file(s) checked)`);
   console.log(`- popup desc renders HTML from GAS without escaping (${descHtmlCheck.checked} file(s) checked)`);
+  console.log(`- northaven-card hours field uses p.hr (not old p.h) (${cardHoursKeyCheck.checked} file(s) checked)`);
+  console.log(`- northaven-card pointermove drag is non-passive (${dragPassiveCheck.checked} file(s) checked)`);
+  console.log(`- northaven-card normalizeMid rejects sentinel m_id values (${mapillaryMidCheck.checked} file(s) checked)`);
 }
 
 try {

@@ -425,8 +425,9 @@
     el.setAttribute('role', 'dialog');
     el.setAttribute('aria-modal', 'true');
     el.setAttribute('aria-label', 'Point of interest details');
+    el.setAttribute('tabindex', '-1'); // Allow programmatic focus
     el.innerHTML =
-      '<div class="nc-sheet-handle-row" aria-hidden="true">' +
+      '<div class="nc-sheet-handle-row" role="button" tabindex="0" aria-label="Expand or collapse details">' +
         '<div class="nc-sheet-handle"></div>' +
       '</div>' +
       '<div id="' + SHEET_BODY_ID + '" class="nc-sheet-body"></div>';
@@ -472,13 +473,20 @@
         _beginDrag(el, _dragPointY(e), e.pointerId);
       });
 
-      handleRow.addEventListener('click', function() {
+      function toggleExpand() {
         if (_dragData || _sheetState === 'hidden') return;
         var target = _sheetState === SHEET_STATE_INITIAL
           ? SHEET_STATE_FULL
           : SHEET_STATE_INITIAL;
         _animate(el, _stateY(target, el.offsetHeight), '300ms cubic-bezier(0.32, 0.72, 0, 1)');
         _sheetState = target;
+      }
+      handleRow.addEventListener('click', toggleExpand);
+      handleRow.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggleExpand();
+        }
       });
     }
 
@@ -511,6 +519,8 @@
       requestAnimationFrame(function() {
         _animate(sheet, _peekY, '350ms cubic-bezier(0.32, 0.72, 0, 1)');
         _sheetState = SHEET_STATE_INITIAL;
+        // Move focus to the sheet so screen readers announce it.
+        sheet.focus({ preventScroll: true });
       });
     });
   }
