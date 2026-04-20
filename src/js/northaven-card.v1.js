@@ -534,14 +534,16 @@
 
   // ── State ─────────────────────────────────────────────────────
 
-  var _opts       = null;
-  var _popup      = null;
-  var _silentHide = false;
+  var _opts            = null;
+  var _popup           = null;
+  var _silentHide      = null;
+  var _activeFeatureId = null;
 
   // ── Public API ────────────────────────────────────────────────
 
   function show(feature, poiData, map, opts) {
     _opts = opts || {};
+    _activeFeatureId = feature.id;
     var p      = feature.properties || {};
     var mId    = normalizeMid(p.m_id);
     var html   = buildHTML(feature, poiData);
@@ -555,15 +557,27 @@
       }
       // Pan so the tapped marker stays visible above the peeked card.
       // _peekY is set synchronously by showSheet(), so we can read it now.
-      // cardVisible = how many px of viewport the card covers at peek.
       if (map && coords) {
         var sheet = _sheetEl();
         var cardVisible = sheet ? (sheet.offsetHeight - _peekY) : 180;
-        map.easeTo({
-          center:   coords,
-          padding:  { top: 60, bottom: cardVisible + 24, left: 20, right: 20 },
-          duration: 350,
-        });
+        
+        // PROJECT the marker coordinates to screen pixels
+        var point = map.project(coords);
+        var viewportHeight = map.getCanvas().clientHeight;
+        
+        // DANGER ZONE: if marker is in the bottom area (where sheet peeks)
+        // or too close to the top edge. 
+        // We use a buffer of 40px from the card and 60px from the top.
+        var safeBottom = viewportHeight - cardVisible - 40;
+        var safeTop = 60;
+        
+        if (point.y > safeBottom || point.y < safeTop) {
+          map.easeTo({
+            center:   coords,
+            padding:  { top: 60, bottom: cardVisible + 24, left: 20, right: 20 },
+            duration: 350,
+          });
+        }
       }
     } else {
       hideSheet();
@@ -620,9 +634,16 @@
     hideSheet();
     if (_popup) { _popup.remove(); _popup = null; }
     _silentHide = false;
+    _activeFeatureId = null;
     if (!silent && _opts && _opts.onClose) _opts.onClose();
     _opts = null;
   }
 
-  window.NorthavenCard = { show: show, hide: hide };
+  function getActiveFeatureId() {
+    if (_sheetState !== 'hidden') return _activeFeatureId;
+    if (_popup) return _activeFeatureId;
+    return null;
+  }
+
+  window.NorthavenCard = { show: show, hide: hide, getActiveFeatureId: getActiveFeatureId };
 })();

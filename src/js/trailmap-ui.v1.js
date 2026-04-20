@@ -524,6 +524,14 @@ function addPopupBack() {
 
   if (!map.getLayer("trail_markers")) return false;  // prevent mapbox errors
 
+  // Guard: if the card component is already showing this feature, don't re-trigger
+  if (window.NorthavenCard?.getActiveFeatureId) {
+    const activeId = window.NorthavenCard.getActiveFeatureId();
+    if (activeId && String(activeId) === String(popupFeature?.id)) {
+      return true;
+    }
+  }
+
   // slim schema: id is on the feature itself
   if (popupFeature?.id) {
     const targetId = String(popupFeature.id);
