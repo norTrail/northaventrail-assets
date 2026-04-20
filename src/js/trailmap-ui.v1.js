@@ -1005,26 +1005,9 @@ function buildURL(urlParams = {}, makeShort = false) {
     url += `${joiner}${LOCATION_PARM}=${encodeURIComponent(activeFeatureID)}`;
     joiner = "&";
 
-    // Find the feature using feature.id (not feature.properties.id)
-    const features = Array.isArray(poiData?.features) ? poiData.features : [];
-    const activeIdStr = String(activeFeatureID);
-
-    for (const feature of features) {
-      if (String(feature?.id) === activeIdStr) {
-        // dropDownText -> properties.n
-        const titleText = String(feature?.properties?.l || feature?.properties?.n || "").trim();
-        const pt = window.btoa(`${titleText} - ${PAGE_TITLE}`);
-
-        if (!makeShort) {
-          url += `${joiner}${PAGE_TITLE_PARM}=${encodeURIComponent(pt)}`;
-          joiner = "&";
-        }
-        break;
-      }
-    }
   }
 
-  const zoom = map.getZoom().toFixed(URL_FIXED_NUMBER);
+  const zoom = String(parseFloat(map.getZoom().toFixed(URL_FIXED_NUMBER)));
   if (parseFloat(zoom) !== parseFloat(DEFAULT_ZOOM)) {
     url += `${joiner}${ZOOM_PARM}=${zoom}`;
     joiner = "&";
@@ -1089,11 +1072,6 @@ function getURLParams() {
 
   for (const [key, value] of params.entries()) {
     result[key] = decodeURIComponent(value);
-  }
-
-  if (result[PAGE_TITLE_PARM]) {
-    try { result[PAGE_TITLE_PARM] = window.atob(result[PAGE_TITLE_PARM]); }
-    catch { delete result[PAGE_TITLE_PARM]; }
   }
 
   if (result[COORDINATES_PARM]) {
