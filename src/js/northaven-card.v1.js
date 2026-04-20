@@ -595,6 +595,10 @@
         if (isValidMid(mId)) {
           loadMapillaryHero(mId, popupEl);
         }
+
+        // ADA: Ensure popup is focusable and move focus to it
+        popupEl.setAttribute('tabindex', '-1');
+        popupEl.focus({ preventScroll: true });
       }
 
       _popup.on('close', function() {

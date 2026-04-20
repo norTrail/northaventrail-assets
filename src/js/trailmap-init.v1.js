@@ -330,30 +330,30 @@ function loadWindow() {
     try {
       const style = m.getStyle();
       if (!style?.layers) return;
+      
+      const wrapExpr = (val) => {
+        if (!Array.isArray(val)) return val;
+        // Specifically catch ["get", "len"] or ["get", "s"] and wrap in coalesce
+        if (val[0] === 'get' && (val[1] === 'len' || val[1] === 's')) {
+          const fallback = (val[1] === 'len') ? 0 : 10;
+          return ["number", ["coalesce", val, fallback], fallback];
+        }
+        // Recursively check arrays
+        return val.map(wrapExpr);
+      };
+
       style.layers.forEach(l => {
-        // Fix any property using ["get", "s"] for symbol-sort-key, or other common numeric props
-        if (l.layout?.['symbol-sort-key']) {
-          const val = l.layout['symbol-sort-key'];
-          if (Array.isArray(val) && val[0] === 'get' && val[1] === 's') {
-            m.setLayoutProperty(l.id, 'symbol-sort-key', ["number", ["coalesce", ["get", "s"], 10], 10]);
-          }
-        }
-
-        // Fix "len" (length) markers seen in console warnings
-        if (l.layout?.['text-field']) {
-          const val = l.layout['text-field'];
-          if (Array.isArray(val) && val[0] === 'get' && val[1] === 'len') {
-            m.setLayoutProperty(l.id, 'text-field', ["coalesce", ["get", "len"], ""]);
-          }
-        }
-
-        // Also icon-size can be problematic if data-driven
-        if (l.layout?.['icon-size']) {
-          const val = l.layout['icon-size'];
-          if (Array.isArray(val) && val.includes('get')) {
-            m.setLayoutProperty(l.id, 'icon-size', ["number", ["coalesce", val, 0.5], 0.5]);
-          }
-        }
+        ['layout', 'paint'].forEach(type => {
+          if (!l[type]) return;
+          Object.keys(l[type]).forEach(prop => {
+            const val = l[type][prop];
+            const newVal = wrapExpr(val);
+            if (newVal !== val) {
+              if (type === 'layout') m.setLayoutProperty(l.id, prop, newVal);
+              else m.setPaintProperty(l.id, prop, newVal);
+            }
+          });
+        });
       });
     } catch (err) {
       console.warn("[Trailmap] Global hardening failed:", err);
