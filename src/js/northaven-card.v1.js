@@ -292,6 +292,12 @@
     }
   }
 
+  function describeMapillaryError(err) {
+    if (!err) return 'Unknown error';
+    if (typeof err === 'string') return err;
+    return String(err.message || err.name || err);
+  }
+
   function closeMapillaryModal() {
     if (!_mapillaryModal) return;
     _mapillaryOpenToken += 1;
@@ -330,6 +336,14 @@
       .then(function(mapillaryLib) {
         if (token !== _mapillaryOpenToken || !_mapillaryModal || _mapillaryModal.hidden || !viewerEl) return;
         var ready = false;
+        var supported = typeof mapillaryLib.isSupported === 'function' ? mapillaryLib.isSupported() : null;
+        var fallbackSupported = typeof mapillaryLib.isFallbackSupported === 'function' ? mapillaryLib.isFallbackSupported() : null;
+
+        if (supported === false && fallbackSupported === false) {
+          setMapillaryStatus('Street-level viewer is not supported in this browser. Use the link above to open Mapillary directly.', true);
+          return;
+        }
+
         function markReady() {
           if (ready || token !== _mapillaryOpenToken) return;
           ready = true;
@@ -358,6 +372,11 @@
               },
             },
           });
+          console.info('Mapillary viewer init', {
+            imageId: normalizedMid,
+            supported: supported,
+            fallbackSupported: fallbackSupported,
+          });
 
           _mapillaryViewer.on('load', function() {
             markReady();
@@ -373,18 +392,20 @@
             }
           });
         } catch (_err) {
+          console.warn('Mapillary viewer init failed', _err);
           if (_mapillaryStatusTimer) {
             window.clearTimeout(_mapillaryStatusTimer);
             _mapillaryStatusTimer = null;
           }
           removeMapillaryViewer();
-          setMapillaryStatus('Unable to open the street-level viewer here. Use the link above to open Mapillary directly.', true);
+          setMapillaryStatus('Unable to open the street-level viewer here. ' + describeMapillaryError(_err) + '. Use the link above to open Mapillary directly.', true);
         }
       })
-      .catch(function() {
+      .catch(function(err) {
+        console.warn('Mapillary assets failed to load', err);
         if (token !== _mapillaryOpenToken) return;
         removeMapillaryViewer();
-        setMapillaryStatus('Unable to load the street-level viewer right now. Use the link above to open Mapillary directly.', true);
+        setMapillaryStatus('Unable to load the street-level viewer right now. ' + describeMapillaryError(err) + '. Use the link above to open Mapillary directly.', true);
       });
   }
 
