@@ -746,8 +746,12 @@
 
     document.addEventListener('keydown', function(e) {
       if (e.key !== 'Escape' || _lightbox) return;
-      if (_sheetState !== 'hidden' || _popup) hide();
-    });
+      if (_mapillaryModal && !_mapillaryModal.hidden) return; // let _mapillaryKeydown handle ESC first
+      if (_sheetState !== 'hidden' || _popup) {
+        e.stopImmediatePropagation();
+        hide();
+      }
+    }, true);
 
     // ── Drag to expand / collapse ─────────────────────────────
     function onPointerMove(e) {
