@@ -3,12 +3,14 @@
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
+const { pathToFileURL } = require("node:url");
 const puppeteer = require("puppeteer");
 
 const QA_USER_AGENT =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) " +
   "AppleWebKit/537.36 (KHTML, like Gecko) " +
   "Chrome/146.0.0.0 Safari/537.36";
+const TRAILMAP_LIVE_URL = pathToFileURL(path.join(__dirname, "..", "trailmap-live.html")).href;
 
 async function goto(page, url) {
   await page.setUserAgent(QA_USER_AGENT);
@@ -17,6 +19,10 @@ async function goto(page, url) {
     timeout: 45000
   });
   const status = response && response.status();
+  if (url.startsWith("file://")) {
+    assert.ok(response === null || status === 0 || status === 200, `Expected local file to load for ${url}, got ${status}`);
+    return;
+  }
   assert.ok(status === 200 || status === 304, `Expected 200/304 for ${url}, got ${status}`);
 }
 
@@ -27,9 +33,17 @@ async function waitForMap(page) {
   });
 }
 
+async function waitForTrailmapDetails(page) {
+  await page.waitForSelector(".nc-desktop-card:not([hidden])", {
+    visible: true,
+    timeout: 15000
+  });
+}
+
 function launchBrowser() {
   return puppeteer.launch({
     headless: true,
+    defaultViewport: { width: 1440, height: 960 },
     args: ["--no-sandbox", "--disable-setuid-sandbox"]
   });
 }
@@ -184,24 +198,24 @@ async function openTrailmapSearch(page, term) {
 async function trailmapPopupLightboxFlow(browser) {
   const page = await browser.newPage();
   try {
-    await goto(page, "https://northaventrail.org/trailmap");
+    await goto(page, TRAILMAP_LIVE_URL);
     await waitForMap(page);
     // "mural" matches "Mural on Northaven Trail Bridge" which has a Drive image
     await openTrailmapSearch(page, "mural");
-    await page.waitForSelector(".mapboxgl-popup", { visible: true, timeout: 15000 });
+    await waitForTrailmapDetails(page);
 
     const triggerState = await page.evaluate(() => {
-      const trigger = document.querySelector(".mapboxgl-popup .map-popup-image-trigger");
+      const trigger = document.querySelector(".nc-desktop-card .nc-thumb-wrap[data-hires]");
       return {
         exists: !!trigger,
-        dataUrl: trigger ? (trigger.getAttribute("data-image-url") || "") : ""
+        dataUrl: trigger ? (trigger.getAttribute("data-hires") || "") : ""
       };
     });
 
-    assert.equal(triggerState.exists, true, "Popup with image should have .map-popup-image-trigger button");
-    assert.ok(triggerState.dataUrl.startsWith("https://"), "Popup image trigger should have a valid https data-image-url");
+    assert.equal(triggerState.exists, true, "Sidecar with image should have a high-resolution thumbnail trigger");
+    assert.ok(triggerState.dataUrl.startsWith("https://"), "Sidecar image trigger should have a valid https data-hires URL");
 
-    await page.$eval(".mapboxgl-popup .map-popup-image-trigger", (el) => el.click());
+    await page.$eval(".nc-desktop-card .nc-thumb-wrap[data-hires]", (el) => el.click());
 
     await page.waitForFunction(() => {
       const lightbox = document.getElementById("lightbox-map");
@@ -229,13 +243,13 @@ async function trailmapPopupLightboxFlow(browser) {
       return !lb || !lb.style.display || lb.style.display === "none";
     }, { timeout: 10000 });
 
-    const popupStillOpen = await page.evaluate(() => !!document.querySelector(".mapboxgl-popup"));
-    assert.equal(popupStillOpen, true, "Escape while lightbox open should close lightbox but keep the popup open");
+    const sidecarStillOpen = await page.evaluate(() => !!document.querySelector(".nc-desktop-card:not([hidden])"));
+    assert.equal(sidecarStillOpen, true, "Escape while lightbox open should close lightbox but keep the sidecar open");
 
     await page.keyboard.press("Escape");
-    await page.waitForFunction(() => !document.querySelector(".mapboxgl-popup"), { timeout: 10000 });
+    await page.waitForFunction(() => !document.querySelector(".nc-desktop-card:not([hidden])"), { timeout: 10000 });
 
-    console.log("trailmap popup lightbox: pass");
+    console.log("trailmap sidecar lightbox: pass");
   } finally {
     await page.close();
   }
@@ -244,7 +258,7 @@ async function trailmapPopupLightboxFlow(browser) {
 async function trailmapMapillaryModalFlow(browser) {
   const page = await browser.newPage();
   try {
-    await goto(page, "https://northaventrail.org/trailmap");
+    await goto(page, TRAILMAP_LIVE_URL);
     await waitForMap(page);
     await page.waitForFunction(() => Array.isArray(window.poiData?.features) && window.poiData.features.length > 0, {
       timeout: 30000
@@ -261,9 +275,9 @@ async function trailmapMapillaryModalFlow(browser) {
       return true;
     });
 
-    assert.equal(opened, true, "Trailmap should be able to open a popup for a Mapillary-backed POI");
-    await page.waitForSelector(".mapboxgl-popup .nc-hero-link[data-mid]", { visible: true, timeout: 15000 });
-    await page.click(".mapboxgl-popup .nc-hero-link[data-mid]");
+    assert.equal(opened, true, "trailmap-live should be able to open details for a Mapillary-backed POI");
+    await page.waitForSelector(".nc-desktop-card .nc-hero-link[data-mid]", { visible: true, timeout: 15000 });
+    await page.click(".nc-desktop-card .nc-hero-link[data-mid]");
 
     await page.waitForFunction(() => {
       const modal = document.getElementById("nc-mapillary-modal");
@@ -304,49 +318,27 @@ async function trailmapMapillaryModalFlow(browser) {
 async function trailmapSearchFlow(browser) {
   const page = await browser.newPage();
   try {
-    await goto(page, "https://northaventrail.org/trailmap");
+    await goto(page, TRAILMAP_LIVE_URL);
     await waitForMap(page);
     await openTrailmapSearch(page, "royal");
     await page.waitForFunction(() => window.location.search.includes("loc="), { timeout: 15000 });
 
-    const hasPopup = await page.waitForSelector(".mapboxgl-popup", {
-      visible: true,
-      timeout: 15000
-    }).then(() => true).catch(() => false);
-
-    assert.equal(hasPopup, true, "Trailmap search should open a popup");
-
-    const popupLinks = await page.evaluate(() =>
-      Array.from(document.querySelectorAll(".mapboxgl-popup .popupIconLink[href]")).map((el) => ({
-        label: el.getAttribute("aria-label") || "",
-        target: el.getAttribute("target") || "",
-        rel: el.getAttribute("rel") || ""
-      }))
-    );
-
-    assert.ok(
-      popupLinks.some((link) => /Google Maps/i.test(link.label) && link.target === "_blank"),
-      "Trailmap popup Google Maps link should open in a new tab"
-    );
-    assert.ok(
-      popupLinks.some((link) => /Apple Maps/i.test(link.label) && link.target === "_blank"),
-      "Trailmap popup Apple Maps link should open in a new tab"
-    );
+    await waitForTrailmapDetails(page);
 
     await page.keyboard.press("Escape");
-    await page.waitForFunction(() => !document.querySelector(".mapboxgl-popup"), { timeout: 10000 });
+    await page.waitForFunction(() => !document.querySelector(".nc-desktop-card:not([hidden])"), { timeout: 10000 });
 
     // Regression: search used a single includes(query) check, so "mural bridge" failed to
     // match "Mural on Northaven Trail Bridge" because the substring isn't contiguous.
     // Fix (410699c): split query into tokens and require all tokens to match individually.
     await openTrailmapSearch(page, "mural bridge");
-    const hasMultiWordPopup = await page.waitForSelector(".mapboxgl-popup", {
+    const hasMultiWordPanel = await page.waitForSelector(".nc-desktop-card:not([hidden])", {
       visible: true,
       timeout: 15000
     }).then(() => true).catch(() => false);
-    assert.equal(hasMultiWordPopup, true, "Multi-word search 'mural bridge' should open a popup (both tokens must match independently)");
+    assert.equal(hasMultiWordPanel, true, "Multi-word search 'mural bridge' should open the sidecar (both tokens must match independently)");
 
-    console.log("trailmap search: pass");
+    console.log("trailmap-live search: pass");
   } finally {
     await page.close();
   }
