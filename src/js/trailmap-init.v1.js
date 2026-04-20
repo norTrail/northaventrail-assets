@@ -876,6 +876,52 @@ function applyMarkerPayload_(m, payload) {
     const effColor = ["coalesce", ["get", "c"], "#1f7291"];
 
     // Add the markers layer once
+    if (!m.getLayer("trail_markers_active_halo")) {
+      m.addLayer({
+        id: "trail_markers_active_halo",
+        type: "circle",
+        source: "trail_markers_source",
+        paint: {
+          "circle-radius": [
+            "case",
+            ["boolean", ["feature-state", "active"], false],
+            18,
+            0
+          ],
+          "circle-color": [
+            "case",
+            ["boolean", ["feature-state", "active"], false],
+            "#d93025",
+            "rgba(0,0,0,0)"
+          ],
+          "circle-stroke-color": [
+            "case",
+            ["boolean", ["feature-state", "active"], false],
+            "#ffffff",
+            "rgba(0,0,0,0)"
+          ],
+          "circle-stroke-width": [
+            "case",
+            ["boolean", ["feature-state", "active"], false],
+            2.5,
+            0
+          ],
+          "circle-opacity": [
+            "case",
+            ["boolean", ["feature-state", "active"], false],
+            0.95,
+            0
+          ],
+          "circle-blur": [
+            "case",
+            ["boolean", ["feature-state", "active"], false],
+            0.15,
+            0
+          ]
+        }
+      });
+    }
+
     if (!m.getLayer("trail_markers")) {
       m.addLayer({
         id: "trail_markers",
