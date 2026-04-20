@@ -15,6 +15,7 @@
   const MAPILLARY_TOKEN    = 'MLY|26456749190653210|c432ace1542e35cd80e00c3f15daccb8';
   const MAPILLARY_API      = 'https://graph.mapillary.com/';
   const MAPILLARY_VIEW     = 'https://www.mapillary.com/app/?pKey=';
+  const PEEK_HERO_PREVIEW  = 56;
   const INVALID_MIDS       = new Set([
     'NONE',
     'NULL',
@@ -83,7 +84,7 @@
     el.addEventListener('click', (e) => {
       if (!e.target.closest('.nc-lightbox-img')) closeLightbox();
     });
-    document.addEventListener('keydown', _lbKeydown);
+    document.addEventListener('keydown', _lbKeydown, true);
     document.body.appendChild(el);
     _lightbox = el;
   }
@@ -92,11 +93,14 @@
     if (!_lightbox) return;
     _lightbox.remove();
     _lightbox = null;
-    document.removeEventListener('keydown', _lbKeydown);
+    document.removeEventListener('keydown', _lbKeydown, true);
   }
 
   function _lbKeydown(e) {
-    if (e.key === 'Escape') closeLightbox();
+    if (e.key !== 'Escape' || !_lightbox) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    closeLightbox();
   }
 
   // ── Mapillary ─────────────────────────────────────────────────
@@ -257,9 +261,6 @@
 
     return `
 <div class="nc-card">
-
-  ${heroHtml}
-
   <div class="nc-header">
     ${thumbHtml}
     <div class="nc-header-text">
@@ -280,6 +281,8 @@
   </div>
 
   <hr class="nc-divider">
+
+  ${heroHtml}
 
   <div class="nc-body">
     ${categoryHtml}
@@ -318,11 +321,20 @@
   // getBoundingClientRect values are in natural (un-transformed) space.
   function _computePeekY(el) {
     var divider = el.querySelector('.nc-divider');
-    if (!divider) return Math.max(el.offsetHeight - 180, 60);
     var sr = el.getBoundingClientRect();
+    var hero = el.querySelector('.nc-hero');
+
+    if (hero) {
+      var hr = hero.getBoundingClientRect();
+      var heroVisible = Math.min(hero.offsetHeight, PEEK_HERO_PREVIEW);
+      var heroBottom = hr.top - sr.top + heroVisible;
+      return Math.max(el.offsetHeight - heroBottom, 60);
+    }
+
+    if (!divider) return Math.max(el.offsetHeight - 180, 60);
     var dr = divider.getBoundingClientRect();
-    var distFromTop = dr.top - sr.top;              // px from sheet top to divider
-    var visible     = distFromTop + divider.offsetHeight + 4; // include divider + buffer
+    var distFromTop = dr.top - sr.top;
+    var visible     = distFromTop + divider.offsetHeight + 4;
     return Math.max(el.offsetHeight - visible, 60);
   }
 
@@ -421,7 +433,8 @@
     });
 
     document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape' && _sheetState !== 'hidden') hide();
+      if (e.key !== 'Escape' || _lightbox) return;
+      if (_sheetState !== 'hidden' || _popup) hide();
     });
 
     // ── Drag to expand / collapse ─────────────────────────────
