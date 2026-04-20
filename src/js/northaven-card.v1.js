@@ -8,14 +8,19 @@
   const MOBILE_BREAKPOINT  = 768;
   const SHEET_ID           = 'nc-bottom-sheet';
   const SHEET_BODY_ID      = 'nc-sheet-body';
-  const GOOGLE_MAP_URL     = 'https://www.google.com/maps/search/?api=1&query=';
-  const APPLE_MAP_URL      = 'https://maps.apple.com/?q=';
+  const GOOGLE_DIR_URL     = 'https://www.google.com/maps/dir/?api=1&destination=';
 
   // Mapillary Graph API — client token, read-only
   const MAPILLARY_TOKEN    = 'MLY|26456749190653210|c432ace1542e35cd80e00c3f15daccb8';
   const MAPILLARY_API      = 'https://graph.mapillary.com/';
   const MAPILLARY_VIEW     = 'https://www.mapillary.com/app/?pKey=';
   const PEEK_HERO_PREVIEW  = 56;
+  const MID_VIEWPORT_RATIO = 0.5;
+  const FULL_VIEWPORT_RATIO = 0.9;
+  const SHEET_STATE_INITIAL = 'initial';
+  const SHEET_STATE_MID = 'mid';
+  const SHEET_STATE_FULL = 'full';
+  const SHEET_STATES = [SHEET_STATE_INITIAL, SHEET_STATE_MID, SHEET_STATE_FULL];
   const INVALID_MIDS       = new Set([
     'NONE',
     'NULL',
@@ -126,7 +131,7 @@
 
   function syncPeekStateIfNeeded(scope) {
     const sheet = _sheetEl();
-    if (!sheet || _sheetState !== 'peek' || !scope || !sheet.contains(scope)) return;
+    if (!sheet || _sheetState !== SHEET_STATE_INITIAL || !scope || !sheet.contains(scope)) return;
     _peekY = _computePeekY(sheet);
     sheet.style.transition = 'transform 180ms ease';
     sheet.style.transform = 'translateY(' + _peekY + 'px)';
@@ -208,8 +213,7 @@
     const lat = coords && coords[1];
     const lng = coords && coords[0];
     const mapQuery   = lat && lng ? `${lat},${lng}` : '';
-    const googleHref = mapQuery ? esc(GOOGLE_MAP_URL + mapQuery) : '';
-    const appleHref  = mapQuery ? esc(APPLE_MAP_URL  + mapQuery) : '';
+    const directionsHref = mapQuery ? esc(GOOGLE_DIR_URL + mapQuery) : '';
 
     const imgUrl      = resolveImage(p, td, 200);
     const imgHiresUrl = resolveImage(p, td, 1200);
@@ -248,15 +252,15 @@
 
     // ── Footer actions ────────────────────────────────────────
     const footerBtns = [
-      googleHref && `<a class="nc-action" href="${googleHref}" target="_blank" rel="noopener noreferrer" aria-label="Open in Google Maps">
-        <svg class="nc-action-icon" aria-hidden="true"><use href="#google-logo"></use></svg>
-        <span>Google</span>
-      </a>`,
-      appleHref && `<a class="nc-action" href="${appleHref}" target="_blank" rel="noopener noreferrer" aria-label="Open in Apple Maps">
-        <svg class="nc-action-icon" aria-hidden="true"><use href="#apple-logo"></use></svg>
-        <span>Apple</span>
-      </a>`,
       resolvedCta && ctaLabel && `<a class="nc-action nc-cta" href="${esc(resolvedCta)}">${ctaLabel}</a>`,
+      directionsHref && `<a class="nc-action" href="${directionsHref}" target="_blank" rel="noopener noreferrer" aria-label="Get directions in Google Maps">
+        <svg class="nc-action-icon" aria-hidden="true"><use href="#google-logo"></use></svg>
+        <span>Directions</span>
+      </a>`,
+      `<button class="nc-action nc-action-share" type="button" aria-label="Share this point of interest">
+        <svg class="nc-action-icon" aria-hidden="true"><use href="#share-icon"></use></svg>
+        <span>Share</span>
+      </button>`,
     ].filter(Boolean).join('');
 
     return `
@@ -267,9 +271,6 @@
       <div class="nc-name-row">
         <h2 class="nc-name">${name}</h2>
         <div class="nc-header-btns">
-          <button class="nc-btn nc-share-btn" type="button" aria-label="Share">
-            <svg class="nc-btn-icon" aria-hidden="true"><use href="#share-icon"></use></svg>
-          </button>
           <button class="nc-btn nc-close-btn" type="button" aria-label="Close">
             <svg class="nc-btn-icon" aria-hidden="true"><use href="#closeX"></use></svg>
           </button>
@@ -282,6 +283,8 @@
 
   <hr class="nc-divider">
 
+  ${footerBtns ? `<div class="nc-actions">${footerBtns}</div>` : ''}
+
   ${heroHtml}
 
   <div class="nc-body">
@@ -291,20 +294,16 @@
     ${resolvedLink && linkText
         ? `<a class="nc-link" href="${esc(resolvedLink)}">${linkText}</a>` : ''}
   </div>
-
-  ${footerBtns ? `<div class="nc-footer">${footerBtns}</div>` : ''}
-
 </div>`;
   }
 
   // ── Bottom sheet ──────────────────────────────────────────────
   //
-  // States: 'hidden' | 'peek' | 'open'
+  // States: 'hidden' | 'initial' | 'mid' | 'full'
   //
-  // Peek shows the handle bar + hero (if present) + full header,
-  // stopping right at the .nc-divider — matching Google Maps' compact
-  // card style. _peekY is computed from the live DOM after each card
-  // is injected so it adapts to varying content heights.
+  // Initial shows the handle bar + header + a sliver of the Mapillary image.
+  // Mid opens to roughly half the viewport. Full opens to roughly 90%.
+  // The initial offset is computed from live DOM after each card is injected.
   //
   // All transforms are managed via inline style so drag updates are
   // immediate. The base .nc-sheet CSS provides the transition timing.
@@ -343,9 +342,34 @@
     el.style.transform  = 'translateY(' + y + 'px)';
   }
 
+  function _stepState(state, direction) {
+    var index = SHEET_STATES.indexOf(state);
+    if (index === -1) return SHEET_STATE_INITIAL;
+    var next = Math.max(0, Math.min(SHEET_STATES.length - 1, index + direction));
+    return SHEET_STATES[next];
+  }
+
+  function _closestState(y, h) {
+    var closest = SHEET_STATE_INITIAL;
+    var closestDist = Infinity;
+    SHEET_STATES.forEach(function(state) {
+      var dist = Math.abs(_stateY(state, h) - y);
+      if (dist < closestDist) {
+        closest = state;
+        closestDist = dist;
+      }
+    });
+    return closest;
+  }
+
   function _stateY(state, h) {
-    if (state === 'open') return 0;
-    if (state === 'peek') return _peekY;
+    if (state === SHEET_STATE_FULL) {
+      return Math.max(0, h - Math.min(h, window.innerHeight * FULL_VIEWPORT_RATIO));
+    }
+    if (state === SHEET_STATE_MID) {
+      return Math.max(0, h - Math.min(h, window.innerHeight * MID_VIEWPORT_RATIO));
+    }
+    if (state === SHEET_STATE_INITIAL) return _peekY;
     return h + 30;
   }
 
@@ -380,26 +404,22 @@
   function _endDrag(el, clientY) {
     if (!_dragData || typeof clientY !== 'number') return;
     var dy  = clientY - _dragData.startY;
-    var vel = dy / Math.max(1, Date.now() - _dragData.startTime); // px/ms, +ve = down
+    var vel = dy / Math.max(1, Date.now() - _dragData.startTime);
     var h   = _dragData.h;
+    var currentY = Math.max(0, Math.min(_dragData.startPx + dy, h + 30));
     _dragData = null;
 
     var target;
-    if (vel > 0.4 || dy > h * 0.3) {
-      target = _sheetState === 'open' ? 'peek' : 'hidden';
-    } else if (vel < -0.4 || dy < -50) {
-      target = 'open';
+    if (vel > 0.25 || dy > 60) {
+      target = _stepState(_sheetState, -1);
+    } else if (vel < -0.25 || dy < -60) {
+      target = _stepState(_sheetState, 1);
     } else {
-      target = _sheetState;
+      target = _closestState(currentY, h);
     }
 
     _animate(el, _stateY(target, h), '300ms cubic-bezier(0.32, 0.72, 0, 1)');
     _sheetState = target;
-
-    if (target === 'hidden') {
-      if (!_silentHide && _opts && _opts.onClose) _opts.onClose();
-      _opts = null;
-    }
   }
 
   function ensureSheet() {
@@ -429,7 +449,7 @@
       var tw = e.target.closest('.nc-thumb-wrap[data-hires]');
       if (tw)                                { openLightbox(tw.dataset.hires); return; }
       if (e.target.closest('.nc-close-btn')) { hide();                         return; }
-      if (e.target.closest('.nc-share-btn')) { _opts && _opts.onShare && _opts.onShare(); return; }
+      if (e.target.closest('.nc-action-share')) { _opts && _opts.onShare && _opts.onShare(); return; }
     });
 
     document.addEventListener('keydown', function(e) {
@@ -460,9 +480,12 @@
       });
 
       handleRow.addEventListener('click', function() {
-        if (_dragData || _sheetState !== 'peek') return;
-        _animate(el, 0, '300ms cubic-bezier(0.32, 0.72, 0, 1)');
-        _sheetState = 'open';
+        if (_dragData || _sheetState === 'hidden') return;
+        var target = _sheetState === SHEET_STATE_INITIAL
+          ? SHEET_STATE_MID
+          : _stepState(_sheetState, -1);
+        _animate(el, _stateY(target, el.offsetHeight), '300ms cubic-bezier(0.32, 0.72, 0, 1)');
+        _sheetState = target;
       });
     }
 
@@ -494,7 +517,7 @@
     requestAnimationFrame(function() {
       requestAnimationFrame(function() {
         _animate(sheet, _peekY, '350ms cubic-bezier(0.32, 0.72, 0, 1)');
-        _sheetState = 'peek';
+        _sheetState = SHEET_STATE_INITIAL;
       });
     });
   }
@@ -551,7 +574,7 @@
           var tw = e.target.closest('.nc-thumb-wrap[data-hires]');
           if (tw)                                { openLightbox(tw.dataset.hires); return; }
           if (e.target.closest('.nc-close-btn')) { hide();                         return; }
-          if (e.target.closest('.nc-share-btn')) { _opts && _opts.onShare && _opts.onShare(); return; }
+          if (e.target.closest('.nc-action-share')) { _opts && _opts.onShare && _opts.onShare(); return; }
         });
 
         if (isValidMid(mId)) {
