@@ -99,6 +99,7 @@
   let _mapillaryModal = null;
   let _mapillaryViewer = null;
   let _mapillaryOpenToken = 0;
+  let _mapillaryStatusTimer = null;
 
   function openLightbox(src) {
     if (_lightbox) { _lightbox.remove(); _lightbox = null; }
@@ -251,11 +252,24 @@
         '<div id="' + MAPILLARY_VIEWER_ID + '" class="nc-mapillary-viewer" aria-hidden="true"></div>' +
       '</div>';
 
-    modal.addEventListener('click', function(e) {
-      if (e.target.closest('[data-mapillary-close="true"]') || e.target.closest('.nc-mapillary-close')) {
+    var closeBtn = modal.querySelector('.nc-mapillary-close');
+    var backdrop = modal.querySelector('.nc-mapillary-backdrop');
+
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
         closeMapillaryModal();
-      }
-    });
+      });
+    }
+
+    if (backdrop) {
+      backdrop.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        closeMapillaryModal();
+      });
+    }
 
     document.body.appendChild(modal);
     _mapillaryModal = modal;
@@ -281,10 +295,15 @@
   function closeMapillaryModal() {
     if (!_mapillaryModal) return;
     _mapillaryOpenToken += 1;
+    if (_mapillaryStatusTimer) {
+      window.clearTimeout(_mapillaryStatusTimer);
+      _mapillaryStatusTimer = null;
+    }
     removeMapillaryViewer();
     _mapillaryModal.hidden = true;
     document.body.classList.remove('nc-mapillary-open');
     document.removeEventListener('keydown', _mapillaryKeydown, true);
+    window.removeEventListener('keydown', _mapillaryKeydown, true);
   }
 
   function openMapillaryModal(mid) {
@@ -303,16 +322,27 @@
     modal.hidden = false;
     document.body.classList.add('nc-mapillary-open');
     document.addEventListener('keydown', _mapillaryKeydown, true);
+    window.addEventListener('keydown', _mapillaryKeydown, true);
     setMapillaryStatus('Loading street-level view...', false);
     modal.querySelector('.nc-mapillary-close')?.focus({ preventScroll: true });
 
     ensureMapillaryAssets()
       .then(function(mapillaryLib) {
         if (token !== _mapillaryOpenToken || !_mapillaryModal || _mapillaryModal.hidden || !viewerEl) return;
-        var loadTimer = window.setTimeout(function() {
-          if (token !== _mapillaryOpenToken) return;
-          removeMapillaryViewer();
-          setMapillaryStatus('Unable to open the street-level viewer here. Use the link above to open Mapillary directly.', true);
+        var ready = false;
+        function markReady() {
+          if (ready || token !== _mapillaryOpenToken) return;
+          ready = true;
+          if (_mapillaryStatusTimer) {
+            window.clearTimeout(_mapillaryStatusTimer);
+            _mapillaryStatusTimer = null;
+          }
+          setMapillaryStatus('', false);
+        }
+
+        _mapillaryStatusTimer = window.setTimeout(function() {
+          if (token !== _mapillaryOpenToken || ready) return;
+          setMapillaryStatus('Still loading street-level view. If it does not appear, use the link above to open Mapillary directly.', true);
         }, 12000);
 
         try {
@@ -330,12 +360,23 @@
           });
 
           _mapillaryViewer.on('load', function() {
-            if (token !== _mapillaryOpenToken) return;
-            window.clearTimeout(loadTimer);
-            setMapillaryStatus('', false);
+            markReady();
+          });
+
+          _mapillaryViewer.on('image', function() {
+            markReady();
+          });
+
+          _mapillaryViewer.on('dataloading', function(event) {
+            if (event && event.loading === false) {
+              markReady();
+            }
           });
         } catch (_err) {
-          window.clearTimeout(loadTimer);
+          if (_mapillaryStatusTimer) {
+            window.clearTimeout(_mapillaryStatusTimer);
+            _mapillaryStatusTimer = null;
+          }
           removeMapillaryViewer();
           setMapillaryStatus('Unable to open the street-level viewer here. Use the link above to open Mapillary directly.', true);
         }
