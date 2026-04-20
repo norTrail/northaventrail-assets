@@ -1412,6 +1412,8 @@ function goToElement(idOverride = null) {
         if (!coords || coords.length !== 2) return;
         flyToMarker(feature, zoom, coords);
         updatePageDetails(feature); // ensure this reads feature.properties.n / d now
+        createPopUp(feature);
+        flyToFeature = null;
         break;
       }
     }

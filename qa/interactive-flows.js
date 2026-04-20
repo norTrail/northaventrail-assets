@@ -46,6 +46,7 @@ function assertHeadersAllowMapillaryViewer() {
     assert.match(line, /script-src[^;]*https:\/\/unpkg\.com/, "CSP should allow Mapillary JS from unpkg.com");
     assert.match(line, /style-src[^;]*https:\/\/unpkg\.com/, "CSP should allow Mapillary CSS from unpkg.com");
     assert.match(line, /connect-src[^;]*https:\/\/graph\.mapillary\.com/, "CSP should allow Mapillary API requests");
+    assert.match(line, /connect-src[^;]*https:\/\/unpkg\.com/, "CSP should allow Mapillary sourcemap requests from unpkg.com");
   }
 
   console.log("headers mapillary csp: pass");
