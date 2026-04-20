@@ -556,6 +556,7 @@
 
   function show(feature, poiData, map, opts) {
     _opts = opts || {};
+    _opts.map = map;
     _activeFeatureId = feature.id;
     var p      = feature.properties || {};
     var mId    = normalizeMid(p.m_id);
@@ -584,13 +585,18 @@
         var safeBottom = viewportHeight - cardVisible - 40;
         var safeTop = 60;
         
+        var easeOptions = {
+          padding: { top: 60, bottom: cardVisible + 24, left: 20, right: 20 },
+          duration: 400,
+        };
+
+        // If marker is in the danger zone (covered or off-screen), center it in the padded view.
+        // Otherwise, simply shifting padding creates the "scroll up" effect naturally.
         if (point.y > safeBottom || point.y < safeTop) {
-          map.easeTo({
-            center:   coords,
-            padding:  { top: 60, bottom: cardVisible + 24, left: 20, right: 20 },
-            duration: 350,
-          });
+          easeOptions.center = coords;
         }
+
+        map.easeTo(easeOptions);
       }
     } else {
       hideSheet();
@@ -646,6 +652,13 @@
     _silentHide = silent;
     hideSheet();
     if (_popup) { _popup.remove(); _popup = null; }
+    
+    // Reset map padding on hide (if we have a map reference)
+    var map = _opts && _opts.map; 
+    if (map) {
+      map.easeTo({ padding: { top: 0, bottom: 0, left: 0, right: 0 }, duration: 300 });
+    }
+
     _silentHide = false;
     _activeFeatureId = null;
     if (!silent && _opts && _opts.onClose) _opts.onClose();
