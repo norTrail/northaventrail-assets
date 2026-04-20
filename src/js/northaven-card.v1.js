@@ -255,20 +255,20 @@
     var closeBtn = modal.querySelector('.nc-mapillary-close');
     var backdrop = modal.querySelector('.nc-mapillary-backdrop');
 
+    function _handleClose(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      closeMapillaryModal();
+    }
+
     if (closeBtn) {
-      closeBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        closeMapillaryModal();
-      });
+      closeBtn.addEventListener('click', _handleClose);
+      closeBtn.addEventListener('touchend', _handleClose);
     }
 
     if (backdrop) {
-      backdrop.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        closeMapillaryModal();
-      });
+      backdrop.addEventListener('click', _handleClose);
+      backdrop.addEventListener('touchend', _handleClose);
     }
 
     document.body.appendChild(modal);
