@@ -326,11 +326,21 @@ function loadWindow() {
     m?.once?.("load", fn);
   }
 
+  // Our own layers already use safe coalesce expressions. Re-processing them on
+  // each reinit causes ["get","s"] inside already-wrapped expressions to get
+  // wrapped again, growing nesting depth by 2 per reinit until Mapbox's
+  // internal recursive serializer overflows the call stack.
+  const OWN_LAYER_IDS = new Set([
+    "trail_markers", "trail_markers_active",
+    "existing_trail", "future_expansions",
+    "monarch_way"
+  ]);
+
   function hardenLayerProperties(m) {
     try {
       const style = m.getStyle();
       if (!style?.layers) return;
-      
+
       const wrapExpr = (val) => {
         if (!Array.isArray(val)) return val;
         // Specifically catch ["get", "len"] or ["get", "s"] and wrap in coalesce
@@ -343,6 +353,7 @@ function loadWindow() {
       };
 
       style.layers.forEach(l => {
+        if (OWN_LAYER_IDS.has(l.id)) return;
         ['layout', 'paint'].forEach(type => {
           if (!l[type]) return;
           Object.keys(l[type]).forEach(prop => {
