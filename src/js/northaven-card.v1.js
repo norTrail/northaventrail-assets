@@ -251,13 +251,11 @@
              onerror="this.closest('.nc-thumb-wrap').remove()">
       </div>` : '';
 
-    // ── Category row: legend icon + badge ─────────────────────
+    // ── Category row: legend icon (outside) + badge pill ──────
     const categoryHtml = category ? `
     <div class="nc-category-row">
-      <span class="nc-badge${iconUrl ? ' nc-badge--with-icon' : ''}">
-        ${iconUrl ? `<img class="nc-category-icon" src="${esc(iconUrl)}" alt="" aria-hidden="true" onerror="this.remove()">` : ''}
-        <span class="nc-badge-label">${category}</span>
-      </span>
+      ${iconUrl ? `<img class="nc-category-icon" src="${esc(iconUrl)}" alt="" aria-hidden="true" onerror="this.remove()">` : ''}
+      <span class="nc-badge">${category}</span>
     </div>` : '';
 
     // ── Amenity pills ─────────────────────────────────────────
@@ -270,7 +268,7 @@
 
     // ── Footer actions ────────────────────────────────────────
     const footerBtns = [
-      resolvedCta && ctaLabel && `<a class="nc-action nc-cta" href="${esc(resolvedCta)}" title="${ctaLabel}" aria-label="${ctaLabel}"><span class="nc-action-icon nc-action-icon--placeholder" aria-hidden="true"></span><span class="nc-action-label">${ctaLabel}</span></a>`,
+      resolvedCta && ctaLabel && `<a class="nc-action nc-cta" href="${esc(resolvedCta)}" title="${ctaLabel}" aria-label="${ctaLabel}"><span class="nc-action-label">${ctaLabel}</span></a>`,
       directionsHref && `<a class="nc-action" href="${directionsHref}" target="_blank" rel="noopener noreferrer" aria-label="Get directions in Google Maps" title="Get directions in Google Maps">
         <svg class="nc-action-icon" aria-hidden="true"><use href="#google-logo"></use></svg>
         <span class="nc-action-label">Directions</span>

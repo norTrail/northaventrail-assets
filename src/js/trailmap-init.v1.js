@@ -947,7 +947,13 @@ function applyMarkerPayload_(m, payload) {
           "text-offset": [0.5, -0.25],
           "icon-padding": 2,
           "icon-size": 0.68,
-          "symbol-sort-key": 9999
+          "symbol-sort-key": 9999,
+          // Must allow overlap so inactive-but-rendered symbols don't suppress
+          // the base trail_markers layer via Mapbox collision detection
+          "icon-allow-overlap": true,
+          "text-allow-overlap": true,
+          "icon-ignore-placement": true,
+          "text-ignore-placement": true
         },
         paint: {
           "text-color": effColor,

@@ -22,6 +22,11 @@
   flex-direction: column;
 }
 
+/* In CSS fullscreen (#mapView.is-fullscreen at z-index 999999), lift sheet above it */
+body.is-map-fullscreen .nc-sheet {
+  z-index: 1000001;
+}
+
 /* JS manages transforms via inline style; these classes are CSS-only fallbacks */
 .nc-sheet--open {
   transform: translateY(0);
@@ -225,20 +230,19 @@
 .nc-category-row {
   display: flex;
   align-items: center;
+  gap: 8px;
   margin-bottom: 8px;
 }
 
 .nc-category-icon {
-  width: 14px;
-  height: 14px;
+  width: 28px;
+  height: 28px;
   flex-shrink: 0;
   object-fit: contain;
 }
 
 .nc-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+  display: inline-block;
   font-size: 11px;
   font-weight: 600;
   color: #108452;
@@ -248,11 +252,6 @@
   text-transform: uppercase;
   letter-spacing: 0.4px;
   margin-bottom: 0;
-}
-
-.nc-badge-label {
-  display: inline-block;
-  line-height: 1;
 }
 
 .nc-amenities {
@@ -354,14 +353,16 @@
   text-decoration: none !important;
 }
 
-.nc-action-icon--placeholder {
-  opacity: 0;
-}
 
 .nc-cta {
   background: #108452;
   color: #fff;
   flex: 2;
+  justify-content: center;
+}
+
+.nc-cta .nc-action-label {
+  margin-top: 0;
 }
 
 .nc-cta,
