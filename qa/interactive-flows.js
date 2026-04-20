@@ -1,6 +1,8 @@
 "use strict";
 
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
 const puppeteer = require("puppeteer");
 
 const QA_USER_AGENT =
@@ -30,6 +32,23 @@ function launchBrowser() {
     headless: true,
     args: ["--no-sandbox", "--disable-setuid-sandbox"]
   });
+}
+
+function assertHeadersAllowMapillaryViewer() {
+  const headersPath = path.join(__dirname, "..", "_headers");
+  const headersText = fs.readFileSync(headersPath, "utf8");
+  const cspLines = headersText
+    .split("\n")
+    .filter((line) => line.includes("Content-Security-Policy:"));
+
+  assert.ok(cspLines.length >= 2, "Expected both scoped and global CSP header rules");
+  for (const line of cspLines) {
+    assert.match(line, /script-src[^;]*https:\/\/unpkg\.com/, "CSP should allow Mapillary JS from unpkg.com");
+    assert.match(line, /style-src[^;]*https:\/\/unpkg\.com/, "CSP should allow Mapillary CSS from unpkg.com");
+    assert.match(line, /connect-src[^;]*https:\/\/graph\.mapillary\.com/, "CSP should allow Mapillary API requests");
+  }
+
+  console.log("headers mapillary csp: pass");
 }
 
 async function waitForMenuState_(page, btnSel, menuSel, open) {
@@ -214,6 +233,66 @@ async function trailmapPopupLightboxFlow(browser) {
     await page.waitForFunction(() => !document.querySelector(".mapboxgl-popup"), { timeout: 10000 });
 
     console.log("trailmap popup lightbox: pass");
+  } finally {
+    await page.close();
+  }
+}
+
+async function trailmapMapillaryModalFlow(browser) {
+  const page = await browser.newPage();
+  try {
+    await goto(page, "https://northaventrail.org/trailmap");
+    await waitForMap(page);
+    await page.waitForFunction(() => Array.isArray(window.poiData?.features) && window.poiData.features.length > 0, {
+      timeout: 30000
+    });
+
+    const opened = await page.evaluate(() => {
+      if (typeof createPopUp !== "function" || !Array.isArray(window.poiData?.features)) return false;
+      const feature = window.poiData.features.find((item) => {
+        const mid = String(item?.properties?.m_id || "").trim();
+        return /^\d+$/.test(mid) && Array.isArray(item?.geometry?.coordinates) && item.geometry.coordinates.length === 2;
+      });
+      if (!feature) return false;
+      createPopUp(feature);
+      return true;
+    });
+
+    assert.equal(opened, true, "Trailmap should be able to open a popup for a Mapillary-backed POI");
+    await page.waitForSelector(".mapboxgl-popup .nc-hero-link[data-mid]", { visible: true, timeout: 15000 });
+    await page.click(".mapboxgl-popup .nc-hero-link[data-mid]");
+
+    await page.waitForFunction(() => {
+      const modal = document.getElementById("nc-mapillary-modal");
+      return modal && !modal.hidden && document.body.classList.contains("nc-mapillary-open");
+    }, { timeout: 10000 });
+
+    const modalState = await page.evaluate(() => {
+      const modal = document.getElementById("nc-mapillary-modal");
+      return {
+        hasModal: !!modal,
+        hasViewerMount: !!document.getElementById("nc-mapillary-viewer"),
+        hasScript: !!document.querySelector('script[data-nc-ext-script*="mapillary-js"]'),
+        hasStylesheet: !!document.querySelector('link[data-nc-ext-style*="mapillary-js"]'),
+        linkHref: modal?.querySelector(".nc-mapillary-link")?.getAttribute("href") || "",
+        closeFocused: document.activeElement?.classList?.contains("nc-mapillary-close") || false
+      };
+    });
+
+    assert.equal(modalState.hasModal, true, "Mapillary modal should exist");
+    assert.equal(modalState.hasViewerMount, true, "Mapillary modal should include a viewer mount");
+    assert.equal(modalState.hasScript, true, "Mapillary modal should lazy-load the Mapillary JS asset");
+    assert.equal(modalState.hasStylesheet, true, "Mapillary modal should lazy-load the Mapillary stylesheet");
+    assert.ok(modalState.linkHref.includes("mapillary.com/app/?pKey="), "Mapillary modal should provide a direct fallback link");
+    assert.equal(modalState.closeFocused, true, "Mapillary modal should move focus to the close button");
+
+    await page.keyboard.press("Escape");
+    await page.waitForFunction(() => {
+      const modal = document.getElementById("nc-mapillary-modal");
+      return modal && modal.hidden && !document.body.classList.contains("nc-mapillary-open");
+    }, { timeout: 10000 });
+
+    console.log("trailmap mapillary modal: pass");
   } finally {
     await page.close();
   }
@@ -420,9 +499,11 @@ async function valentineModalFlow(browser) {
 }
 
 async function main() {
+  assertHeadersAllowMapillaryViewer();
   const browser = await launchBrowser();
   try {
     await trailmapPopupLightboxFlow(browser);
+    await trailmapMapillaryModalFlow(browser);
     await trailmapSearchFlow(browser);
     await mapsMenuPageFlow(browser, "https://northaventrail.org/map-points-of-interest", "listing maps menu");
     await mapsMenuPageFlow(browser, "https://northaventrail.org/hawk-lights", "hawk lights maps menu");

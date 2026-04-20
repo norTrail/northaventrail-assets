@@ -226,6 +226,7 @@ body.is-map-fullscreen .nc-sheet {
   display: block;
   width: 100%;
   height: 100%;
+  cursor: pointer;
 }
 
 .nc-hero-img {
@@ -415,6 +416,93 @@ body.is-map-fullscreen .nc-sheet {
 }
 
 /* ── Mapillary hero ──────────────────────────────────────────── */
+
+body.nc-mapillary-open {
+  overflow: hidden;
+}
+
+.nc-mapillary-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000002;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+}
+
+.nc-mapillary-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.86);
+}
+
+.nc-mapillary-panel {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: min(100vw, 960px);
+  height: 100vh;
+  background: #111;
+  color: #fff;
+}
+
+.nc-mapillary-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: max(12px, env(safe-area-inset-top)) 12px 12px;
+  background: rgba(17, 17, 17, 0.94);
+}
+
+.nc-mapillary-title {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.nc-mapillary-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nc-mapillary-link {
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.nc-mapillary-link:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.nc-mapillary-close {
+  color: #fff;
+}
+
+.nc-mapillary-close:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.nc-mapillary-status {
+  padding: 12px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.nc-mapillary-status.is-error {
+  color: #ffd7d7;
+}
+
+.nc-mapillary-viewer {
+  flex: 1;
+  min-height: 0;
+  background: #000;
+}
 
 /* ── Lightbox ────────────────────────────────────────────────── */
 

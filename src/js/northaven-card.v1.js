@@ -14,10 +14,14 @@
   const MAPILLARY_TOKEN    = 'MLY|26456749190653210|c432ace1542e35cd80e00c3f15daccb8';
   const MAPILLARY_API      = 'https://graph.mapillary.com/';
   const MAPILLARY_VIEW     = 'https://www.mapillary.com/app/?pKey=';
+  const MAPILLARY_JS_URL   = 'https://unpkg.com/mapillary-js@4.1.2/dist/mapillary.js';
+  const MAPILLARY_CSS_URL  = 'https://unpkg.com/mapillary-js@4.1.2/dist/mapillary.css';
   const PEEK_HERO_PREVIEW  = 56;
   const FULL_VIEWPORT_RATIO = 0.9;
   const SHEET_STATE_INITIAL = 'initial';
   const SHEET_STATE_FULL    = 'full';
+  const MAPILLARY_MODAL_ID  = 'nc-mapillary-modal';
+  const MAPILLARY_VIEWER_ID = 'nc-mapillary-viewer';
   const INVALID_MIDS       = new Set([
     'NONE',
     'NULL',
@@ -91,6 +95,10 @@
   // ── Lightbox ──────────────────────────────────────────────────
 
   let _lightbox = null;
+  let _mapillaryAssetPromise = null;
+  let _mapillaryModal = null;
+  let _mapillaryViewer = null;
+  let _mapillaryOpenToken = 0;
 
   function openLightbox(src) {
     if (_lightbox) { _lightbox.remove(); _lightbox = null; }
@@ -114,11 +122,79 @@
     document.removeEventListener('keydown', _lbKeydown, true);
   }
 
+  function ensureStylesheetOnce(href) {
+    if (!href) return Promise.resolve();
+    var existing = document.querySelector('link[data-nc-ext-style="' + href + '"]');
+    if (existing) return Promise.resolve();
+
+    return new Promise(function(resolve, reject) {
+      var link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = href;
+      link.setAttribute('data-nc-ext-style', href);
+      link.onload = function() { resolve(); };
+      link.onerror = function() { reject(new Error('Failed to load stylesheet')); };
+      document.head.appendChild(link);
+    });
+  }
+
+  function ensureScriptOnce(src) {
+    if (!src) return Promise.resolve();
+    var existing = document.querySelector('script[data-nc-ext-script="' + src + '"]');
+    if (existing) {
+      if (existing.getAttribute('data-loaded') === 'true') return Promise.resolve();
+      return new Promise(function(resolve, reject) {
+        existing.addEventListener('load', function() { resolve(); }, { once: true });
+        existing.addEventListener('error', function() { reject(new Error('Failed to load script')); }, { once: true });
+      });
+    }
+
+    return new Promise(function(resolve, reject) {
+      var script = document.createElement('script');
+      script.src = src;
+      script.async = true;
+      script.setAttribute('data-nc-ext-script', src);
+      script.onload = function() {
+        script.setAttribute('data-loaded', 'true');
+        resolve();
+      };
+      script.onerror = function() { reject(new Error('Failed to load script')); };
+      document.head.appendChild(script);
+    });
+  }
+
+  function ensureMapillaryAssets() {
+    if (window.mapillary && window.mapillary.Viewer) return Promise.resolve(window.mapillary);
+    if (_mapillaryAssetPromise) return _mapillaryAssetPromise;
+
+    _mapillaryAssetPromise = Promise.all([
+      ensureStylesheetOnce(MAPILLARY_CSS_URL),
+      ensureScriptOnce(MAPILLARY_JS_URL),
+    ]).then(function() {
+      if (!window.mapillary || !window.mapillary.Viewer) {
+        throw new Error('Mapillary viewer unavailable');
+      }
+      return window.mapillary;
+    }).catch(function(err) {
+      _mapillaryAssetPromise = null;
+      throw err;
+    });
+
+    return _mapillaryAssetPromise;
+  }
+
   function _lbKeydown(e) {
     if (e.key !== 'Escape' || !_lightbox) return;
     e.preventDefault();
     e.stopImmediatePropagation();
     closeLightbox();
+  }
+
+  function _mapillaryKeydown(e) {
+    if (e.key !== 'Escape' || !_mapillaryModal) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    closeMapillaryModal();
   }
 
   // ── Mapillary ─────────────────────────────────────────────────
@@ -140,6 +216,135 @@
 
   function isValidMid(mid) {
     return Boolean(normalizeMid(mid));
+  }
+
+  function removeMapillaryViewer() {
+    if (_mapillaryViewer && typeof _mapillaryViewer.remove === 'function') {
+      _mapillaryViewer.remove();
+    }
+    _mapillaryViewer = null;
+  }
+
+  function ensureMapillaryModal() {
+    if (_mapillaryModal) return _mapillaryModal;
+
+    var modal = document.createElement('div');
+    modal.id = MAPILLARY_MODAL_ID;
+    modal.className = 'nc-mapillary-modal';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'Street-level viewer');
+    modal.hidden = true;
+    modal.innerHTML =
+      '<div class="nc-mapillary-backdrop" data-mapillary-close="true"></div>' +
+      '<div class="nc-mapillary-panel">' +
+        '<div class="nc-mapillary-bar">' +
+          '<div class="nc-mapillary-title">Street View</div>' +
+          '<div class="nc-mapillary-actions">' +
+            '<a class="nc-mapillary-link" href="#" target="_blank" rel="noopener noreferrer">Open in Mapillary</a>' +
+            '<button class="nc-btn nc-mapillary-close" type="button" aria-label="Close street-level viewer" title="Close">' +
+              '<svg class="nc-btn-icon" aria-hidden="true"><use href="#closeX"></use></svg>' +
+            '</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="nc-mapillary-status" aria-live="polite">Loading street-level view...</div>' +
+        '<div id="' + MAPILLARY_VIEWER_ID + '" class="nc-mapillary-viewer" aria-hidden="true"></div>' +
+      '</div>';
+
+    modal.addEventListener('click', function(e) {
+      if (e.target.closest('[data-mapillary-close="true"]') || e.target.closest('.nc-mapillary-close')) {
+        closeMapillaryModal();
+      }
+    });
+
+    document.body.appendChild(modal);
+    _mapillaryModal = modal;
+    return modal;
+  }
+
+  function setMapillaryStatus(text, isError) {
+    var modal = ensureMapillaryModal();
+    var statusEl = modal.querySelector('.nc-mapillary-status');
+    var viewerEl = modal.querySelector('.nc-mapillary-viewer');
+
+    if (statusEl) {
+      statusEl.textContent = text || '';
+      statusEl.hidden = !text;
+      statusEl.classList.toggle('is-error', Boolean(isError));
+    }
+
+    if (viewerEl) {
+      viewerEl.setAttribute('aria-hidden', text ? 'true' : 'false');
+    }
+  }
+
+  function closeMapillaryModal() {
+    if (!_mapillaryModal) return;
+    _mapillaryOpenToken += 1;
+    removeMapillaryViewer();
+    _mapillaryModal.hidden = true;
+    document.body.classList.remove('nc-mapillary-open');
+    document.removeEventListener('keydown', _mapillaryKeydown, true);
+  }
+
+  function openMapillaryModal(mid) {
+    var normalizedMid = normalizeMid(mid);
+    if (!normalizedMid) return;
+
+    var modal = ensureMapillaryModal();
+    var viewerEl = modal.querySelector('.nc-mapillary-viewer');
+    var openLink = modal.querySelector('.nc-mapillary-link');
+    var token = ++_mapillaryOpenToken;
+
+    removeMapillaryViewer();
+    if (viewerEl) viewerEl.innerHTML = '';
+    if (openLink) openLink.href = MAPILLARY_VIEW + normalizedMid;
+
+    modal.hidden = false;
+    document.body.classList.add('nc-mapillary-open');
+    document.addEventListener('keydown', _mapillaryKeydown, true);
+    setMapillaryStatus('Loading street-level view...', false);
+    modal.querySelector('.nc-mapillary-close')?.focus({ preventScroll: true });
+
+    ensureMapillaryAssets()
+      .then(function(mapillaryLib) {
+        if (token !== _mapillaryOpenToken || !_mapillaryModal || _mapillaryModal.hidden || !viewerEl) return;
+        var loadTimer = window.setTimeout(function() {
+          if (token !== _mapillaryOpenToken) return;
+          removeMapillaryViewer();
+          setMapillaryStatus('Unable to open the street-level viewer here. Use the link above to open Mapillary directly.', true);
+        }, 12000);
+
+        try {
+          _mapillaryViewer = new mapillaryLib.Viewer({
+            accessToken: MAPILLARY_TOKEN,
+            container: viewerEl,
+            imageId: normalizedMid,
+            component: {
+              cover: false,
+              fallback: {
+                image: true,
+                navigation: true,
+              },
+            },
+          });
+
+          _mapillaryViewer.on('load', function() {
+            if (token !== _mapillaryOpenToken) return;
+            window.clearTimeout(loadTimer);
+            setMapillaryStatus('', false);
+          });
+        } catch (_err) {
+          window.clearTimeout(loadTimer);
+          removeMapillaryViewer();
+          setMapillaryStatus('Unable to open the street-level viewer here. Use the link above to open Mapillary directly.', true);
+        }
+      })
+      .catch(function() {
+        if (token !== _mapillaryOpenToken) return;
+        removeMapillaryViewer();
+        setMapillaryStatus('Unable to load the street-level viewer right now. Use the link above to open Mapillary directly.', true);
+      });
   }
 
   function syncPeekStateIfNeeded(scope) {
@@ -234,7 +439,7 @@
     // ── Mapillary hero ────────────────────────────────────────
     const heroHtml = mId ? `
   <div class="nc-hero">
-    <a class="nc-hero-link" href="${esc(MAPILLARY_VIEW + mId)}" target="_blank" rel="noopener noreferrer" aria-label="View street-level photo on Mapillary">
+    <a class="nc-hero-link" href="${esc(MAPILLARY_VIEW + mId)}" target="_blank" rel="noopener noreferrer" aria-label="Open interactive street-level viewer" data-mid="${esc(mId)}">
       <img class="nc-hero-img" alt="Street-level photo">
     </a>
     <span class="nc-hero-badge">Street View</span>
@@ -461,6 +666,12 @@
     el.addEventListener('click', function(e) {
       var tw = e.target.closest('.nc-thumb-wrap[data-hires]');
       if (tw)                                { openLightbox(tw.dataset.hires); return; }
+      var heroLink = e.target.closest('.nc-hero-link[data-mid]');
+      if (heroLink) {
+        e.preventDefault();
+        openMapillaryModal(heroLink.getAttribute('data-mid'));
+        return;
+      }
       if (e.target.closest('.nc-close-btn')) { hide();                         return; }
       if (e.target.closest('.nc-action-share') || e.target.closest('.nc-share-btn')) { _opts && _opts.onShare && _opts.onShare(); return; }
     });
@@ -618,6 +829,12 @@
         popupEl.addEventListener('click', function(e) {
           var tw = e.target.closest('.nc-thumb-wrap[data-hires]');
           if (tw)                                { openLightbox(tw.dataset.hires); return; }
+          var heroLink = e.target.closest('.nc-hero-link[data-mid]');
+          if (heroLink) {
+            e.preventDefault();
+            openMapillaryModal(heroLink.getAttribute('data-mid'));
+            return;
+          }
           if (e.target.closest('.nc-close-btn')) { hide();                         return; }
           if (e.target.closest('.nc-action-share') || e.target.closest('.nc-share-btn')) { _opts && _opts.onShare && _opts.onShare(); return; }
         });
@@ -647,6 +864,7 @@
   function hide(opts) {
     var silent = opts && opts.silent ? true : false;
     _silentHide = silent;
+    closeMapillaryModal();
     hideSheet();
     if (_popup) { _popup.remove(); _popup = null; }
     

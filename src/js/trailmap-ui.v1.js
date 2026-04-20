@@ -6,6 +6,35 @@
 
 let rotateEndTimer = null;
 let popupEscapeWired = false;
+let flyToPopupFallbackTimer = null;
+
+function clearFlyToPopupFallback_() {
+  if (flyToPopupFallbackTimer) {
+    clearTimeout(flyToPopupFallbackTimer);
+    flyToPopupFallbackTimer = null;
+  }
+}
+
+function scheduleFlyToPopupFallback_(feature) {
+  clearFlyToPopupFallback_();
+
+  if (!feature?.id) return;
+
+  flyToPopupFallbackTimer = setTimeout(() => {
+    flyToPopupFallbackTimer = null;
+
+    if (!flyToFeature?.id || String(flyToFeature.id) !== String(feature.id)) return;
+    if (!map?.getLayer?.("trail_markers")) return;
+
+    const visible = map.queryRenderedFeatures({ layers: ["trail_markers"] });
+    const isVisible = visible.some((candidate) => String(candidate?.id) === String(feature.id));
+
+    if (!isVisible) return;
+
+    createPopUp(feature);
+    flyToFeature = null;
+  }, 600);
+}
 
 function wireMapEventsAfterMarkers_() {
   if (!map || map.__trailmapEventsAfterMarkersWired) return;
@@ -51,6 +80,7 @@ function wireMapEventsAfterMarkers_() {
     if (flyToFeature?.id) {
       let zoomLevel = map.getZoom();
       if (zoomLevel > 22) {
+        clearFlyToPopupFallback_();
         flyToFeature = null;
         return;
       }
@@ -63,6 +93,7 @@ function wireMapEventsAfterMarkers_() {
       for (let x = 0; x < visible.length; x++) {
         const f = visible[x];
         if (String(f?.id) === targetId) {
+          clearFlyToPopupFallback_();
           createPopUp(flyToFeature);
           flyToFeature = null;
           break;
@@ -555,6 +586,7 @@ function addPopupBack() {
 
 function flyToMarker(currentFeature, zoomLevel, coords) {
   forceClosePopups();
+  clearFlyToPopupFallback_();
 
   let zl = zoomLevel;
   if (!zl) {
@@ -583,6 +615,8 @@ function flyToMarker(currentFeature, zoomLevel, coords) {
     curve: 1,
     easing(t) { return t; }
   });
+
+  scheduleFlyToPopupFallback_(currentFeature);
 }
 
 // removed redundant SVG logic — now in NorthavenUtils
@@ -1247,6 +1281,7 @@ function clickShare(title, text, url) {
 /* ------------------------------------------------------------ */
 
 function forceClosePopups() {
+  clearFlyToPopupFallback_();
   window.NorthavenCard?.hide?.({ silent: true });
   const popups = document.getElementsByClassName('mapboxgl-popup');
   while (popups.length) {
