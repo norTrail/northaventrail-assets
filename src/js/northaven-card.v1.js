@@ -100,6 +100,7 @@
   let _mapillaryViewer = null;
   let _mapillaryOpenToken = 0;
   let _mapillaryStatusTimer = null;
+  let _mapillaryFocusReturn = null;
 
   function openLightbox(src) {
     if (_lightbox) { _lightbox.remove(); _lightbox = null; }
@@ -192,7 +193,7 @@
   }
 
   function _mapillaryKeydown(e) {
-    if (e.key !== 'Escape' || !_mapillaryModal) return;
+    if (e.key !== 'Escape' || !_mapillaryModal || _mapillaryModal.hidden) return;
     e.preventDefault();
     e.stopImmediatePropagation();
     closeMapillaryModal();
@@ -221,7 +222,7 @@
 
   function removeMapillaryViewer() {
     if (_mapillaryViewer && typeof _mapillaryViewer.remove === 'function') {
-      _mapillaryViewer.remove();
+      try { _mapillaryViewer.remove(); } catch (e) { /* ignore viewer teardown errors */ }
     }
     _mapillaryViewer = null;
   }
@@ -299,17 +300,22 @@
   }
 
   function closeMapillaryModal() {
-    if (!_mapillaryModal) return;
+    if (!_mapillaryModal || _mapillaryModal.hidden) return;
     _mapillaryOpenToken += 1;
     if (_mapillaryStatusTimer) {
       window.clearTimeout(_mapillaryStatusTimer);
       _mapillaryStatusTimer = null;
     }
     removeMapillaryViewer();
+    var viewerEl = _mapillaryModal.querySelector('.nc-mapillary-viewer');
+    if (viewerEl) viewerEl.innerHTML = '';
     _mapillaryModal.hidden = true;
     document.body.classList.remove('nc-mapillary-open');
     document.removeEventListener('keydown', _mapillaryKeydown, true);
-    window.removeEventListener('keydown', _mapillaryKeydown, true);
+    if (_mapillaryFocusReturn) {
+      try { _mapillaryFocusReturn.focus({ preventScroll: true }); } catch (e) { /* ignore */ }
+      _mapillaryFocusReturn = null;
+    }
   }
 
   function openMapillaryModal(mid) {
@@ -325,10 +331,10 @@
     if (viewerEl) viewerEl.innerHTML = '';
     if (openLink) openLink.href = MAPILLARY_VIEW + normalizedMid;
 
+    _mapillaryFocusReturn = document.activeElement || null;
     modal.hidden = false;
     document.body.classList.add('nc-mapillary-open');
     document.addEventListener('keydown', _mapillaryKeydown, true);
-    window.addEventListener('keydown', _mapillaryKeydown, true);
     setMapillaryStatus('Loading street-level view...', false);
     modal.querySelector('.nc-mapillary-close')?.focus({ preventScroll: true });
 
