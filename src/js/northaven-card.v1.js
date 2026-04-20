@@ -75,6 +75,22 @@
         || '';
   }
 
+  function resolveLegendIcon(iconValue) {
+    const u = window.NorthavenUtils;
+    const raw = String(iconValue || '').trim();
+    if (!u || !raw) return '';
+
+    if (/^(https?:)?\/\//i.test(raw) || raw.startsWith('/')) {
+      return raw;
+    }
+
+    if (/\.[a-z0-9]+$/i.test(raw)) {
+      return u.normalizeSquarespaceAssetUrl(raw);
+    }
+
+    return u.normalizeSquarespaceAssetUrl(raw + '.svg');
+  }
+
   // ── Lightbox ──────────────────────────────────────────────────
 
   let _lightbox = null;
@@ -204,7 +220,7 @@
 
     // Legend icon — shown next to the category badge (not as thumbnail)
     const iconRaw   = td && td.i ? String(td.i).trim() : '';
-    const iconUrl   = iconRaw && u ? u.normalizeSquarespaceAssetUrl(iconRaw) : '';
+    const iconUrl   = resolveLegendIcon(iconRaw);
 
     const resolvedLink = u ? u.normalizeAbsUrl(linkUrl) : linkUrl;
     const resolvedCta  = u ? u.normalizeAbsUrl(ctaUrl)  : ctaUrl;
@@ -252,14 +268,14 @@
 
     // ── Footer actions ────────────────────────────────────────
     const footerBtns = [
-      resolvedCta && ctaLabel && `<a class="nc-action nc-cta" href="${esc(resolvedCta)}">${ctaLabel}</a>`,
+      resolvedCta && ctaLabel && `<a class="nc-action nc-cta" href="${esc(resolvedCta)}"><span class="nc-action-label">${ctaLabel}</span></a>`,
       directionsHref && `<a class="nc-action" href="${directionsHref}" target="_blank" rel="noopener noreferrer" aria-label="Get directions in Google Maps">
         <svg class="nc-action-icon" aria-hidden="true"><use href="#google-logo"></use></svg>
-        <span>Directions</span>
+        <span class="nc-action-label">Directions</span>
       </a>`,
       `<button class="nc-action nc-action-share" type="button" aria-label="Share this point of interest">
         <svg class="nc-action-icon" aria-hidden="true"><use href="#share-icon"></use></svg>
-        <span>Share</span>
+        <span class="nc-action-label">Share</span>
       </button>`,
     ].filter(Boolean).join('');
 
@@ -271,6 +287,9 @@
       <div class="nc-name-row">
         <h2 class="nc-name">${name}</h2>
         <div class="nc-header-btns">
+          <button class="nc-btn nc-share-btn" type="button" aria-label="Share">
+            <svg class="nc-btn-icon" aria-hidden="true"><use href="#share-icon"></use></svg>
+          </button>
           <button class="nc-btn nc-close-btn" type="button" aria-label="Close">
             <svg class="nc-btn-icon" aria-hidden="true"><use href="#closeX"></use></svg>
           </button>
@@ -449,7 +468,7 @@
       var tw = e.target.closest('.nc-thumb-wrap[data-hires]');
       if (tw)                                { openLightbox(tw.dataset.hires); return; }
       if (e.target.closest('.nc-close-btn')) { hide();                         return; }
-      if (e.target.closest('.nc-action-share')) { _opts && _opts.onShare && _opts.onShare(); return; }
+      if (e.target.closest('.nc-action-share') || e.target.closest('.nc-share-btn')) { _opts && _opts.onShare && _opts.onShare(); return; }
     });
 
     document.addEventListener('keydown', function(e) {
@@ -574,7 +593,7 @@
           var tw = e.target.closest('.nc-thumb-wrap[data-hires]');
           if (tw)                                { openLightbox(tw.dataset.hires); return; }
           if (e.target.closest('.nc-close-btn')) { hide();                         return; }
-          if (e.target.closest('.nc-action-share')) { _opts && _opts.onShare && _opts.onShare(); return; }
+          if (e.target.closest('.nc-action-share') || e.target.closest('.nc-share-btn')) { _opts && _opts.onShare && _opts.onShare(); return; }
         });
 
         if (isValidMid(mId)) {

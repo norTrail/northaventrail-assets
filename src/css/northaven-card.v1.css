@@ -297,25 +297,29 @@
   padding: 10px 14px 12px;
   border-top: 1px solid #e8e8e8;
   flex-shrink: 0;
+  align-items: stretch;
 }
 
 .nc-action {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  justify-content: center;
+  gap: 6px;
   flex: 1;
-  padding: 7px 6px;
+  min-height: 94px;
+  padding: 10px 8px;
   border: 0;
   border-radius: 8px;
   background: #e8f4ee;
   color: #108452;
   font-size: 11px;
   font-weight: 600;
-  text-decoration: none;
+  text-decoration: none !important;
   cursor: pointer;
   text-align: center;
-  line-height: 1;
+  line-height: 1.15;
+  box-sizing: border-box;
 }
 
 .nc-action:hover {
@@ -331,12 +335,31 @@
   display: block;
   width: 20px;
   height: 20px;
+  flex-shrink: 0;
+}
+
+.nc-action-label {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  width: 100%;
+  min-height: 2.3em;
+  text-decoration: none !important;
 }
 
 .nc-cta {
   background: #108452;
   color: #fff;
   flex: 2;
+}
+
+.nc-cta,
+.nc-cta:link,
+.nc-cta:visited,
+.nc-cta:hover,
+.nc-cta:active,
+.nc-cta:focus {
+  text-decoration: none !important;
 }
 
 .nc-cta:hover {
