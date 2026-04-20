@@ -532,9 +532,10 @@
 
   function show(feature, poiData, map, opts) {
     _opts = opts || {};
-    var p   = feature.properties || {};
-    var mId = normalizeMid(p.m_id);
-    var html = buildHTML(feature, poiData);
+    var p      = feature.properties || {};
+    var mId    = normalizeMid(p.m_id);
+    var html   = buildHTML(feature, poiData);
+    var coords = feature.geometry && feature.geometry.coordinates;
 
     if (isMobile()) {
       if (_popup) { _popup.remove(); _popup = null; }
@@ -542,11 +543,22 @@
       if (isValidMid(mId)) {
         loadMapillaryHero(mId, document.getElementById(SHEET_BODY_ID));
       }
+      // Pan so the tapped marker stays visible above the peeked card.
+      // _peekY is set synchronously by showSheet(), so we can read it now.
+      // cardVisible = how many px of viewport the card covers at peek.
+      if (map && coords) {
+        var sheet = _sheetEl();
+        var cardVisible = sheet ? (sheet.offsetHeight - _peekY) : 180;
+        map.easeTo({
+          center:   coords,
+          padding:  { top: 60, bottom: cardVisible + 24, left: 20, right: 20 },
+          duration: 350,
+        });
+      }
     } else {
       hideSheet();
       if (_popup) { _popup.remove(); _popup = null; }
 
-      var coords = feature.geometry && feature.geometry.coordinates;
       if (!coords) return;
 
       _popup = new mapboxgl.Popup({
