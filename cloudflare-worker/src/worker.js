@@ -1,4 +1,5 @@
 const ALLOWED_ORIGINS = [
+  'https://assets.northaventrail.org',
   'https://northaventrail.org',
   'https://www.northaventrail.org',
   'https://dorothy-buechel.squarespace.com',

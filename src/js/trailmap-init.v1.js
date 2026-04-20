@@ -938,7 +938,6 @@ function applyMarkerPayload_(m, payload) {
         id: "trail_markers_active",
         type: "symbol",
         source: "trail_markers_source",
-        filter: ["==", ["boolean", ["feature-state", "active"], false], true],
         layout: {
           "text-field": effLabel,
           "text-variable-anchor": ["top", "bottom-right", "bottom-left"],
@@ -952,7 +951,18 @@ function applyMarkerPayload_(m, payload) {
         },
         paint: {
           "text-color": effColor,
-          "text-opacity": 1,
+          "icon-opacity": [
+            "case",
+            ["boolean", ["feature-state", "active"], false],
+            1,
+            0
+          ],
+          "text-opacity": [
+            "case",
+            ["boolean", ["feature-state", "active"], false],
+            1,
+            0
+          ],
           "text-halo-color": "white",
           "text-halo-width": 2.6,
           "text-halo-blur": 1
