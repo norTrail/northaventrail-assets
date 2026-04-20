@@ -15,12 +15,9 @@
   const MAPILLARY_API      = 'https://graph.mapillary.com/';
   const MAPILLARY_VIEW     = 'https://www.mapillary.com/app/?pKey=';
   const PEEK_HERO_PREVIEW  = 56;
-  const MID_VIEWPORT_RATIO = 0.5;
   const FULL_VIEWPORT_RATIO = 0.9;
   const SHEET_STATE_INITIAL = 'initial';
-  const SHEET_STATE_MID = 'mid';
-  const SHEET_STATE_FULL = 'full';
-  const SHEET_STATES = [SHEET_STATE_INITIAL, SHEET_STATE_MID, SHEET_STATE_FULL];
+  const SHEET_STATE_FULL    = 'full';
   const INVALID_MIDS       = new Set([
     'NONE',
     'NULL',
@@ -318,11 +315,11 @@
 
   // ── Bottom sheet ──────────────────────────────────────────────
   //
-  // States: 'hidden' | 'initial' | 'mid' | 'full'
+  // States: 'hidden' | 'initial' | 'full'
   //
-  // Initial shows the handle bar + header + a sliver of the Mapillary image.
-  // Mid opens to roughly half the viewport. Full opens to roughly 90%.
-  // The initial offset is computed from live DOM after each card is injected.
+  // Initial shows the handle bar + header (up to the first <hr>).
+  // Full opens to 90% of the viewport.
+  // Any upward drag → full. Any downward drag → initial.
   //
   // All transforms are managed via inline style so drag updates are
   // immediate. The base .nc-sheet CSS provides the transition timing.
@@ -361,32 +358,9 @@
     el.style.transform  = 'translateY(' + y + 'px)';
   }
 
-  function _stepState(state, direction) {
-    var index = SHEET_STATES.indexOf(state);
-    if (index === -1) return SHEET_STATE_INITIAL;
-    var next = Math.max(0, Math.min(SHEET_STATES.length - 1, index + direction));
-    return SHEET_STATES[next];
-  }
-
-  function _closestState(y, h) {
-    var closest = SHEET_STATE_INITIAL;
-    var closestDist = Infinity;
-    SHEET_STATES.forEach(function(state) {
-      var dist = Math.abs(_stateY(state, h) - y);
-      if (dist < closestDist) {
-        closest = state;
-        closestDist = dist;
-      }
-    });
-    return closest;
-  }
-
   function _stateY(state, h) {
     if (state === SHEET_STATE_FULL) {
       return Math.max(0, h - Math.min(h, window.innerHeight * FULL_VIEWPORT_RATIO));
-    }
-    if (state === SHEET_STATE_MID) {
-      return Math.max(0, h - Math.min(h, window.innerHeight * MID_VIEWPORT_RATIO));
     }
     if (state === SHEET_STATE_INITIAL) return _peekY;
     return h + 30;
@@ -425,16 +399,16 @@
     var dy  = clientY - _dragData.startY;
     var vel = dy / Math.max(1, Date.now() - _dragData.startTime);
     var h   = _dragData.h;
-    var currentY = Math.max(0, Math.min(_dragData.startPx + dy, h + 30));
     _dragData = null;
 
+    // Any upward drag or flick → full. Any downward drag or flick → initial.
     var target;
-    if (vel > 0.25 || dy > 60) {
-      target = _stepState(_sheetState, -1);
-    } else if (vel < -0.25 || dy < -60) {
-      target = _stepState(_sheetState, 1);
+    if (dy < -10 || vel < -0.15) {
+      target = SHEET_STATE_FULL;
+    } else if (dy > 10 || vel > 0.15) {
+      target = SHEET_STATE_INITIAL;
     } else {
-      target = _closestState(currentY, h);
+      target = _sheetState; // tiny movement — stay put
     }
 
     _animate(el, _stateY(target, h), '300ms cubic-bezier(0.32, 0.72, 0, 1)');
@@ -501,8 +475,8 @@
       handleRow.addEventListener('click', function() {
         if (_dragData || _sheetState === 'hidden') return;
         var target = _sheetState === SHEET_STATE_INITIAL
-          ? SHEET_STATE_MID
-          : _stepState(_sheetState, -1);
+          ? SHEET_STATE_FULL
+          : SHEET_STATE_INITIAL;
         _animate(el, _stateY(target, el.offsetHeight), '300ms cubic-bezier(0.32, 0.72, 0, 1)');
         _sheetState = target;
       });
