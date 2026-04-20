@@ -466,6 +466,9 @@ body.nc-mapillary-open {
   gap: 12px;
   padding: max(12px, env(safe-area-inset-top)) 12px 12px;
   background: rgba(17, 17, 17, 0.94);
+  position: relative;
+  z-index: 10;
+  flex-shrink: 0;
 }
 
 .nc-mapillary-title {
@@ -515,6 +518,19 @@ body.nc-mapillary-open {
   min-height: 0;
   background: #111;
   position: relative;
+  overflow: hidden;
+}
+
+/* ── Mapillary internal UI overrides ─────────────────────────── */
+
+/* Equalize prev/next navigation button sizes — Mapillary 4.x renders
+   prev as a large circle and next as a smaller box by default */
+.nc-mapillary-viewer .mapillary-navigation-button {
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  box-sizing: border-box !important;
 }
 
 .nc-mapillary-loading {

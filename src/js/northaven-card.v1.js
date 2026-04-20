@@ -340,7 +340,7 @@
 
     removeMapillaryViewer();
     if (viewerEl) viewerEl.innerHTML = SPINNER_HTML;
-    if (openLink) openLink.href = MAPILLARY_VIEW + normalizedMid;
+    if (openLink) { openLink.href = MAPILLARY_VIEW + normalizedMid; openLink.hidden = false; }
 
     _mapillaryFocusReturn = document.activeElement || null;
     modal.hidden = false;
@@ -371,6 +371,8 @@
           }
           hideMapillarySpinner();
           setMapillaryStatus('', false);
+          var link = modal.querySelector('.nc-mapillary-link');
+          if (link) link.hidden = true;
         }
 
         _mapillaryStatusTimer = window.setTimeout(function() {
