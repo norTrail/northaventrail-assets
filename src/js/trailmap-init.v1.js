@@ -750,18 +750,7 @@ function _fetchAndApplyMarkerData(reqId, mapAtStart, dataUrls, index = 0) {
 }
 
 function resolvePoiMapIconUrl_(iconValue) {
-  const raw = String(iconValue || "").trim();
-  if (!raw) return "";
-
-  if (/^(https?:)?\/\//i.test(raw) || raw.startsWith("/")) {
-    return raw;
-  }
-
-  if (/\.[a-z0-9]+$/i.test(raw)) {
-    return normalizeSquarespaceAssetUrl(raw);
-  }
-
-  return normalizeSquarespaceAssetUrl(`${raw}.svg`);
+  return window.NorthavenUtils?.resolveIconUrl(iconValue) ?? "";
 }
 
 function loadMapImageElement_(url) {

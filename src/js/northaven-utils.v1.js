@@ -346,6 +346,14 @@
     return new URL(`img/${s}`, "https://assets.northaventrail.org/").toString();
   }
 
+  function resolveIconUrl(iconValue) {
+    const raw = String(iconValue || "").trim();
+    if (!raw) return "";
+    if (/^(https?:)?\/\//i.test(raw) || raw.startsWith("/")) return raw;
+    if (/\.[a-z0-9]+$/i.test(raw)) return normalizeSquarespaceAssetUrl(raw);
+    return normalizeSquarespaceAssetUrl(`${raw}.svg`);
+  }
+
   // Returns the ordered, deduplicated set of data URLs from a manifest object.
   // Tries manifest.current → manifest.fallback → manifest.previous.
   // Used by page scripts that fetch versioned trail-poi / tails data files.
@@ -500,6 +508,7 @@
     isMobile,
     fetchJson,
     normalizeSquarespaceAssetUrl,
+    resolveIconUrl,
     getManifestDataUrls,
     makeLogClientEvent,
     formatDateISO,

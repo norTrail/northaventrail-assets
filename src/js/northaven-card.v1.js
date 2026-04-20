@@ -89,18 +89,8 @@
 
   function resolveLegendIcon(iconValue) {
     const u = window.NorthavenUtils;
-    const raw = String(iconValue || '').trim();
-    if (!u || !raw) return '';
-
-    if (/^(https?:)?\/\//i.test(raw) || raw.startsWith('/')) {
-      return raw;
-    }
-
-    if (/\.[a-z0-9]+$/i.test(raw)) {
-      return u.normalizeSquarespaceAssetUrl(raw);
-    }
-
-    return u.normalizeSquarespaceAssetUrl(raw + '.svg');
+    if (!u) return '';
+    return u.resolveIconUrl(iconValue);
   }
 
   // ── Lightbox ──────────────────────────────────────────────────
