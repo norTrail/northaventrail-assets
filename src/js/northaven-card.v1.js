@@ -327,15 +327,26 @@
     var openLink = modal.querySelector('.nc-mapillary-link');
     var token = ++_mapillaryOpenToken;
 
+    var SPINNER_HTML =
+      '<div class="nc-mapillary-loading" aria-hidden="true">' +
+        '<div class="nc-spinner">' +
+          '<div class="nc-rect1"></div>' +
+          '<div class="nc-rect2"></div>' +
+          '<div class="nc-rect3"></div>' +
+          '<div class="nc-rect4"></div>' +
+          '<div class="nc-rect5"></div>' +
+        '</div>' +
+      '</div>';
+
     removeMapillaryViewer();
-    if (viewerEl) viewerEl.innerHTML = '';
+    if (viewerEl) viewerEl.innerHTML = SPINNER_HTML;
     if (openLink) openLink.href = MAPILLARY_VIEW + normalizedMid;
 
     _mapillaryFocusReturn = document.activeElement || null;
     modal.hidden = false;
     document.body.classList.add('nc-mapillary-open');
     document.addEventListener('keydown', _mapillaryKeydown, true);
-    setMapillaryStatus('Loading street-level view...', false);
+    setMapillaryStatus('', false);
     modal.querySelector('.nc-mapillary-close')?.focus({ preventScroll: true });
 
     ensureMapillaryAssets()
@@ -346,6 +357,7 @@
         var fallbackSupported = typeof mapillaryLib.isFallbackSupported === 'function' ? mapillaryLib.isFallbackSupported() : null;
 
         if (supported === false && fallbackSupported === false) {
+          hideMapillarySpinner();
           setMapillaryStatus('Street-level viewer is not supported in this browser. Use the link above to open Mapillary directly.', true);
           return;
         }
@@ -357,13 +369,15 @@
             window.clearTimeout(_mapillaryStatusTimer);
             _mapillaryStatusTimer = null;
           }
+          hideMapillarySpinner();
           setMapillaryStatus('', false);
         }
 
         _mapillaryStatusTimer = window.setTimeout(function() {
           if (token !== _mapillaryOpenToken || ready) return;
-          setMapillaryStatus('Still loading street-level view. If it does not appear, use the link above to open Mapillary directly.', true);
-        }, 12000);
+          hideMapillarySpinner();
+          setMapillaryStatus('Taking longer than expected. Use the link above to open Mapillary directly.', true);
+        }, 5000);
 
         try {
           _mapillaryViewer = new mapillaryLib.Viewer({
@@ -403,6 +417,7 @@
             window.clearTimeout(_mapillaryStatusTimer);
             _mapillaryStatusTimer = null;
           }
+          hideMapillarySpinner();
           removeMapillaryViewer();
           setMapillaryStatus('Unable to open the street-level viewer here. ' + describeMapillaryError(_err) + '. Use the link above to open Mapillary directly.', true);
         }
@@ -410,9 +425,16 @@
       .catch(function(err) {
         console.warn('Mapillary assets failed to load', err);
         if (token !== _mapillaryOpenToken) return;
+        hideMapillarySpinner();
         removeMapillaryViewer();
         setMapillaryStatus('Unable to load the street-level viewer right now. ' + describeMapillaryError(err) + '. Use the link above to open Mapillary directly.', true);
       });
+  }
+
+  function hideMapillarySpinner() {
+    if (!_mapillaryModal) return;
+    var el = _mapillaryModal.querySelector('.nc-mapillary-loading');
+    if (el) el.remove();
   }
 
   function syncPeekStateIfNeeded(scope) {
