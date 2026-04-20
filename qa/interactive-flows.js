@@ -42,6 +42,7 @@ function assertHeadersAllowMapillaryViewer() {
     .filter((line) => line.includes("Content-Security-Policy:"));
 
   assert.ok(cspLines.length >= 2, "Expected both scoped and global CSP header rules");
+  assert.ok(cspLines.some((line) => /script-src[^;]*'unsafe-eval'/.test(line)), "CSP should allow unsafe-eval for MapillaryJS");
   for (const line of cspLines) {
     assert.match(line, /script-src[^;]*https:\/\/unpkg\.com/, "CSP should allow Mapillary JS from unpkg.com");
     assert.match(line, /style-src[^;]*https:\/\/unpkg\.com/, "CSP should allow Mapillary CSS from unpkg.com");
