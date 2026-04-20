@@ -18,6 +18,7 @@
   const MAPILLARY_CSS_URL  = 'https://unpkg.com/mapillary-js@4.1.2/dist/mapillary.css';
   const PEEK_HERO_PREVIEW  = 56;
   const FULL_VIEWPORT_RATIO = 0.9;
+  const SHEET_STATE_HIDDEN  = 'hidden';
   const SHEET_STATE_INITIAL = 'initial';
   const SHEET_STATE_FULL    = 'full';
   const MAPILLARY_MODAL_ID  = 'nc-mapillary-modal';
@@ -622,7 +623,7 @@
   // All transforms are managed via inline style so drag updates are
   // immediate. The base .nc-sheet CSS provides the transition timing.
 
-  let _sheetState = 'hidden';
+  let _sheetState = SHEET_STATE_HIDDEN;
   let _peekY      = 0;
   let _dragData   = null;  // { startY, startTime, startPx, h, pointerId }
   let _suppressHandleClickUntil = 0;
@@ -673,7 +674,7 @@
   }
 
   function _beginDrag(el, clientY, pointerId) {
-    if (_sheetState === 'hidden' || typeof clientY !== 'number') return;
+    if (_sheetState === SHEET_STATE_HIDDEN || typeof clientY !== 'number') return;
     var h = el.offsetHeight;
     _dragData = {
       startY: clientY,
@@ -708,7 +709,7 @@
     } else if (dy > 10 || vel > 0.15) {
       // If we are at peek (initial) and drag down significantly -> hide.
       // Otherwise returning to initial (peek).
-      target = (_sheetState === SHEET_STATE_INITIAL && dy > 40) ? 'hidden' : SHEET_STATE_INITIAL;
+      target = (_sheetState === SHEET_STATE_INITIAL && dy > 40) ? SHEET_STATE_HIDDEN : SHEET_STATE_INITIAL;
     } else {
       target = _sheetState; // tiny movement — stay put
     }
@@ -771,7 +772,7 @@
     document.addEventListener('keydown', function(e) {
       if (e.key !== 'Escape' || _lightbox) return;
       if (_mapillaryModal && !_mapillaryModal.hidden) return; // let _mapillaryKeydown handle ESC first
-      if (_sheetState !== 'hidden' || _popup) {
+      if (_sheetState !== SHEET_STATE_HIDDEN || _popup) {
         e.stopImmediatePropagation();
         hide();
       }
@@ -800,7 +801,7 @@
       });
 
       function toggleExpand() {
-        if (_dragData || _sheetState === 'hidden') return;
+        if (_dragData || _sheetState === SHEET_STATE_HIDDEN) return;
         if (Date.now() < _suppressHandleClickUntil) return;
         var target = _sheetState === SHEET_STATE_INITIAL
           ? SHEET_STATE_FULL
@@ -839,7 +840,7 @@
     // Step 3 — jump below screen (no visible flash; browser hasn't painted yet).
     sheet.style.transform = 'translateY(' + (window.innerHeight + 30) + 'px)';
     sheet.offsetHeight;                        // force reflow
-    _sheetState = 'hidden';
+    _sheetState = SHEET_STATE_HIDDEN;
 
     // Step 4 — animate to peek after two frames so the slide-up is always seen.
     requestAnimationFrame(function() {
@@ -854,9 +855,9 @@
 
   function hideSheet() {
     var el = _sheetEl();
-    if (!el || _sheetState === 'hidden') return;
+    if (!el || _sheetState === SHEET_STATE_HIDDEN) return;
     _animate(el, el.offsetHeight + 30, '220ms ease');
-    _sheetState = 'hidden';
+    _sheetState = SHEET_STATE_HIDDEN;
   }
 
   // ── State ─────────────────────────────────────────────────────
