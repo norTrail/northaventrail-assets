@@ -623,6 +623,7 @@ body.nc-mapillary-open {
   #map {
     --nc-sidecar-width: 400px;
     --nc-sidecar-handle-width: 28px;
+    --nc-sidecar-inset: 12px;
   }
 
   #map .mapboxgl-ctrl-top-left,
@@ -636,9 +637,9 @@ body.nc-mapillary-open {
 
   .nc-desktop-card {
     position: absolute;
-    top: 12px;
-    bottom: 12px;
-    left: 12px;
+    top: var(--nc-sidecar-inset);
+    bottom: var(--nc-sidecar-inset);
+    left: var(--nc-sidecar-inset);
     width: min(var(--nc-sidecar-width), calc(100% - 84px));
     z-index: 81;
     display: flex;
@@ -652,7 +653,7 @@ body.nc-mapillary-open {
   }
 
   .nc-desktop-card.is-collapsed {
-    transform: translateX(calc(var(--nc-sidecar-handle-width) - 100%));
+    transform: translateX(calc(var(--nc-sidecar-handle-width) - 100% - var(--nc-sidecar-inset)));
   }
 
   .nc-desktop-card__panel {

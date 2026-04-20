@@ -25,6 +25,7 @@
   const DESKTOP_CARD_BODY_ID = 'nc-desktop-card-body';
   const DESKTOP_CARD_WIDTH  = 400;
   const DESKTOP_CARD_GAP    = 16;
+  const DESKTOP_CARD_INSET  = 12;
   const MAPILLARY_MODAL_ID  = 'nc-mapillary-modal';
   const MAPILLARY_VIEWER_ID = 'nc-mapillary-viewer';
   const MAPILLARY_SPINNER_HTML =
@@ -604,6 +605,12 @@
       shell.querySelector('.nc-desktop-card__panel')?.focus?.({ preventScroll: true });
       panDesktopCardIntoView(map, coords);
     });
+
+    if (map && typeof map.once === 'function' && (map.isMoving?.() || map.isEasing?.())) {
+      map.once('moveend', function() {
+        panDesktopCardIntoView(map, coords);
+      });
+    }
   }
 
   function syncPeekStateIfNeeded(scope) {
@@ -737,8 +744,11 @@
     const amenityHtml = pills ? `<div class="nc-amenities">${pills}</div>` : '';
 
     // ── Footer actions ────────────────────────────────────────
+    const ctaExternal = resolvedCta && u?.isExternalDomain ? u.isExternalDomain(resolvedCta) : false;
+    const ctaTarget = ctaExternal ? ' target="_blank" rel="noopener noreferrer"' : '';
+
     const footerBtns = [
-      resolvedCta && ctaLabel && `<a class="nc-action nc-cta" href="${esc(resolvedCta)}" title="${ctaLabel}" aria-label="${ctaLabel}"><span class="nc-action-label">${ctaLabel}</span></a>`,
+      resolvedCta && ctaLabel && `<a class="nc-action nc-cta" href="${esc(resolvedCta)}" title="${ctaLabel}" aria-label="${ctaLabel}"${ctaTarget}><span class="nc-action-label">${ctaLabel}</span></a>`,
       directionsHref && `<a class="nc-action" href="${directionsHref}" target="_blank" rel="noopener noreferrer" aria-label="Get directions in Google Maps" title="Get directions in Google Maps">
         <svg class="nc-action-icon" aria-hidden="true"><use href="#google-logo"></use></svg>
         <span class="nc-action-label">Directions</span>
