@@ -23,6 +23,16 @@
   const SHEET_STATE_FULL    = 'full';
   const MAPILLARY_MODAL_ID  = 'nc-mapillary-modal';
   const MAPILLARY_VIEWER_ID = 'nc-mapillary-viewer';
+  const MAPILLARY_SPINNER_HTML =
+    '<div class="nc-mapillary-loading" aria-hidden="true">' +
+      '<div class="nc-spinner">' +
+        '<div class="nc-rect1"></div>' +
+        '<div class="nc-rect2"></div>' +
+        '<div class="nc-rect3"></div>' +
+        '<div class="nc-rect4"></div>' +
+        '<div class="nc-rect5"></div>' +
+      '</div>' +
+    '</div>';
   const INVALID_MIDS       = new Set([
     'NONE',
     'NULL',
@@ -328,19 +338,8 @@
     var openLink = modal.querySelector('.nc-mapillary-link');
     var token = ++_mapillaryOpenToken;
 
-    var SPINNER_HTML =
-      '<div class="nc-mapillary-loading" aria-hidden="true">' +
-        '<div class="nc-spinner">' +
-          '<div class="nc-rect1"></div>' +
-          '<div class="nc-rect2"></div>' +
-          '<div class="nc-rect3"></div>' +
-          '<div class="nc-rect4"></div>' +
-          '<div class="nc-rect5"></div>' +
-        '</div>' +
-      '</div>';
-
     removeMapillaryViewer();
-    if (viewerEl) viewerEl.innerHTML = SPINNER_HTML;
+    if (viewerEl) viewerEl.innerHTML = MAPILLARY_SPINNER_HTML;
     if (openLink) { openLink.href = MAPILLARY_VIEW + normalizedMid; openLink.hidden = false; }
 
     _mapillaryFocusReturn = document.activeElement || null;
@@ -978,7 +977,7 @@
   }
 
   function getActiveFeatureId() {
-    if (_sheetState !== 'hidden') return _activeFeatureId;
+    if (_sheetState !== SHEET_STATE_HIDDEN) return _activeFeatureId;
     if (_popup) return _activeFeatureId;
     return null;
   }

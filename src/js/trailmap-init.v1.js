@@ -704,9 +704,7 @@ function _fetchAndApplyMarkerData(reqId, mapAtStart, dataUrls, index = 0) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-  // Use a cache-buster during this optimization rollout to ensure fresh data.
-  const fetchUrl = dataUrl + (dataUrl.includes('?') ? '&' : '?') + 't=' + Date.now();
-  return fetch(fetchUrl, { signal: controller.signal })
+  return fetch(dataUrl, { signal: controller.signal })
     .then((r) => { clearTimeout(timeoutId); return r.json(); })
     .then((payload) => {
       if (reqId !== __markerReqId) return;
