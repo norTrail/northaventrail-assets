@@ -328,6 +328,7 @@
   let _sheetState = 'hidden';
   let _peekY      = 0;
   let _dragData   = null;  // { startY, startTime, startPx, h, pointerId }
+  let _suppressHandleClickUntil = 0;
 
   function _sheetEl() {
     return document.getElementById(SHEET_ID);
@@ -400,6 +401,7 @@
     var dy  = clientY - _dragData.startY;
     var vel = dy / Math.max(1, Date.now() - _dragData.startTime);
     var h   = _dragData.h;
+    var moved = Math.abs(dy);
     _dragData = null;
 
     // Any upward drag or flick → full. Any downward drag or flick → initial.
@@ -416,6 +418,10 @@
 
     _animate(el, _stateY(target, h), '300ms cubic-bezier(0.32, 0.72, 0, 1)');
     _sheetState = target;
+
+    if (moved > 6) {
+      _suppressHandleClickUntil = Date.now() + 400;
+    }
   }
 
   function ensureSheet() {
@@ -488,6 +494,7 @@
 
       function toggleExpand() {
         if (_dragData || _sheetState === 'hidden') return;
+        if (Date.now() < _suppressHandleClickUntil) return;
         var target = _sheetState === SHEET_STATE_INITIAL
           ? SHEET_STATE_FULL
           : SHEET_STATE_INITIAL;
@@ -574,29 +581,19 @@
       if (map && coords) {
         var sheet = _sheetEl();
         var cardVisible = sheet ? (sheet.offsetHeight - _peekY) : 180;
-        
-        // PROJECT the marker coordinates to screen pixels
         var point = map.project(coords);
         var viewportHeight = map.getCanvas().clientHeight;
-        
-        // DANGER ZONE: if marker is in the bottom area (where sheet peeks)
-        // or too close to the top edge. 
-        // We use a buffer of 40px from the card and 60px from the top.
-        var safeBottom = viewportHeight - cardVisible - 40;
+        var safeBottom = viewportHeight - cardVisible - 20;
         var safeTop = 60;
-        
-        var easeOptions = {
-          padding: { top: 60, bottom: cardVisible + 24, left: 20, right: 20 },
+        var targetY = Math.max(safeTop, Math.min(safeBottom, point.y));
+        var offsetY = targetY - (viewportHeight / 2);
+
+        map.easeTo({
+          center: coords,
+          offset: [0, offsetY],
           duration: 400,
-        };
-
-        // If marker is in the danger zone (covered or off-screen), center it in the padded view.
-        // Otherwise, simply shifting padding creates the "scroll up" effect naturally.
-        if (point.y > safeBottom || point.y < safeTop) {
-          easeOptions.center = coords;
-        }
-
-        map.easeTo(easeOptions);
+          essential: true,
+        });
       }
     } else {
       hideSheet();
