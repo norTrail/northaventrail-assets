@@ -254,8 +254,10 @@
     // ── Category row: legend icon + badge ─────────────────────
     const categoryHtml = category ? `
     <div class="nc-category-row">
-      ${iconUrl ? `<img class="nc-category-icon" src="${esc(iconUrl)}" alt="" aria-hidden="true" onerror="this.remove()">` : ''}
-      <span class="nc-badge">${category}</span>
+      <span class="nc-badge${iconUrl ? ' nc-badge--with-icon' : ''}">
+        ${iconUrl ? `<img class="nc-category-icon" src="${esc(iconUrl)}" alt="" aria-hidden="true" onerror="this.remove()">` : ''}
+        <span class="nc-badge-label">${category}</span>
+      </span>
     </div>` : '';
 
     // ── Amenity pills ─────────────────────────────────────────
@@ -268,12 +270,12 @@
 
     // ── Footer actions ────────────────────────────────────────
     const footerBtns = [
-      resolvedCta && ctaLabel && `<a class="nc-action nc-cta" href="${esc(resolvedCta)}"><span class="nc-action-icon nc-action-icon--placeholder" aria-hidden="true"></span><span class="nc-action-label">${ctaLabel}</span></a>`,
-      directionsHref && `<a class="nc-action" href="${directionsHref}" target="_blank" rel="noopener noreferrer" aria-label="Get directions in Google Maps">
+      resolvedCta && ctaLabel && `<a class="nc-action nc-cta" href="${esc(resolvedCta)}" title="${ctaLabel}" aria-label="${ctaLabel}"><span class="nc-action-icon nc-action-icon--placeholder" aria-hidden="true"></span><span class="nc-action-label">${ctaLabel}</span></a>`,
+      directionsHref && `<a class="nc-action" href="${directionsHref}" target="_blank" rel="noopener noreferrer" aria-label="Get directions in Google Maps" title="Get directions in Google Maps">
         <svg class="nc-action-icon" aria-hidden="true"><use href="#google-logo"></use></svg>
         <span class="nc-action-label">Directions</span>
       </a>`,
-      `<button class="nc-action nc-action-share" type="button" aria-label="Share this point of interest">
+      `<button class="nc-action nc-action-share" type="button" aria-label="Share this point of interest" title="Share this point of interest">
         <svg class="nc-action-icon" aria-hidden="true"><use href="#share-icon"></use></svg>
         <span class="nc-action-label">Share</span>
       </button>`,
@@ -287,10 +289,10 @@
       <div class="nc-name-row">
         <h2 class="nc-name">${name}</h2>
         <div class="nc-header-btns">
-          <button class="nc-btn nc-share-btn" type="button" aria-label="Share">
+          <button class="nc-btn nc-share-btn" type="button" aria-label="Share" title="Share this point of interest">
             <svg class="nc-btn-icon" aria-hidden="true"><use href="#share-icon"></use></svg>
           </button>
-          <button class="nc-btn nc-close-btn" type="button" aria-label="Close">
+          <button class="nc-btn nc-close-btn" type="button" aria-label="Close" title="Close">
             <svg class="nc-btn-icon" aria-hidden="true"><use href="#closeX"></use></svg>
           </button>
         </div>
