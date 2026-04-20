@@ -38,21 +38,44 @@ body.is-map-fullscreen .nc-sheet {
 
 .nc-sheet-handle-row {
   display: flex;
-  justify-content: center;
-  padding: 10px 0 6px;
+  align-items: center;
+  padding: 0 4px 0 0;
   flex-shrink: 0;
   touch-action: none;
-  cursor: grab;
   user-select: none;
   -webkit-user-select: none;
   border: 0;
   background: transparent;
   width: 100%;
+  position: relative;
+  min-height: 36px;
 }
 
-.nc-sheet-handle-row:focus-visible {
+.nc-handle-track {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  padding: 12px 0 8px;
+  cursor: grab;
+  border: 0;
+  background: transparent;
+}
+
+.nc-handle-track:focus-visible {
   outline: 2px solid #108452;
-  outline-offset: -4px;
+  outline-offset: -10px;
+  border-radius: 8px;
+}
+
+.nc-sheet-btns {
+  display: flex;
+  gap: 2px;
+  padding-right: 4px;
+}
+
+.nc-sheet-handle-row .nc-btn {
+  width: 40px;
+  height: 40px;
 }
 
 .nc-sheet-handle {
@@ -149,6 +172,7 @@ body.is-map-fullscreen .nc-sheet {
   padding: 0;
   line-height: 0;
   transition: background 150ms ease;
+  flex-shrink: 0;
 }
 
 .nc-btn:hover {
@@ -164,6 +188,7 @@ body.is-map-fullscreen .nc-sheet {
   display: block;
   width: 20px;
   height: 20px;
+  pointer-events: none;
 }
 
 .nc-near {

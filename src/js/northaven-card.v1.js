@@ -241,9 +241,18 @@
   </div>` : '';
 
     // ── Thumbnail ─────────────────────────────────────────────
-    const thumbHtml = imgUrl ? `
-      <div class="nc-thumb-wrap"${imgHiresUrl ? ` data-hires="${esc(imgHiresUrl)}"` : ''}>
-        <img class="nc-thumb" src="${esc(imgUrl)}" alt="" aria-hidden="true"
+    // For 911 markers (type 'em'), prioritize the generated sign
+    let effectiveImg = imgUrl;
+    let hiresAttr = imgHiresUrl ? ` data-hires="${esc(imgHiresUrl)}"` : '';
+
+    if (p.t === 'em' && u?.generate911SignSvg) {
+      effectiveImg = u.generate911SignSvg(p.l);
+      hiresAttr = ''; // no hires for SVG
+    }
+
+    const thumbHtml = effectiveImg ? `
+      <div class="nc-thumb-wrap"${hiresAttr}>
+        <img class="nc-thumb" src="${esc(effectiveImg)}" alt="" aria-hidden="true"
              width="72" height="72" loading="lazy"
              onerror="this.closest('.nc-thumb-wrap').remove()">
       </div>` : '';
@@ -283,14 +292,6 @@
     <div class="nc-header-text">
       <div class="nc-name-row">
         <h2 class="nc-name">${name}</h2>
-        <div class="nc-header-btns">
-          <button class="nc-btn nc-share-btn" type="button" aria-label="Share" title="Share this point of interest">
-            <svg class="nc-btn-icon" aria-hidden="true"><use href="#share-icon"></use></svg>
-          </button>
-          <button class="nc-btn nc-close-btn" type="button" aria-label="Close" title="Close">
-            <svg class="nc-btn-icon" aria-hidden="true"><use href="#closeX"></use></svg>
-          </button>
-        </div>
       </div>
       ${near  ? `<div class="nc-near">Near ${near}</div>`  : ''}
       ${hours ? `<div class="nc-hours">${hours}</div>` : ''}
@@ -406,7 +407,9 @@
     if (dy < -10 || vel < -0.15) {
       target = SHEET_STATE_FULL;
     } else if (dy > 10 || vel > 0.15) {
-      target = SHEET_STATE_INITIAL;
+      // If we are at peek (initial) and drag down significantly -> hide.
+      // Otherwise returning to initial (peek).
+      target = (_sheetState === SHEET_STATE_INITIAL && dy > 40) ? 'hidden' : SHEET_STATE_INITIAL;
     } else {
       target = _sheetState; // tiny movement — stay put
     }
@@ -427,13 +430,23 @@
     el.setAttribute('aria-label', 'Point of interest details');
     el.setAttribute('tabindex', '-1'); // Allow programmatic focus
     el.innerHTML =
-      '<div class="nc-sheet-handle-row" role="button" tabindex="0" aria-label="Expand or collapse details">' +
-        '<div class="nc-sheet-handle"></div>' +
+      '<div class="nc-sheet-handle-row">' +
+        '<div class="nc-handle-track" role="button" tabindex="0" aria-label="Expand or collapse details">' +
+          '<div class="nc-sheet-handle"></div>' +
+        '</div>' +
+        '<div class="nc-sheet-btns">' +
+          '<button class="nc-btn nc-share-btn" type="button" aria-label="Share" title="Share this point of interest">' +
+            '<svg class="nc-btn-icon" aria-hidden="true"><use href="#share-icon"></use></svg>' +
+          '</button>' +
+          '<button class="nc-btn nc-close-btn" type="button" aria-label="Close" title="Close">' +
+            '<svg class="nc-btn-icon" aria-hidden="true"><use href="#closeX"></use></svg>' +
+          '</button>' +
+        '</div>' +
       '</div>' +
       '<div id="' + SHEET_BODY_ID + '" class="nc-sheet-body"></div>';
     document.body.appendChild(el);
 
-    var handleRow = el.querySelector('.nc-sheet-handle-row');
+    var handleTrack = el.querySelector('.nc-handle-track');
 
     el.style.transition = 'none';
     el.style.transform  = 'translateY(' + (window.innerHeight + 30) + 'px)';
@@ -466,8 +479,8 @@
       _endDrag(el, _dragPointY(e));
     }
 
-    if (handleRow) {
-      handleRow.addEventListener('pointerdown', function(e) {
+    if (handleTrack) {
+      handleTrack.addEventListener('pointerdown', function(e) {
         if (e.pointerType === 'mouse' && e.button !== 0) return;
         e.preventDefault();
         _beginDrag(el, _dragPointY(e), e.pointerId);
@@ -481,8 +494,8 @@
         _animate(el, _stateY(target, el.offsetHeight), '300ms cubic-bezier(0.32, 0.72, 0, 1)');
         _sheetState = target;
       }
-      handleRow.addEventListener('click', toggleExpand);
-      handleRow.addEventListener('keydown', function(e) {
+      handleTrack.addEventListener('click', toggleExpand);
+      handleTrack.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           toggleExpand();

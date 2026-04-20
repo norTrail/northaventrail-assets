@@ -985,6 +985,10 @@ function applyMarkerPayload_(m, payload) {
       });
     }
 
+    // Ensure markers are ALWAYS at the top of the layer stack
+    if (m.getLayer("trail_markers")) m.moveLayer("trail_markers");
+    if (m.getLayer("trail_markers_active")) m.moveLayer("trail_markers_active");
+
     // Filtering (unchanged), BUT your filterData() must now use properties.n (name)
     const params = (typeof getURLParams === 'function') ? getURLParams() : {};
 
