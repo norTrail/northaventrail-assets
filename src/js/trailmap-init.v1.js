@@ -875,53 +875,6 @@ function applyMarkerPayload_(m, payload) {
     const effIcon = ["coalesce", ["get", "sp"], ["get", "i"], "road"];
     const effColor = ["coalesce", ["get", "c"], "#1f7291"];
 
-    // Add the markers layer once
-    if (!m.getLayer("trail_markers_active_halo")) {
-      m.addLayer({
-        id: "trail_markers_active_halo",
-        type: "circle",
-        source: "trail_markers_source",
-        paint: {
-          "circle-radius": [
-            "case",
-            ["boolean", ["feature-state", "active"], false],
-            18,
-            0
-          ],
-          "circle-color": [
-            "case",
-            ["boolean", ["feature-state", "active"], false],
-            "#d93025",
-            "rgba(0,0,0,0)"
-          ],
-          "circle-stroke-color": [
-            "case",
-            ["boolean", ["feature-state", "active"], false],
-            "#ffffff",
-            "rgba(0,0,0,0)"
-          ],
-          "circle-stroke-width": [
-            "case",
-            ["boolean", ["feature-state", "active"], false],
-            2.5,
-            0
-          ],
-          "circle-opacity": [
-            "case",
-            ["boolean", ["feature-state", "active"], false],
-            0.95,
-            0
-          ],
-          "circle-blur": [
-            "case",
-            ["boolean", ["feature-state", "active"], false],
-            0.15,
-            0
-          ]
-        }
-      });
-    }
-
     if (!m.getLayer("trail_markers")) {
       m.addLayer({
         id: "trail_markers",
@@ -946,10 +899,16 @@ function applyMarkerPayload_(m, payload) {
         },
         paint: {
           "text-color": effColor,
+          "icon-opacity": [
+            "case",
+            ["boolean", ["feature-state", "active"], false],
+            0,
+            1
+          ],
           "text-opacity": [
             "case",
             ["boolean", ["feature-state", "active"], false],
-            1,
+            0,
             0.85
           ],
           "text-halo-color": [
@@ -970,6 +929,33 @@ function applyMarkerPayload_(m, payload) {
             0,
             2
           ]
+        }
+      });
+    }
+
+    if (!m.getLayer("trail_markers_active")) {
+      m.addLayer({
+        id: "trail_markers_active",
+        type: "symbol",
+        source: "trail_markers_source",
+        filter: ["==", ["boolean", ["feature-state", "active"], false], true],
+        layout: {
+          "text-field": effLabel,
+          "text-variable-anchor": ["top", "bottom-right", "bottom-left"],
+          "text-justify": "auto",
+          "icon-image": effIcon,
+          "icon-offset": [0, -23],
+          "text-offset": [0.5, -0.25],
+          "icon-padding": 2,
+          "icon-size": 0.68,
+          "symbol-sort-key": 9999
+        },
+        paint: {
+          "text-color": effColor,
+          "text-opacity": 1,
+          "text-halo-color": "white",
+          "text-halo-width": 2.6,
+          "text-halo-blur": 1
         }
       });
     }

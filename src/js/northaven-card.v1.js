@@ -268,7 +268,7 @@
 
     // ── Footer actions ────────────────────────────────────────
     const footerBtns = [
-      resolvedCta && ctaLabel && `<a class="nc-action nc-cta" href="${esc(resolvedCta)}"><span class="nc-action-label">${ctaLabel}</span></a>`,
+      resolvedCta && ctaLabel && `<a class="nc-action nc-cta" href="${esc(resolvedCta)}"><span class="nc-action-icon nc-action-icon--placeholder" aria-hidden="true"></span><span class="nc-action-label">${ctaLabel}</span></a>`,
       directionsHref && `<a class="nc-action" href="${directionsHref}" target="_blank" rel="noopener noreferrer" aria-label="Get directions in Google Maps">
         <svg class="nc-action-icon" aria-hidden="true"><use href="#google-logo"></use></svg>
         <span class="nc-action-label">Directions</span>
