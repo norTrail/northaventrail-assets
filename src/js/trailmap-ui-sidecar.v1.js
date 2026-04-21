@@ -138,6 +138,21 @@
     window.TrailmapListing?.highlightFeature?.(featureId);
   }
 
+  window.NorthavenSidecarOpenFromSearch = function openFromSearchSidecar_(featureId) {
+    if (window.innerWidth < 768) return false;
+    if (!featureId || !Array.isArray(poiData?.features)) return false;
+
+    const fullFeature = poiData.features.find((f) => String(f?.id ?? '') === String(featureId));
+    if (!fullFeature?.geometry?.coordinates) return false;
+
+    resetCoordinates = true;
+    flyToMarkerForDesktopSidecar(fullFeature);
+    updatePageDetails(fullFeature);
+    createPopUp(fullFeature);
+    resetCoordinates = false;
+    return true;
+  };
+
   function clearActiveMarkerState() {
     resetActiveMarkerAnimation();
     if (activeFeatureID && map?.getSource?.(TRAIL_MARKERS_SOURCE_ID)) {

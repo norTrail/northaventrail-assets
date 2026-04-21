@@ -209,6 +209,28 @@ function onMapClick_(event) {
 let SEARCH_READY = false;
 let SEARCH_INDEX = [];        /* [{ id, label, desc, haystackLower }]*/
 let SEARCH_MAX_OPTIONS = 80;
+const SEARCH_AMENITY_LABELS = {
+  'water-human': 'Drinking Water',
+  'water-dog': 'Dog Water',
+  'bike-repair': 'Bike Repair',
+  'bench': 'Seating',
+  'picnic': 'Picnic Table',
+  'picnic-table': 'Picnic Table',
+  'parking': 'Parking',
+  'shade': 'Shade',
+  'bike-rack': 'Bike Rack',
+  'kiosk': 'Info Kiosk',
+  'water-bottle-refill': 'Bottle Refill',
+  'garden': 'Garden',
+};
+
+function amenitySearchText_(rawAmenities) {
+  return String(rawAmenities || '')
+    .split(/[\s,]+/)
+    .filter(Boolean)
+    .map((token) => SEARCH_AMENITY_LABELS[token] || token.replace(/-/g, ' '))
+    .join(' ');
+}
 
 function buildSearchIndex_(data) {
   const features = Array.isArray(data?.features) ? data.features : [];
@@ -240,12 +262,14 @@ function buildSearchIndex_(data) {
 
     // Keywords: POI + type
     const keywords = [p.k, typeDef?.k].filter(Boolean).map(String).join(' ').trim();
+    const amenityText = amenitySearchText_(p.am || typeDef?.am);
 
     const haystackLower = [
       label,
       near,
       desc,
       keywords,
+      amenityText,
       linkText,
       linkUrl
     ].filter(Boolean).join(' ').toLowerCase();
@@ -398,7 +422,13 @@ function wireCustomSearchUI_() {
     }
 
     forcedClosePopup = true;
-    goToElement(item.id);
+    const handledByDesktopSidecar =
+      window.innerWidth >= 768 &&
+      typeof window.NorthavenSidecarOpenFromSearch === "function" &&
+      window.NorthavenSidecarOpenFromSearch(item.id) === true;
+    if (!handledByDesktopSidecar) {
+      goToElement(item.id);
+    }
     forcedClosePopup = false;
 
     // requested behavior: clear input, close dropdown

@@ -199,12 +199,15 @@ body.is-map-fullscreen .nc-sheet {
 .nc-near {
   font-size: 13px;
   color: #666;
-  margin-bottom: 2px;
+  line-height: 1.35;
+  margin-bottom: 0;
 }
 
 .nc-hours {
   font-size: 13px;
-  color: #444;
+  color: #666;
+  line-height: 1.35;
+  margin-top: 2px;
 }
 
 .nc-hours-status {

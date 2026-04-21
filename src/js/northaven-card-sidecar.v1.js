@@ -66,6 +66,14 @@
     'garden':              'Garden',
   };
 
+  function getAmenityLabelsText(amenities) {
+    return String(amenities || '')
+      .split(/[\s,]+/)
+      .filter(function(token) { return token && AMENITY_LABELS[token]; })
+      .map(function(token) { return AMENITY_LABELS[token]; })
+      .join(', ');
+  }
+
   // ── Helpers ──────────────────────────────────────────────────
 
   function isMobile() {
@@ -744,6 +752,19 @@
       }
     }
 
+    match = value.match(/^(\d{1,2}):(\d{2})$/);
+    if (match) {
+      var hour24Only = Number(match[1]);
+      var minute24Only = Number(match[2]);
+      if (hour24Only >= 0 && hour24Only < 24 && minute24Only >= 0 && minute24Only < 60) {
+        var total24 = hour24Only * 60 + minute24Only;
+        return {
+          mins: total24,
+          display: formatMinutesDisplay(total24),
+        };
+      }
+    }
+
     return {
       mins: null,
       display: value,
@@ -795,6 +816,7 @@
     const ctaLabel  = esc(String((p.cta_label) || '').trim());
     const ctaUrl    =     String((p.cta_url)   || '').trim();
     const amenities =     String(p.am  || (td && td.am) || '').trim();
+    const amenityLabels = getAmenityLabelsText(amenities);
     const mId       =     normalizeMid(p.m_id);
 
     // Legend icon — shown next to the category badge (not as thumbnail)
@@ -854,7 +876,7 @@
       .filter(function(t) { return t && AMENITY_LABELS[t]; })
       .map(function(t)    { return `<span class="nc-tag">${esc(AMENITY_LABELS[t])}</span>`; })
       .join('');
-    const amenityHtml = pills ? `<div class="nc-amenities">${pills}</div>` : '';
+    const amenityHtml = pills ? `<div class="nc-amenities" aria-label="${esc(amenityLabels)}">${pills}</div>` : '';
 
     // ── Footer actions ────────────────────────────────────────
     const ctaExternal = resolvedCta && u?.isExternalDomain ? u.isExternalDomain(resolvedCta) : false;
