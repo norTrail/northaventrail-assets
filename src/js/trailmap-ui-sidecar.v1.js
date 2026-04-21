@@ -5,6 +5,53 @@
 (function () {
   'use strict';
 
+  const ACTIVE_MARKER_LAYER_ID = 'trail_markers_active';
+  const ACTIVE_MARKER_BASE_SIZE = 0.68;
+  const ACTIVE_MARKER_BASE_OFFSET = [0, -23];
+  const ACTIVE_MARKER_BOUNCE_MS = 520;
+  let activeMarkerBounceFrame = null;
+
+  function setActiveLayerLayout(size, offsetY) {
+    if (!map?.getLayer?.(ACTIVE_MARKER_LAYER_ID)) return;
+    map.setLayoutProperty(ACTIVE_MARKER_LAYER_ID, 'icon-size', size);
+    map.setLayoutProperty(ACTIVE_MARKER_LAYER_ID, 'icon-offset', [0, offsetY]);
+  }
+
+  function resetActiveMarkerAnimation() {
+    if (activeMarkerBounceFrame) {
+      cancelAnimationFrame(activeMarkerBounceFrame);
+      activeMarkerBounceFrame = null;
+    }
+    setActiveLayerLayout(ACTIVE_MARKER_BASE_SIZE, ACTIVE_MARKER_BASE_OFFSET[1]);
+  }
+
+  function animateActiveMarkerBounce() {
+    resetActiveMarkerAnimation();
+    if (!map?.getLayer?.(ACTIVE_MARKER_LAYER_ID)) return;
+
+    const start = performance.now();
+
+    function frame(now) {
+      const elapsed = now - start;
+      const t = Math.min(elapsed / ACTIVE_MARKER_BOUNCE_MS, 1);
+      const eased = 1 - Math.pow(1 - t, 3);
+      const wobble = Math.sin(eased * Math.PI * 2.15) * (1 - eased);
+      const size = ACTIVE_MARKER_BASE_SIZE + wobble * 0.16;
+      const offsetY = ACTIVE_MARKER_BASE_OFFSET[1] - wobble * 12;
+
+      setActiveLayerLayout(size, offsetY);
+
+      if (t < 1) {
+        activeMarkerBounceFrame = requestAnimationFrame(frame);
+      } else {
+        activeMarkerBounceFrame = null;
+        setActiveLayerLayout(ACTIVE_MARKER_BASE_SIZE, ACTIVE_MARKER_BASE_OFFSET[1]);
+      }
+    }
+
+    activeMarkerBounceFrame = requestAnimationFrame(frame);
+  }
+
   function resolveFeature(currentFeature) {
     const idStr = String(currentFeature?.id ?? '');
     const fullFeature =
@@ -30,6 +77,7 @@
   }
 
   function clearActiveMarkerState() {
+    resetActiveMarkerAnimation();
     if (activeFeatureID && map?.getSource?.('trail_markers_source')) {
       map.setFeatureState(
         { source: 'trail_markers_source', id: activeFeatureID },
@@ -46,6 +94,7 @@
       { active: true }
     );
     activeFeatureID = featureId;
+    animateActiveMarkerBounce();
   }
 
   createPopUp = function createPopUpSidecar_(currentFeature) {

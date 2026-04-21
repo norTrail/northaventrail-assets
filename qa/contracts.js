@@ -415,6 +415,95 @@ function checkMapillaryMidNormalization() {
   return { checked: 1 };
 }
 
+// Regression guard for: showDesktopCard called panDesktopCardIntoView directly inside
+// a single requestAnimationFrame, which fired before Mapbox finished settling after an
+// easeTo — the sidecar panel panned to the wrong position or not at all when a marker
+// was clicked while the map was still animating. Fix: scheduleDesktopPan fans the pan
+// call across double-rAF + 240 ms timeout + moveend so at least one attempt lands after
+// the map is stable. (2026-04-20, 342be36)
+function checkScheduleDesktopPan() {
+  const content = fs.readFileSync(
+    path.join(REPO_ROOT, "src", "js", "northaven-card-sidecar.v1.js"), "utf8"
+  );
+  assert.ok(
+    /function\s+scheduleDesktopPan\s*\(/.test(content),
+    "northaven-card-sidecar.v1.js: scheduleDesktopPan() must be defined — bare panDesktopCardIntoView() in a single rAF fires too early when the map is mid-animation"
+  );
+  // showDesktopCard must delegate to scheduleDesktopPan, not call panDesktopCardIntoView directly
+  const showDesktopCardMatch = content.match(/function\s+showDesktopCard\s*\([^)]*\)\s*\{([\s\S]*?)^  \}/m);
+  if (showDesktopCardMatch) {
+    assert.ok(
+      /scheduleDesktopPan/.test(showDesktopCardMatch[1]),
+      "northaven-card-sidecar.v1.js: showDesktopCard must call scheduleDesktopPan(), not panDesktopCardIntoView() directly"
+    );
+  } else {
+    // Fall back to a simpler check: scheduleDesktopPan appears after the function definition
+    assert.ok(
+      content.indexOf("scheduleDesktopPan") > content.indexOf("function showDesktopCard"),
+      "northaven-card-sidecar.v1.js: showDesktopCard must call scheduleDesktopPan() — direct panDesktopCardIntoView() fires before the map settles"
+    );
+  }
+  return { checked: 1 };
+}
+
+// Regression guard for: panDesktopCardIntoView set suppressMapEvents = true before
+// calling map.easeTo() but never reset it — leaving map click/drag events permanently
+// suppressed after the first sidecar pan, until page reload. Fix: map.once('moveend')
+// resets suppressMapEvents = false after the easeTo animation completes. (2026-04-20, bc2bdbb)
+function checkSuppressMapEventsReset() {
+  const content = fs.readFileSync(
+    path.join(REPO_ROOT, "src", "js", "northaven-card-sidecar.v1.js"), "utf8"
+  );
+  assert.ok(
+    /suppressMapEvents\s*=\s*true/.test(content),
+    "northaven-card-sidecar.v1.js: panDesktopCardIntoView must set suppressMapEvents = true before easeTo"
+  );
+  assert.ok(
+    /suppressMapEvents\s*=\s*false/.test(content),
+    "northaven-card-sidecar.v1.js: panDesktopCardIntoView must reset suppressMapEvents = false (missing reset left map events permanently suppressed after the first sidecar pan)"
+  );
+  return { checked: 1 };
+}
+
+// Regression guard for: .nc-desktop-card.is-collapsed used translateX(calc(
+// var(--nc-sidecar-handle-width) - 100%)) without accounting for the card's 12px left
+// inset — the collapsed handle was offset 12px past the viewport edge and clipped.
+// Fix: --nc-sidecar-inset CSS variable subtracted from the transform so the handle sits
+// flush at the left edge. (2026-04-20, 7358ec9)
+function checkCollapsedSidecarTransform() {
+  const content = fs.readFileSync(
+    path.join(REPO_ROOT, "src", "css", "northaven-card-sidecar.v1.css"), "utf8"
+  );
+  assert.ok(
+    /--nc-sidecar-inset/.test(content),
+    "northaven-card-sidecar.v1.css: must define --nc-sidecar-inset CSS variable — the collapsed transform must subtract the inset or the handle overflows the viewport edge"
+  );
+  assert.ok(
+    /is-collapsed[^}]*transform\s*:[^}]*var\(--nc-sidecar-inset\)/.test(content),
+    "northaven-card-sidecar.v1.css: .nc-desktop-card.is-collapsed transform must include var(--nc-sidecar-inset) — omitting it shifts the collapsed handle 12px off-screen"
+  );
+  return { checked: 1 };
+}
+
+// Regression guard for: the CTA <a> link in buildDesktopCardHTML had no target
+// attribute — external CTAs (e.g. links to partner sites) opened in the same tab,
+// navigating the user away from the map. Fix: isExternalDomain() check added; external
+// CTAs get target="_blank" rel="noopener noreferrer". (2026-04-20, 7358ec9)
+function checkCtaExternalTarget() {
+  const content = fs.readFileSync(
+    path.join(REPO_ROOT, "src", "js", "northaven-card-sidecar.v1.js"), "utf8"
+  );
+  assert.ok(
+    /isExternalDomain\s*\(\s*resolvedCta\s*\)/.test(content),
+    "northaven-card-sidecar.v1.js: CTA link must call isExternalDomain(resolvedCta) to detect external URLs before setting target — missing check left external CTAs opening in the same tab"
+  );
+  assert.ok(
+    /ctaTarget/.test(content),
+    "northaven-card-sidecar.v1.js: CTA link must use a ctaTarget variable to conditionally apply target=\"_blank\" rel=\"noopener noreferrer\" for external CTAs"
+  );
+  return { checked: 1 };
+}
+
 function main() {
   const manifestNames = Object.keys(MANIFEST_VALIDATORS).sort();
   const results = manifestNames.map(validateManifest);
@@ -430,6 +519,10 @@ function main() {
   const cardHoursKeyCheck = checkCardHoursFieldKey();
   const dragPassiveCheck = checkDragListenerIsNonPassive();
   const mapillaryMidCheck = checkMapillaryMidNormalization();
+  const scheduleDesktopPanCheck = checkScheduleDesktopPan();
+  const suppressResetCheck = checkSuppressMapEventsReset();
+  const collapsedTransformCheck = checkCollapsedSidecarTransform();
+  const ctaExternalCheck = checkCtaExternalTarget();
 
   console.log("Contract checks passed:");
   for (const result of results) {
@@ -446,6 +539,10 @@ function main() {
   console.log(`- northaven-card hours field uses p.hr (not old p.h) (${cardHoursKeyCheck.checked} file(s) checked)`);
   console.log(`- northaven-card pointermove drag is non-passive (${dragPassiveCheck.checked} file(s) checked)`);
   console.log(`- northaven-card normalizeMid rejects sentinel m_id values (${mapillaryMidCheck.checked} file(s) checked)`);
+  console.log(`- sidecar showDesktopCard uses scheduleDesktopPan (not bare rAF pan) (${scheduleDesktopPanCheck.checked} file(s) checked)`);
+  console.log(`- sidecar panDesktopCardIntoView resets suppressMapEvents on moveend (${suppressResetCheck.checked} file(s) checked)`);
+  console.log(`- sidecar collapsed transform subtracts --nc-sidecar-inset (${collapsedTransformCheck.checked} file(s) checked)`);
+  console.log(`- sidecar CTA link uses isExternalDomain for target=_blank (${ctaExternalCheck.checked} file(s) checked)`);
 }
 
 try {
