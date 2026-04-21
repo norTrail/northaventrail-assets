@@ -10,10 +10,14 @@ const QA_USER_AGENT =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) " +
   "AppleWebKit/537.36 (KHTML, like Gecko) " +
   "Chrome/146.0.0.0 Safari/537.36";
+const QA_MOBILE_USER_AGENT =
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) " +
+  "AppleWebKit/605.1.15 (KHTML, like Gecko) " +
+  "Version/17.0 Mobile/15E148 Safari/604.1";
 const TRAILMAP_LIVE_URL = pathToFileURL(path.join(__dirname, "..", "trailmap-live.html")).href;
 
 async function goto(page, url) {
-  await page.setUserAgent(QA_USER_AGENT);
+  await page.setUserAgent(page.__qaUserAgent || QA_USER_AGENT);
   const response = await page.goto(url, {
     waitUntil: "networkidle2",
     timeout: 45000
@@ -33,19 +37,39 @@ async function waitForMap(page) {
   });
 }
 
-async function waitForTrailmapDetails(page) {
-  await page.waitForSelector(".nc-desktop-card:not([hidden])", {
+async function waitForTrailmapDetails(page, options = {}) {
+  const { mobile = false } = options;
+  const selector = mobile
+    ? "#nc-bottom-sheet .nc-sheet-body .nc-name"
+    : ".nc-desktop-card:not([hidden]) .nc-name";
+
+  await page.waitForSelector(selector, {
     visible: true,
     timeout: 15000
   });
 }
 
-function launchBrowser() {
+function launchBrowser(options = {}) {
+  const {
+    viewport = { width: 1440, height: 960 },
+    userAgent = QA_USER_AGENT
+  } = options;
+
   return puppeteer.launch({
     headless: true,
-    defaultViewport: { width: 1440, height: 960 },
+    defaultViewport: viewport,
     args: ["--no-sandbox", "--disable-setuid-sandbox"]
+  }).then(async (browser) => {
+    browser.__qaUserAgent = userAgent;
+    return browser;
   });
+}
+
+async function newPage(browser) {
+  const page = await browser.newPage();
+  page.__qaUserAgent = browser.__qaUserAgent || QA_USER_AGENT;
+  await page.setUserAgent(page.__qaUserAgent);
+  return page;
 }
 
 function assertHeadersAllowMapillaryViewer() {
@@ -195,8 +219,29 @@ async function openTrailmapSearch(page, term) {
   await page.keyboard.press("Enter");
 }
 
+async function closeTrailmapDetails(page, options = {}) {
+  const { mobile = false } = options;
+  if (mobile) {
+    await page.waitForSelector("#nc-bottom-sheet .nc-close-btn", {
+      visible: true,
+      timeout: 10000
+    });
+    await page.click("#nc-bottom-sheet .nc-close-btn");
+    await page.waitForFunction(() => {
+      const card = window.NorthavenCard;
+      return !card || !card.isSheetVisible || card.isSheetVisible() === false;
+    }, { timeout: 10000 });
+    return;
+  }
+
+  await page.keyboard.press("Escape");
+  await page.waitForFunction(() => !document.querySelector(".nc-desktop-card:not([hidden])"), {
+    timeout: 10000
+  });
+}
+
 async function trailmapPopupLightboxFlow(browser) {
-  const page = await browser.newPage();
+  const page = await newPage(browser);
   try {
     await goto(page, TRAILMAP_LIVE_URL);
     await waitForMap(page);
@@ -246,8 +291,7 @@ async function trailmapPopupLightboxFlow(browser) {
     const sidecarStillOpen = await page.evaluate(() => !!document.querySelector(".nc-desktop-card:not([hidden])"));
     assert.equal(sidecarStillOpen, true, "Escape while lightbox open should close lightbox but keep the sidecar open");
 
-    await page.keyboard.press("Escape");
-    await page.waitForFunction(() => !document.querySelector(".nc-desktop-card:not([hidden])"), { timeout: 10000 });
+    await closeTrailmapDetails(page);
 
     console.log("trailmap sidecar lightbox: pass");
   } finally {
@@ -256,7 +300,7 @@ async function trailmapPopupLightboxFlow(browser) {
 }
 
 async function trailmapMapillaryModalFlow(browser) {
-  const page = await browser.newPage();
+  const page = await newPage(browser);
   try {
     await goto(page, TRAILMAP_LIVE_URL);
     await waitForMap(page);
@@ -316,7 +360,7 @@ async function trailmapMapillaryModalFlow(browser) {
 }
 
 async function trailmapSearchFlow(browser) {
-  const page = await browser.newPage();
+  const page = await newPage(browser);
   try {
     await goto(page, TRAILMAP_LIVE_URL);
     await waitForMap(page);
@@ -325,8 +369,7 @@ async function trailmapSearchFlow(browser) {
 
     await waitForTrailmapDetails(page);
 
-    await page.keyboard.press("Escape");
-    await page.waitForFunction(() => !document.querySelector(".nc-desktop-card:not([hidden])"), { timeout: 10000 });
+    await closeTrailmapDetails(page);
 
     // Regression: search used a single includes(query) check, so "mural bridge" failed to
     // match "Mural on Northaven Trail Bridge" because the substring isn't contiguous.
@@ -344,8 +387,61 @@ async function trailmapSearchFlow(browser) {
   }
 }
 
+async function trailmapMobileCardFlow(browser) {
+  const page = await newPage(browser);
+  try {
+    await goto(page, TRAILMAP_LIVE_URL);
+    await waitForMap(page);
+
+    await openTrailmapSearch(page, "royal");
+    await page.waitForFunction(() => window.location.search.includes("loc="), { timeout: 15000 });
+    await waitForTrailmapDetails(page, { mobile: true });
+
+    const firstState = await page.evaluate(() => ({
+      activeFeatureId: String(window.NorthavenCard?.getActiveFeatureId?.() || ""),
+      visible: Boolean(window.NorthavenCard?.isSheetVisible?.()),
+      title: document.querySelector("#nc-bottom-sheet .nc-name")?.textContent?.trim() || "",
+      hasShareButton: !!document.querySelector("#nc-bottom-sheet .nc-share-btn"),
+      hasCloseButton: !!document.querySelector("#nc-bottom-sheet .nc-close-btn")
+    }));
+
+    assert.equal(firstState.visible, true, "Mobile trailmap search should open the bottom sheet");
+    assert.ok(firstState.activeFeatureId.length > 0, "Mobile trailmap bottom sheet should have an active feature id");
+    assert.ok(firstState.title.length > 0, "Mobile trailmap bottom sheet should show a title");
+    assert.equal(firstState.hasShareButton, true, "Mobile trailmap bottom sheet should include a share button");
+    assert.equal(firstState.hasCloseButton, true, "Mobile trailmap bottom sheet should include a close button");
+
+    await openTrailmapSearch(page, "mural bridge");
+    await waitForTrailmapDetails(page, { mobile: true });
+
+    const secondState = await page.evaluate(() => ({
+      activeFeatureId: String(window.NorthavenCard?.getActiveFeatureId?.() || ""),
+      visible: Boolean(window.NorthavenCard?.isSheetVisible?.()),
+      title: document.querySelector("#nc-bottom-sheet .nc-name")?.textContent?.trim() || ""
+    }));
+
+    assert.equal(secondState.visible, true, "A second mobile trailmap search should keep the bottom sheet visible");
+    assert.ok(secondState.activeFeatureId.length > 0, "A second mobile trailmap search should keep an active feature id");
+    assert.notEqual(
+      secondState.activeFeatureId,
+      firstState.activeFeatureId,
+      "A second mobile trailmap search should update the bottom sheet to a different feature"
+    );
+    assert.notEqual(
+      secondState.title,
+      firstState.title,
+      "A second mobile trailmap search should update the bottom sheet title"
+    );
+
+    await closeTrailmapDetails(page, { mobile: true });
+    console.log("trailmap mobile card: pass");
+  } finally {
+    await page.close();
+  }
+}
+
 async function mapsMenuPageFlow(browser, url, label) {
-  const page = await browser.newPage();
+  const page = await newPage(browser);
   try {
     await goto(page, url);
     await assertMapsMenuToggle(page, { label });
@@ -356,7 +452,7 @@ async function mapsMenuPageFlow(browser, url, label) {
 }
 
 async function issueTrackerSearchFlow(browser) {
-  const page = await browser.newPage();
+  const page = await newPage(browser);
   try {
     await goto(page, "https://northaventrail.org/report-trail-issue");
     await waitForMap(page);
@@ -386,7 +482,7 @@ async function issueTrackerSearchFlow(browser) {
 }
 
 async function tailsMarkerFlow(browser) {
-  const page = await browser.newPage();
+  const page = await newPage(browser);
   try {
     await goto(page, "https://northaventrail.org/tails-2026");
     await waitForMap(page);
@@ -421,7 +517,7 @@ async function tailsMarkerFlow(browser) {
 }
 
 async function valentineModalFlow(browser) {
-  const page = await browser.newPage();
+  const page = await newPage(browser);
   try {
     await goto(page, "https://northaventrail.org/valentine-cling-map-2027");
     await waitForMap(page);
@@ -496,10 +592,15 @@ async function valentineModalFlow(browser) {
 async function main() {
   assertHeadersAllowMapillaryViewer();
   const browser = await launchBrowser();
+  const mobileBrowser = await launchBrowser({
+    viewport: { width: 390, height: 844, isMobile: true, hasTouch: true },
+    userAgent: QA_MOBILE_USER_AGENT
+  });
   try {
     await trailmapPopupLightboxFlow(browser);
     await trailmapMapillaryModalFlow(browser);
     await trailmapSearchFlow(browser);
+    await trailmapMobileCardFlow(mobileBrowser);
     await mapsMenuPageFlow(browser, "https://northaventrail.org/map-points-of-interest", "listing maps menu");
     await mapsMenuPageFlow(browser, "https://northaventrail.org/hawk-lights", "hawk lights maps menu");
     await issueTrackerSearchFlow(browser);
@@ -507,6 +608,7 @@ async function main() {
     await valentineModalFlow(browser);
   } finally {
     await browser.close();
+    await mobileBrowser.close();
   }
 }
 
