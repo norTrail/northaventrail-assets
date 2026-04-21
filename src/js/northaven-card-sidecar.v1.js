@@ -531,33 +531,32 @@
   function collapseDesktopCard(opts) {
     var shell = getDesktopCardEl();
     if (!shell || shell.hidden) return;
+    var toggle = shell.querySelector('.nc-desktop-card__toggle');
     shell.classList.add('is-collapsed');
     syncDesktopHostClasses(true, true);
-    updateDesktopToggleLabels(shell.querySelector('.nc-desktop-card__toggle'), true);
-    if (opts && opts.focusToggle) {
-      shell.querySelector('.nc-desktop-card__toggle')?.focus({ preventScroll: true });
-    }
+    updateDesktopToggleLabels(toggle, true);
+    if (opts && opts.focusToggle) toggle?.focus({ preventScroll: true });
   }
 
   function expandDesktopCard(opts) {
     var shell = getDesktopCardEl();
     if (!shell || shell.hidden) return;
+    var toggle = shell.querySelector('.nc-desktop-card__toggle');
     shell.classList.remove('is-collapsed');
     syncDesktopHostClasses(true, false);
-    updateDesktopToggleLabels(shell.querySelector('.nc-desktop-card__toggle'), false);
-    if (opts && opts.focusToggle) {
-      shell.querySelector('.nc-desktop-card__toggle')?.focus({ preventScroll: true });
-    }
+    updateDesktopToggleLabels(toggle, false);
+    if (opts && opts.focusToggle) toggle?.focus({ preventScroll: true });
   }
 
   function hideDesktopCard() {
     var shell = getDesktopCardEl();
     if (!shell) return;
+    var toggle = shell.querySelector('.nc-desktop-card__toggle');
     shell.hidden = true;
     shell.classList.remove('is-collapsed');
     shell.querySelector('.nc-desktop-card__body')?.replaceChildren();
     syncDesktopHostClasses(false, false);
-    updateDesktopToggleLabels(shell.querySelector('.nc-desktop-card__toggle'), false);
+    updateDesktopToggleLabels(toggle, false);
   }
 
   function panDesktopCardIntoView(map, coords) {
@@ -996,7 +995,7 @@
     document.addEventListener('keydown', function(e) {
       if (e.key !== 'Escape' || _lightbox) return;
       if (_mapillaryModal && !_mapillaryModal.hidden) return; // let _mapillaryKeydown handle ESC first
-      if (_sheetState !== SHEET_STATE_HIDDEN || _popup) {
+      if (_sheetState !== SHEET_STATE_HIDDEN) {
         e.stopImmediatePropagation();
         hide();
       }
@@ -1087,8 +1086,7 @@
   // ── State ─────────────────────────────────────────────────────
 
   var _opts            = null;
-  var _popup           = null;
-  var _silentHide      = null;
+  var _silentHide      = false;
   var _activeFeatureId = null;
   var _activeFeature   = null;
   var _activePoiData   = null;
@@ -1117,7 +1115,6 @@
         _silentHide = true;
         hideSheet();
         hideDesktopCard();
-        if (_popup) { _popup.remove(); _popup = null; }
         _silentHide = false;
 
         show(feature, data, map, opts);
@@ -1143,7 +1140,6 @@
     _silentHide = true;
     hideSheet();
     hideDesktopCard();
-    if (_popup) { _popup.remove(); _popup = null; }
     _silentHide = false;
 
     if (isMobile()) {
@@ -1182,7 +1178,6 @@
     closeMapillaryModal();
     hideSheet();
     hideDesktopCard();
-    if (_popup) { _popup.remove(); _popup = null; }
 
     _silentHide = false;
     _activeFeatureId = null;
@@ -1195,7 +1190,6 @@
   function getActiveFeatureId() {
     if (_sheetState !== SHEET_STATE_HIDDEN) return _activeFeatureId;
     if (getDesktopCardEl() && !getDesktopCardEl().hidden) return _activeFeatureId;
-    if (_popup) return _activeFeatureId;
     return null;
   }
 

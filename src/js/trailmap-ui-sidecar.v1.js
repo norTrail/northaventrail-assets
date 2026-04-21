@@ -5,10 +5,14 @@
 (function () {
   'use strict';
 
-  const ACTIVE_MARKER_LAYER_ID = 'trail_markers_active';
-  const ACTIVE_MARKER_BASE_SIZE = 0.68;
+  const ACTIVE_MARKER_LAYER_ID   = 'trail_markers_active';
+  const TRAIL_MARKERS_LAYER_ID   = 'trail_markers';
+  const TRAIL_MARKERS_SOURCE_ID  = 'trail_markers_source';
+  const MONARCH_WAY_LAYER_ID     = 'monarch_way';
+  const MAPBOX_POPUP_CLASS       = 'mapboxgl-popup';
+  const ACTIVE_MARKER_BASE_SIZE  = 0.68;
   const ACTIVE_MARKER_BASE_OFFSET = [0, -23];
-  const ACTIVE_MARKER_BOUNCE_MS = 520;
+  const ACTIVE_MARKER_BOUNCE_MS  = 520;
   const DESKTOP_SIDECAR_WIDTH_FALLBACK = 400;
   const DESKTOP_SIDECAR_INSET_FALLBACK = 12;
   let activeMarkerBounceFrame = null;
@@ -65,12 +69,12 @@
     }
 
     if (activeFeatureID) {
-      map.setFeatureState({ source: 'trail_markers_source', id: activeFeatureID }, { active: false });
+      map.setFeatureState({ source: TRAIL_MARKERS_SOURCE_ID, id: activeFeatureID }, { active: false });
       activeFeatureID = null;
     }
 
     if (currentFeature?.id) {
-      map.setFeatureState({ source: 'trail_markers_source', id: currentFeature.id }, { active: true });
+      map.setFeatureState({ source: TRAIL_MARKERS_SOURCE_ID, id: currentFeature.id }, { active: true });
     }
 
     flyToFeature = currentFeature;
@@ -125,9 +129,9 @@
 
   function clearActiveMarkerState() {
     resetActiveMarkerAnimation();
-    if (activeFeatureID && map?.getSource?.('trail_markers_source')) {
+    if (activeFeatureID && map?.getSource?.(TRAIL_MARKERS_SOURCE_ID)) {
       map.setFeatureState(
-        { source: 'trail_markers_source', id: activeFeatureID },
+        { source: TRAIL_MARKERS_SOURCE_ID, id: activeFeatureID },
         { active: false }
       );
     }
@@ -135,9 +139,9 @@
   }
 
   function setActiveMarkerState(featureId) {
-    if (!featureId || !map?.getSource?.('trail_markers_source')) return;
+    if (!featureId || !map?.getSource?.(TRAIL_MARKERS_SOURCE_ID)) return;
     map.setFeatureState(
-      { source: 'trail_markers_source', id: featureId },
+      { source: TRAIL_MARKERS_SOURCE_ID, id: featureId },
       { active: true }
     );
     activeFeatureID = featureId;
@@ -181,7 +185,7 @@
       return;
     }
 
-    const popUps = document.getElementsByClassName('mapboxgl-popup');
+    const popUps = document.getElementsByClassName(MAPBOX_POPUP_CLASS);
     if (popUps[0]) popUps[0].remove();
     popupFeature = null;
     clearListingSelection();
@@ -192,7 +196,7 @@
     clearFlyToPopupFallback_();
     window.NorthavenCard?.hide?.({ silent: true });
 
-    const popups = document.getElementsByClassName('mapboxgl-popup');
+    const popups = document.getElementsByClassName(MAPBOX_POPUP_CLASS);
     while (popups.length) {
       forcedClosePopup = true;
       popups[0].remove();
@@ -207,20 +211,20 @@
   onMapClick_ = function onMapClickSidecar_(event) {
     closeSearchControl();
 
-    if (map?.getLayer?.('monarch_way')) {
+    if (map?.getLayer?.(MONARCH_WAY_LAYER_ID)) {
       const monarchHit = map.queryRenderedFeatures(event.point, {
-        layers: ['monarch_way']
+        layers: [MONARCH_WAY_LAYER_ID]
       });
       if (monarchHit.length) return;
     }
 
-    if (!map.getLayer('trail_markers')) {
+    if (!map.getLayer(TRAIL_MARKERS_LAYER_ID)) {
       clearSelection_();
       return;
     }
 
     const features = map.queryRenderedFeatures(event.point, {
-      layers: ['trail_markers']
+      layers: [TRAIL_MARKERS_LAYER_ID]
     });
 
     if (!features.length) {
