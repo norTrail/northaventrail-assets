@@ -97,6 +97,17 @@
     return u.resolveIconUrl(iconValue);
   }
 
+  function readHoursField(source, keys) {
+    if (!source || !Array.isArray(keys)) return '';
+    for (var i = 0; i < keys.length; i += 1) {
+      var value = source[keys[i]];
+      if (value !== undefined && value !== null && String(value).trim()) {
+        return String(value).trim();
+      }
+    }
+    return '';
+  }
+
   // ── Lightbox ──────────────────────────────────────────────────
 
   let _lightbox = null;
@@ -248,12 +259,12 @@
         '<div class="nc-mapillary-bar">' +
           '<div class="nc-mapillary-title">Street View</div>' +
           '<div class="nc-mapillary-actions">' +
-            '<a class="nc-mapillary-link" href="#" target="_blank" rel="noopener noreferrer">Open in Mapillary</a>' +
             '<button class="nc-btn nc-mapillary-close" type="button" aria-label="Close street-level viewer" title="Close">' +
               '<svg class="nc-btn-icon" aria-hidden="true"><use href="#closeX"></use></svg>' +
             '</button>' +
           '</div>' +
         '</div>' +
+        '<a class="nc-mapillary-link" href="#" target="_blank" rel="noopener noreferrer">Open in Mapillary</a>' +
         '<div class="nc-mapillary-status" aria-live="polite">Loading street-level view...</div>' +
         '<div id="' + MAPILLARY_VIEWER_ID + '" class="nc-mapillary-viewer" aria-hidden="true"></div>' +
       '</div>';
@@ -744,9 +755,9 @@
 
     const name      = esc(String(p.l   || (td && td.l)  || '').trim());
     const near      = esc(String(p.r   || '').trim());
-    const hrOpen    = String(p.hr_open  || (td && td.hr_open)  || '').trim();
-    const hrClose   = String(p.hr_close || (td && td.hr_close) || '').trim();
-    const hours     = buildHoursDisplay(hrOpen, hrClose);  // formatted display string
+    const hrOpen    = readHoursField(p, ['hr_open']) || readHoursField(td, ['hr_open']);
+    const hrClose   = readHoursField(p, ['hr_closed', 'hr_close']) || readHoursField(td, ['hr_closed', 'hr_close']);
+    const hours     = buildHoursDisplay(hrOpen, hrClose) || String(p.hr || (td && td.hr) || '').trim();
     const category  = esc(String(p.b   || (td && td.l)  || '').trim());
     const desc      =     String(p.d   || (td && td.d)  || '').trim();
     const linkText  = esc(String(p.e   || (td && td.e)  || '').trim());
@@ -798,11 +809,13 @@
              onerror="this.closest('.nc-thumb-wrap').remove()">
       </div>` : '';
 
-    // ── Category row: legend icon (outside) + badge pill ──────
+    // ── Category row: legend icon inside the badge pill ───────
     const categoryHtml = category ? `
     <div class="nc-category-row">
-      ${iconUrl ? `<img class="nc-category-icon" src="${esc(iconUrl)}" alt="" aria-hidden="true" onerror="this.remove()">` : ''}
-      <span class="nc-badge">${category}</span>
+      <span class="nc-badge">
+        ${iconUrl ? `<img class="nc-category-icon" src="${esc(iconUrl)}" alt="" aria-hidden="true" onerror="this.remove()">` : ''}
+        <span class="nc-badge-label">${category}</span>
+      </span>
     </div>` : '';
 
     // ── Amenity pills ─────────────────────────────────────────

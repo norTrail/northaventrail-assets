@@ -121,6 +121,10 @@ body.is-map-fullscreen .nc-sheet {
   cursor: zoom-in;
 }
 
+.nc-thumb-wrap[data-hires] .nc-thumb {
+  cursor: zoom-in;
+}
+
 .nc-thumb {
   display: block;
   width: 72px;
@@ -286,28 +290,33 @@ body.is-map-fullscreen .nc-sheet {
 .nc-category-row {
   display: flex;
   align-items: center;
-  gap: 8px;
   margin-bottom: 8px;
 }
 
 .nc-category-icon {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   flex-shrink: 0;
   object-fit: contain;
 }
 
 .nc-badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-size: 11px;
   font-weight: 600;
   color: #108452;
   background: #e8f4ee;
-  border-radius: 10px;
-  padding: 2px 8px;
+  border-radius: 14px;
+  padding: 6px 14px;
   text-transform: uppercase;
   letter-spacing: 0.4px;
   margin-bottom: 0;
+}
+
+.nc-badge-label {
+  display: inline-block;
 }
 
 .nc-amenities {
@@ -465,60 +474,87 @@ body.nc-mapillary-open {
   z-index: 1;
   display: flex;
   flex-direction: column;
-  width: min(100vw, 960px);
+  width: 100vw;
   height: 100vh;
   background: #111;
   color: #fff;
 }
 
 .nc-mapillary-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  pointer-events: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: max(12px, env(safe-area-inset-top)) 12px 12px;
-  background: rgba(17, 17, 17, 0.94);
-  position: relative;
+  padding: max(14px, env(safe-area-inset-top)) 16px 12px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.78) 0%, rgba(0, 0, 0, 0.48) 58%, rgba(0, 0, 0, 0) 100%);
   z-index: 10;
-  flex-shrink: 0;
 }
 
 .nc-mapillary-title {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
 }
 
 .nc-mapillary-actions {
   display: flex;
   align-items: center;
   gap: 8px;
+  pointer-events: auto;
 }
 
 .nc-mapillary-link {
+  position: absolute;
+  left: 16px;
+  bottom: 18px;
+  z-index: 9;
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(17, 17, 17, 0.72);
+  backdrop-filter: blur(6px);
   color: #fff;
   font-size: 13px;
   font-weight: 600;
-  text-decoration: underline;
+  text-decoration: none;
 }
 
 .nc-mapillary-link:focus-visible {
   outline: 2px solid #fff;
   outline-offset: 2px;
-  border-radius: 2px;
+  border-radius: 999px;
 }
 
 .nc-mapillary-close {
   color: #fff;
+  background: rgba(17, 17, 17, 0.52);
+  backdrop-filter: blur(6px);
+  pointer-events: auto;
 }
 
 .nc-mapillary-close:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.18);
 }
 
 .nc-mapillary-status {
-  padding: 12px;
+  position: absolute;
+  top: calc(max(14px, env(safe-area-inset-top)) + 48px);
+  left: 16px;
+  right: 16px;
+  z-index: 8;
+  padding: 10px 12px;
   font-size: 14px;
   color: rgba(255, 255, 255, 0.92);
+  background: rgba(17, 17, 17, 0.72);
+  border-radius: 12px;
+  backdrop-filter: blur(6px);
 }
 
 .nc-mapillary-status.is-error {
@@ -653,15 +689,10 @@ body.nc-mapillary-open {
     display: flex;
     align-items: stretch;
     pointer-events: none;
-    transition: transform 220ms cubic-bezier(0.32, 0.72, 0, 1);
   }
 
   .nc-desktop-card[hidden] {
     display: none !important;
-  }
-
-  .nc-desktop-card.is-collapsed {
-    transform: translateX(calc(var(--nc-sidecar-handle-width) - 100% - var(--nc-sidecar-inset)));
   }
 
   .nc-desktop-card__panel {
@@ -675,13 +706,14 @@ body.nc-mapillary-open {
     display: flex;
     flex-direction: column;
     pointer-events: auto;
-    transition: opacity 120ms ease, visibility 120ms ease;
+    transition: transform 220ms cubic-bezier(0.32, 0.72, 0, 1), opacity 120ms ease, visibility 120ms ease;
   }
 
   .nc-desktop-card.is-collapsed .nc-desktop-card__panel {
     pointer-events: none;
     opacity: 0;
     visibility: hidden;
+    transform: translateX(calc(-100% - var(--nc-sidecar-inset)));
   }
 
   .nc-desktop-card__body {
@@ -696,7 +728,7 @@ body.nc-mapillary-open {
   .nc-desktop-card__toggle {
     position: absolute;
     top: 50%;
-    right: calc(var(--nc-sidecar-handle-width) * -1);
+    left: calc(var(--nc-sidecar-inset) * -1);
     transform: translateY(-50%);
     width: var(--nc-sidecar-handle-width);
     height: 64px;
@@ -727,10 +759,11 @@ body.nc-mapillary-open {
     font-size: 18px;
     line-height: 1;
     transition: transform 180ms ease;
+    transform: rotate(180deg);
   }
 
   .nc-desktop-card.is-collapsed .nc-desktop-card__chevron {
-    transform: rotate(180deg);
+    transform: rotate(0deg);
   }
 
   .nc-desktop-card .nc-card {

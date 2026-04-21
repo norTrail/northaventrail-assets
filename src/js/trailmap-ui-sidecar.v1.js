@@ -103,6 +103,17 @@
     scheduleFlyToPopupFallback_(currentFeature);
   }
 
+  const baseFlyToMarker_ = typeof flyToMarker === 'function' ? flyToMarker : null;
+  flyToMarker = function flyToMarkerSidecarAware_(currentFeature, zoomLevel, coords) {
+    if (window.innerWidth >= 768) {
+      flyToMarkerForDesktopSidecar(currentFeature, zoomLevel, coords);
+      return;
+    }
+    if (baseFlyToMarker_) {
+      baseFlyToMarker_(currentFeature, zoomLevel, coords);
+    }
+  };
+
   function resolveFeature(currentFeature) {
     const idStr = String(currentFeature?.id ?? '');
     const fullFeature =
