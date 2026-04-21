@@ -779,6 +779,14 @@ function ensurePoiImages_(m, payload, features) {
 
   const types = payload?.defs?.types || {};
   const iconUrlsByKey = new Map();
+  const sharedActiveMarkerUrl =
+    typeof TRAILMAP_ACTIVE_MARKER_IMAGE !== "undefined" && TRAILMAP_ACTIVE_MARKER_IMAGE
+      ? String(TRAILMAP_ACTIVE_MARKER_IMAGE).trim()
+      : "";
+  const sharedActiveMarkerKey =
+    typeof TRAILMAP_ACTIVE_MARKER_KEY !== "undefined" && TRAILMAP_ACTIVE_MARKER_KEY
+      ? String(TRAILMAP_ACTIVE_MARKER_KEY).trim()
+      : "trailmap-active-marker";
 
   Object.values(types).forEach((def) => {
     const iconKey = String(def?.sp || def?.i || "").trim().replace(/\.svg$/i, "");
@@ -788,11 +796,16 @@ function ensurePoiImages_(m, payload, features) {
     if (iconUrl) iconUrlsByKey.set(iconKey, iconUrl);
   });
 
+  if (sharedActiveMarkerUrl && !iconUrlsByKey.has(sharedActiveMarkerKey)) {
+    iconUrlsByKey.set(sharedActiveMarkerKey, sharedActiveMarkerUrl);
+  }
+
   const neededKeys = new Set();
   (features || []).forEach((feature) => {
     const iconKey = String(feature?.properties?.sp || feature?.properties?.i || "").trim();
     if (iconKey) neededKeys.add(iconKey);
   });
+  if (sharedActiveMarkerUrl) neededKeys.add(sharedActiveMarkerKey);
 
   const loaders = Array.from(neededKeys).map((iconKey) => {
     if (m.hasImage(iconKey)) return Promise.resolve();
@@ -881,6 +894,14 @@ function applyMarkerPayload_(m, payload) {
     const effLabel = ["coalesce", ["get", "b"], "Marker"];
     const effIcon = ["coalesce", ["get", "sp"], ["get", "i"], "road"];
     const effColor = ["coalesce", ["get", "c"], "#1f7291"];
+    const sharedActiveMarkerKey =
+      typeof TRAILMAP_ACTIVE_MARKER_KEY !== "undefined" && TRAILMAP_ACTIVE_MARKER_KEY
+        ? String(TRAILMAP_ACTIVE_MARKER_KEY).trim()
+        : "trailmap-active-marker";
+    const activeIconImage =
+      typeof TRAILMAP_ACTIVE_MARKER_IMAGE !== "undefined" && TRAILMAP_ACTIVE_MARKER_IMAGE
+        ? sharedActiveMarkerKey
+        : effIcon;
 
     if (!m.getLayer("trail_markers")) {
       m.addLayer({
@@ -949,7 +970,7 @@ function applyMarkerPayload_(m, payload) {
           "text-field": effLabel,
           "text-variable-anchor": ["top", "bottom-right", "bottom-left"],
           "text-justify": "auto",
-          "icon-image": effIcon,
+          "icon-image": activeIconImage,
           "icon-offset": [0, -23],
           "text-offset": [0.5, -0.25],
           "icon-padding": 2,
