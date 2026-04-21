@@ -882,6 +882,47 @@ function applyMarkerPayload_(m, payload) {
     const effIcon = ["coalesce", ["get", "sp"], ["get", "i"], "road"];
     const effColor = ["coalesce", ["get", "c"], "#1f7291"];
 
+    if (!m.getLayer("trail_markers_active_ring")) {
+      m.addLayer({
+        id: "trail_markers_active_ring",
+        type: "circle",
+        source: "trail_markers_source",
+        paint: {
+          "circle-radius": [
+            "case",
+            ["boolean", ["feature-state", "active"], false],
+            11,
+            0
+          ],
+          "circle-color": [
+            "case",
+            ["boolean", ["feature-state", "active"], false],
+            "rgba(255,255,255,0.96)",
+            "rgba(255,255,255,0)"
+          ],
+          "circle-stroke-width": [
+            "case",
+            ["boolean", ["feature-state", "active"], false],
+            3,
+            0
+          ],
+          "circle-stroke-color": [
+            "case",
+            ["boolean", ["feature-state", "active"], false],
+            "#d93025",
+            "rgba(0,0,0,0)"
+          ],
+          "circle-opacity": [
+            "case",
+            ["boolean", ["feature-state", "active"], false],
+            1,
+            0
+          ],
+          "circle-blur": 0.2
+        }
+      });
+    }
+
     if (!m.getLayer("trail_markers")) {
       m.addLayer({
         id: "trail_markers",
@@ -984,6 +1025,7 @@ function applyMarkerPayload_(m, payload) {
     }
 
     // Ensure markers are ALWAYS at the top of the layer stack
+    if (m.getLayer("trail_markers_active_ring")) m.moveLayer("trail_markers_active_ring");
     if (m.getLayer("trail_markers")) m.moveLayer("trail_markers");
     if (m.getLayer("trail_markers_active")) m.moveLayer("trail_markers_active");
 

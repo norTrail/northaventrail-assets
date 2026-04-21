@@ -577,12 +577,24 @@
     var clampedY = Math.max(72, Math.min(canvas.clientHeight - 72, point.y));
     var offsetY = clampedY - (canvas.clientHeight / 2);
 
+    if (typeof suppressMapEvents !== 'undefined') {
+      suppressMapEvents = true;
+    }
+
     map.easeTo({
       center: coords,
       offset: [offsetX, offsetY],
       duration: 280,
       essential: true,
     });
+
+    if (typeof map.once === 'function') {
+      map.once('moveend', function() {
+        if (typeof suppressMapEvents !== 'undefined') {
+          suppressMapEvents = false;
+        }
+      });
+    }
   }
 
   function showDesktopCard(html, map, coords, mId) {

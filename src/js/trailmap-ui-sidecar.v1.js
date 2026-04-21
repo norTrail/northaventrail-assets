@@ -15,6 +15,52 @@
     activeFeatureID = null;
   }
 
+  function setActiveMarkerState(featureId) {
+    if (!featureId || !map?.getSource?.('trail_markers_source')) return;
+    map.setFeatureState(
+      { source: 'trail_markers_source', id: featureId },
+      { active: true }
+    );
+    activeFeatureID = featureId;
+  }
+
+  createPopUp = function createPopUpSidecar_(currentFeature) {
+    forceClosePopups();
+    popupFeature = currentFeature;
+
+    const idStr = String(currentFeature?.id ?? '');
+    const fullFeature =
+      idStr && Array.isArray(poiData?.features)
+        ? poiData.features.find((f) => String(f.id) === idStr) || currentFeature
+        : currentFeature;
+
+    const coords = fullFeature?.geometry?.coordinates;
+    if (!Array.isArray(coords) || coords.length !== 2) return;
+
+    const p = fullFeature.properties || {};
+    const title = String(p.l || p.n || '').trim();
+
+    setActiveMarkerState(fullFeature.id);
+    window.TrailmapListing?.highlightFeature?.(idStr);
+
+    window.NorthavenCard.show(fullFeature, poiData, map, {
+      onShare: () => {
+        clickShare(
+          'Northaven Trail Map',
+          title ? `${title} on the Northaven Trail` : 'Northaven Trail Map',
+          buildURL({ markerID: idStr, markerTitle: title }, true)
+        );
+      },
+      onClose: () => {
+        clearActiveMarkerState();
+        popupFeature = null;
+        window.TrailmapListing?.clearActiveFeature?.();
+        if (!forcedClosePopup) resetPageDetails();
+        removeActive();
+      },
+    });
+  };
+
   clearSelection_ = function clearSelectionSidecar_() {
     if (window.NorthavenCard?.getActiveFeatureId?.()) {
       window.NorthavenCard.hide();
