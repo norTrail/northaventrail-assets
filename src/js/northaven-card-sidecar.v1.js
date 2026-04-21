@@ -706,28 +706,56 @@
 
   // Parse an ISO timestamp from GAS (e.g. "1899-12-30T11:00:00.000Z") into
   // total minutes using local time so comparison works in the visitor's timezone.
-  function isoToLocalMins(isoStr) {
-    if (!isoStr) return null;
-    var d = new Date(isoStr);
-    if (isNaN(d)) return null;
-    return d.getHours() * 60 + d.getMinutes();
+  function formatMinutesDisplay(totalMinutes) {
+    if (totalMinutes === null || totalMinutes === undefined) return null;
+    var h = Math.floor(totalMinutes / 60) % 24;
+    var min = totalMinutes % 60;
+    var ampm = h >= 12 ? 'PM' : 'AM';
+    var h12 = h % 12 || 12;
+    return h12 + ':' + (min < 10 ? '0' : '') + min + ' ' + ampm;
   }
 
-  // Format an ISO timestamp as "5:00 AM" / "11:00 PM" in local time.
-  function isoToLocalDisplay(isoStr) {
-    if (!isoStr) return null;
-    var d = new Date(isoStr);
-    if (isNaN(d)) return null;
-    var h = d.getHours(), min = d.getMinutes();
-    var ampm = h >= 12 ? 'PM' : 'AM';
-    var h12  = h % 12 || 12;
-    return h12 + ':' + (min < 10 ? '0' : '') + min + ' ' + ampm;
+  function parseClockValue(rawValue) {
+    if (!rawValue) return null;
+    var value = String(rawValue).trim();
+    if (!value) return null;
+
+    var d = new Date(value);
+    if (!isNaN(d)) {
+      return {
+        mins: d.getHours() * 60 + d.getMinutes(),
+        display: formatMinutesDisplay(d.getHours() * 60 + d.getMinutes()),
+      };
+    }
+
+    var match = value.match(/^(\d{1,2})(?::(\d{2}))?\s*([AaPp][Mm])$/);
+    if (match) {
+      var hours = Number(match[1]);
+      var minutes = Number(match[2] || '0');
+      var suffix = match[3].toUpperCase();
+      if (hours >= 1 && hours <= 12 && minutes >= 0 && minutes < 60) {
+        var hour24 = hours % 12;
+        if (suffix === 'PM') hour24 += 12;
+        var total = hour24 * 60 + minutes;
+        return {
+          mins: total,
+          display: formatMinutesDisplay(total),
+        };
+      }
+    }
+
+    return {
+      mins: null,
+      display: value,
+    };
   }
 
   // Build the "5:00 AM - 11:00 PM" display string from the two ISO fields.
   function buildHoursDisplay(hrOpen, hrClose) {
-    var o = isoToLocalDisplay(hrOpen);
-    var c = isoToLocalDisplay(hrClose);
+    var openInfo = parseClockValue(hrOpen);
+    var closeInfo = parseClockValue(hrClose);
+    var o = openInfo && openInfo.display;
+    var c = closeInfo && closeInfo.display;
     if (!o && !c) return '';
     if (o && c) return o + ' \u2013 ' + c;
     return o || c;
@@ -735,8 +763,10 @@
 
   // Return 'open' or 'closed' by comparing current local time to the two ISO fields.
   function hoursStatus(hrOpen, hrClose) {
-    var start = isoToLocalMins(hrOpen);
-    var end   = isoToLocalMins(hrClose);
+    var openInfo = parseClockValue(hrOpen);
+    var closeInfo = parseClockValue(hrClose);
+    var start = openInfo ? openInfo.mins : null;
+    var end = closeInfo ? closeInfo.mins : null;
     if (start === null || end === null) return null;
     var now = new Date();
     var cur = now.getHours() * 60 + now.getMinutes();

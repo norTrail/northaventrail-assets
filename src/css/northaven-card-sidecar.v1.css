@@ -728,7 +728,7 @@ body.nc-mapillary-open {
   .nc-desktop-card__toggle {
     position: absolute;
     top: 50%;
-    left: calc(var(--nc-sidecar-inset) * -1);
+    right: calc(var(--nc-sidecar-handle-width) * -1);
     transform: translateY(-50%);
     width: var(--nc-sidecar-handle-width);
     height: 64px;
@@ -764,6 +764,11 @@ body.nc-mapillary-open {
 
   .nc-desktop-card.is-collapsed .nc-desktop-card__chevron {
     transform: rotate(0deg);
+  }
+
+  .nc-desktop-card.is-collapsed .nc-desktop-card__toggle {
+    left: calc(var(--nc-sidecar-inset) * -1);
+    right: auto;
   }
 
   .nc-desktop-card .nc-card {
