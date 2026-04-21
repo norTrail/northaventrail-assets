@@ -71,6 +71,7 @@ let __rebuildInProgress = false;
 let __onReinitRunning = false;
 
 let map = null;
+let isInitialRun_ = true;
 
 let poiData = null;
 
@@ -1034,8 +1035,9 @@ function applyMarkerPayload_(m, payload) {
     }
 
     forcedClosePopup = true;
-    goToElement();
+    goToElement(null, { immediate: isInitialRun_ });
     forcedClosePopup = false;
+    isInitialRun_ = false;
 
     installMapControls_();
     wireMapEventsAfterMarkers_();

@@ -614,7 +614,7 @@ function addPopupBack() {
   return found;
 }
 
-function flyToMarker(currentFeature, zoomLevel, coords) {
+function flyToMarker(currentFeature, zoomLevel, coords, options = {}) {
   forceClosePopups();
   clearFlyToPopupFallback_();
 
@@ -1322,7 +1322,7 @@ function toLngLat_(arr, fallback) {
   return (Number.isFinite(lng) && Number.isFinite(lat)) ? [lng, lat] : fallback;
 }
 
-function goToElement(idOverride = null) {
+function goToElement(idOverride = null, options = {}) {
   if (suppressMapEvents) return;
 
   const params = getURLParams();
@@ -1418,7 +1418,7 @@ function goToElement(idOverride = null) {
           params?.[COORDINATES_PARM_ARRAY] ??
           feature?.geometry?.coordinates;
         if (!coords || coords.length !== 2) return;
-        flyToMarker(feature, zoom, coords);
+        flyToMarker(feature, zoom, coords, options);
         updatePageDetails(feature); // ensure this reads feature.properties.n / d now
         createPopUp(feature);
         flyToFeature = null;

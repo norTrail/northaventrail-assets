@@ -58,7 +58,7 @@
     activeMarkerBounceFrame = requestAnimationFrame(frame);
   }
 
-  function flyToMarkerForDesktopSidecar(currentFeature, zoomLevel, coords) {
+  function flyToMarkerForDesktopSidecar(currentFeature, zoomLevel, coords, options = {}) {
     forceClosePopups();
     clearFlyToPopupFallback_();
 
@@ -91,7 +91,10 @@
       : DESKTOP_SIDECAR_INSET_FALLBACK;
     const offsetX = Math.round((sidecarWidth + sidecarInset) / 2);
 
-    map.flyTo({
+    const jump = options.immediate === true;
+    const method = jump ? 'jumpTo' : 'flyTo';
+
+    map[method]({
       center: flyToCoords,
       zoom: zl,
       offset: [offsetX, 0],
@@ -104,13 +107,13 @@
   }
 
   const baseFlyToMarker_ = typeof flyToMarker === 'function' ? flyToMarker : null;
-  flyToMarker = function flyToMarkerSidecarAware_(currentFeature, zoomLevel, coords) {
+  flyToMarker = function flyToMarkerSidecarAware_(currentFeature, zoomLevel, coords, options = {}) {
     if (window.innerWidth >= 768) {
-      flyToMarkerForDesktopSidecar(currentFeature, zoomLevel, coords);
+      flyToMarkerForDesktopSidecar(currentFeature, zoomLevel, coords, options);
       return;
     }
     if (baseFlyToMarker_) {
-      baseFlyToMarker_(currentFeature, zoomLevel, coords);
+      baseFlyToMarker_(currentFeature, zoomLevel, coords, options);
     }
   };
 
