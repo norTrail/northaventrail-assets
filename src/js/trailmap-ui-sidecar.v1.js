@@ -112,6 +112,38 @@
       flyToMarkerForDesktopSidecar(currentFeature, zoomLevel, coords, options);
       return;
     }
+
+    // Mobile — URL load (immediate): jump directly to the correct zoom level so
+    // the marker is on screen, then let NorthavenCard.show()'s easeTo handle the
+    // final vertical offset (keeping the marker above the peeked bottom sheet).
+    // Doing a full flyTo here would conflict with the card's own pan animation.
+    if (options.immediate === true) {
+      forceClosePopups();
+      clearFlyToPopupFallback_();
+
+      let zl = zoomLevel;
+      if (!zl) {
+        zl = Number(map.getZoom().toFixed(URL_FIXED_NUMBER));
+        if (zl < DEFAULT_FLYTO_ZOOM) zl = DEFAULT_FLYTO_ZOOM;
+      }
+
+      if (activeFeatureID) {
+        map.setFeatureState({ source: 'trail_markers_source', id: activeFeatureID }, { active: false });
+        activeFeatureID = null;
+      }
+      if (currentFeature?.id) {
+        map.setFeatureState({ source: 'trail_markers_source', id: currentFeature.id }, { active: true });
+      }
+
+      flyToFeature = currentFeature;
+      activeFeatureID = currentFeature.id;
+
+      const flyToCoords = coords || currentFeature.geometry.coordinates;
+      map.jumpTo({ center: flyToCoords, zoom: zl });
+      // No scheduleFlyToPopupFallback_ — createPopUp fires immediately after this.
+      return;
+    }
+
     if (baseFlyToMarker_) {
       baseFlyToMarker_(currentFeature, zoomLevel, coords, options);
     }
