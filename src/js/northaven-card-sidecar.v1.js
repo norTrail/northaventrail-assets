@@ -25,7 +25,6 @@
   const DESKTOP_CARD_BODY_ID = 'nc-desktop-card-body';
   const DESKTOP_CARD_WIDTH  = 400;
   const DESKTOP_CARD_GAP    = 16;
-  const DESKTOP_CARD_INSET  = 12;
   const MAPILLARY_MODAL_ID  = 'nc-mapillary-modal';
   const MAPILLARY_VIEWER_ID = 'nc-mapillary-viewer';
   const MAPILLARY_SPINNER_HTML =

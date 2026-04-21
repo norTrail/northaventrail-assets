@@ -5,6 +5,30 @@
 (function () {
   'use strict';
 
+  function resolveFeature(currentFeature) {
+    const idStr = String(currentFeature?.id ?? '');
+    const fullFeature =
+      idStr && Array.isArray(poiData?.features)
+        ? poiData.features.find((f) => String(f.id) === idStr) || currentFeature
+        : currentFeature;
+    return {
+      id: idStr,
+      feature: fullFeature,
+    };
+  }
+
+  function clearListingSelection() {
+    removeActive();
+    window.TrailmapListing?.clearActiveFeature?.();
+  }
+
+  function highlightListing(featureId) {
+    if (!featureId) return;
+    const listing = document.getElementById(`listing-${featureId}`);
+    if (listing) listing.classList.add('activeOption');
+    window.TrailmapListing?.highlightFeature?.(featureId);
+  }
+
   function clearActiveMarkerState() {
     if (activeFeatureID && map?.getSource?.('trail_markers_source')) {
       map.setFeatureState(
@@ -28,12 +52,7 @@
     forceClosePopups();
     popupFeature = currentFeature;
 
-    const idStr = String(currentFeature?.id ?? '');
-    const fullFeature =
-      idStr && Array.isArray(poiData?.features)
-        ? poiData.features.find((f) => String(f.id) === idStr) || currentFeature
-        : currentFeature;
-
+    const { id: idStr, feature: fullFeature } = resolveFeature(currentFeature);
     const coords = fullFeature?.geometry?.coordinates;
     if (!Array.isArray(coords) || coords.length !== 2) return;
 
@@ -41,7 +60,7 @@
     const title = String(p.l || p.n || '').trim();
 
     setActiveMarkerState(fullFeature.id);
-    window.TrailmapListing?.highlightFeature?.(idStr);
+    highlightListing(idStr);
 
     window.NorthavenCard.show(fullFeature, poiData, map, {
       onShare: () => {
@@ -54,9 +73,8 @@
       onClose: () => {
         clearActiveMarkerState();
         popupFeature = null;
-        window.TrailmapListing?.clearActiveFeature?.();
+        clearListingSelection();
         if (!forcedClosePopup) resetPageDetails();
-        removeActive();
       },
     });
   };
@@ -70,9 +88,8 @@
     const popUps = document.getElementsByClassName('mapboxgl-popup');
     if (popUps[0]) popUps[0].remove();
     popupFeature = null;
-    removeActive();
+    clearListingSelection();
     clearActiveMarkerState();
-    window.TrailmapListing?.clearActiveFeature?.();
   };
 
   forceClosePopups = function forceClosePopupsSidecar_() {
@@ -87,9 +104,8 @@
     }
 
     popupFeature = null;
-    removeActive();
+    clearListingSelection();
     clearActiveMarkerState();
-    window.TrailmapListing?.clearActiveFeature?.();
   };
 
   onMapClick_ = function onMapClickSidecar_(event) {
@@ -130,10 +146,7 @@
 
     resetCoordinates = true;
 
-    const fullFeature =
-      clickedId && Array.isArray(poiData?.features)
-        ? poiData.features.find((f) => String(f.id) === clickedId) || clickedPoint
-        : clickedPoint;
+    const { feature: fullFeature } = resolveFeature(clickedPoint);
 
     flyToMarker(fullFeature);
     updatePageDetails(fullFeature);
@@ -141,12 +154,6 @@
     resetCoordinates = false;
 
     removeActive();
-
-    const listing = document.getElementById(`listing-${clickedId}`);
-    if (listing) listing.classList.add('activeOption');
-
-    if (window.TrailmapListing && window.TrailmapListing.highlightFeature) {
-      window.TrailmapListing.highlightFeature(clickedId);
-    }
+    highlightListing(clickedId);
   };
 })();

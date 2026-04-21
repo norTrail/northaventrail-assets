@@ -774,19 +774,24 @@ function loadMapImageElement_(url) {
   });
 }
 
+function getSharedActiveMarkerConfig_() {
+  const url =
+    typeof TRAILMAP_ACTIVE_MARKER_IMAGE !== "undefined" && TRAILMAP_ACTIVE_MARKER_IMAGE
+      ? String(TRAILMAP_ACTIVE_MARKER_IMAGE).trim()
+      : "";
+  const key =
+    typeof TRAILMAP_ACTIVE_MARKER_KEY !== "undefined" && TRAILMAP_ACTIVE_MARKER_KEY
+      ? String(TRAILMAP_ACTIVE_MARKER_KEY).trim()
+      : "trailmap-active-marker";
+  return { url, key };
+}
+
 function ensurePoiImages_(m, payload, features) {
   if (!m?.addImage || !m?.hasImage) return Promise.resolve();
 
   const types = payload?.defs?.types || {};
   const iconUrlsByKey = new Map();
-  const sharedActiveMarkerUrl =
-    typeof TRAILMAP_ACTIVE_MARKER_IMAGE !== "undefined" && TRAILMAP_ACTIVE_MARKER_IMAGE
-      ? String(TRAILMAP_ACTIVE_MARKER_IMAGE).trim()
-      : "";
-  const sharedActiveMarkerKey =
-    typeof TRAILMAP_ACTIVE_MARKER_KEY !== "undefined" && TRAILMAP_ACTIVE_MARKER_KEY
-      ? String(TRAILMAP_ACTIVE_MARKER_KEY).trim()
-      : "trailmap-active-marker";
+  const { url: sharedActiveMarkerUrl, key: sharedActiveMarkerKey } = getSharedActiveMarkerConfig_();
 
   Object.values(types).forEach((def) => {
     const iconKey = String(def?.sp || def?.i || "").trim().replace(/\.svg$/i, "");
@@ -894,14 +899,9 @@ function applyMarkerPayload_(m, payload) {
     const effLabel = ["coalesce", ["get", "b"], "Marker"];
     const effIcon = ["coalesce", ["get", "sp"], ["get", "i"], "road"];
     const effColor = ["coalesce", ["get", "c"], "#1f7291"];
-    const sharedActiveMarkerKey =
-      typeof TRAILMAP_ACTIVE_MARKER_KEY !== "undefined" && TRAILMAP_ACTIVE_MARKER_KEY
-        ? String(TRAILMAP_ACTIVE_MARKER_KEY).trim()
-        : "trailmap-active-marker";
+    const { url: sharedActiveMarkerUrl, key: sharedActiveMarkerKey } = getSharedActiveMarkerConfig_();
     const activeIconImage =
-      typeof TRAILMAP_ACTIVE_MARKER_IMAGE !== "undefined" && TRAILMAP_ACTIVE_MARKER_IMAGE
-        ? sharedActiveMarkerKey
-        : effIcon;
+      sharedActiveMarkerUrl ? sharedActiveMarkerKey : effIcon;
 
     if (!m.getLayer("trail_markers")) {
       m.addLayer({
