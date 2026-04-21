@@ -42,6 +42,7 @@ function wireMapEventsAfterMarkers_() {
 
   // drag / rotate / pitch / zoom
   map.on("dragend", () => {
+    userMovedMap_ = true;
     if (!flyToFeature) updatePageDetails();
   });
 
@@ -55,12 +56,16 @@ function wireMapEventsAfterMarkers_() {
   });
 
   map.on("pitchend", () => {
+    userMovedMap_ = true;
     if (!flyToFeature) updatePageDetails();
   });
 
   map.on("zoomend", () => {
     if (suppressMapEvents) return;
-    if (!flyToFeature) updatePageDetails();
+    if (!flyToFeature) {
+      userMovedMap_ = true;
+      updatePageDetails();
+    }
 
     // popup visibility restore/remove
     // slim schema: id is on the feature itself
@@ -175,6 +180,9 @@ function onMapClick_(event) {
 
   const clickedPoint = features[0];
 
+  // Marker click is system-initiated movement — reset userMovedMap_ so
+  // buildURL doesn't encode stale z/cords from the flyTo into the URL.
+  userMovedMap_ = false;
   resetCoordinates = true;
 
   // flyToMarker expects a GeoJSON feature with .geometry.coordinates
@@ -1034,44 +1042,71 @@ function buildURL(urlParams = {}, makeShort = false) {
   if (activeFeatureID) {
     url += `${joiner}${LOCATION_PARM}=${encodeURIComponent(activeFeatureID)}`;
     joiner = "&";
-
   }
 
-  const zoom = String(parseFloat(map.getZoom().toFixed(URL_FIXED_NUMBER)));
-  if (parseFloat(zoom) !== parseFloat(DEFAULT_ZOOM)) {
-    url += `${joiner}${ZOOM_PARM}=${zoom}`;
-    joiner = "&";
-  }
+  // Only write z and cords when the user explicitly moved the map (drag/zoom).
+  // When positioning is system-driven (marker click, URL load), omit them so
+  // that a shareable/refreshable URL uses the marker's true coordinates instead
+  // of the potentially offset position calculated by the sidecar flyTo.
+  if (userMovedMap_) {
+    const zoom = String(parseFloat(map.getZoom().toFixed(URL_FIXED_NUMBER)));
+    if (parseFloat(zoom) !== parseFloat(DEFAULT_ZOOM)) {
+      url += `${joiner}${ZOOM_PARM}=${zoom}`;
+      joiner = "&";
+    }
 
-  const bearing = map.getBearing().toFixed(URL_FIXED_NUMBER);
-  if (parseFloat(bearing) !== DEFAULT_BEARING) {
-    url += `${joiner}${BEARING_PARAM}=${bearing}`;
-    joiner = "&";
-  }
+    const bearing = map.getBearing().toFixed(URL_FIXED_NUMBER);
+    if (parseFloat(bearing) !== DEFAULT_BEARING) {
+      url += `${joiner}${BEARING_PARAM}=${bearing}`;
+      joiner = "&";
+    }
 
-  const pitch = map.getPitch().toFixed(URL_FIXED_NUMBER);
-  if (parseFloat(pitch) !== DEFAULT_PITCH) {
-    url += `${joiner}${PITCH_PARAM}=${pitch}`;
-    joiner = "&";
-  }
+    const pitch = map.getPitch().toFixed(URL_FIXED_NUMBER);
+    if (parseFloat(pitch) !== DEFAULT_PITCH) {
+      url += `${joiner}${PITCH_PARAM}=${pitch}`;
+      joiner = "&";
+    }
 
-  const sat = map.getLayer("mapbox-satellite")
-    ? map.getLayoutProperty("mapbox-satellite", "visibility")
-    : DEFAULT_SATELLITE;
-  if (sat !== DEFAULT_SATELLITE) {
-    url += `${joiner}${SATELLITE_PARAM}=${sat}`;
-    joiner = "&";
-  }
+    const sat = map.getLayer("mapbox-satellite")
+      ? map.getLayoutProperty("mapbox-satellite", "visibility")
+      : DEFAULT_SATELLITE;
+    if (sat !== DEFAULT_SATELLITE) {
+      url += `${joiner}${SATELLITE_PARAM}=${sat}`;
+      joiner = "&";
+    }
 
-  if (!resetCoordinates) {
-    const c = map.getCenter();
-    const coords = [c.lng.toFixed(URL_FIXED_NUMBER), c.lat.toFixed(URL_FIXED_NUMBER)];
+    if (!resetCoordinates) {
+      const c = map.getCenter();
+      const coords = [c.lng.toFixed(URL_FIXED_NUMBER), c.lat.toFixed(URL_FIXED_NUMBER)];
 
-    if (
-      parseFloat(coords[0]) !== parseFloat(DEFAULT_COORDS[0]) ||
-      parseFloat(coords[1]) !== parseFloat(DEFAULT_COORDS[1])
-    ) {
-      url += `${joiner}${COORDINATES_PARM}=${coords}`;
+      if (
+        parseFloat(coords[0]) !== parseFloat(DEFAULT_COORDS[0]) ||
+        parseFloat(coords[1]) !== parseFloat(DEFAULT_COORDS[1])
+      ) {
+        url += `${joiner}${COORDINATES_PARM}=${coords}`;
+        joiner = "&";
+      }
+    }
+  } else {
+    // Still write bearing/pitch/satellite even for system moves — these are map
+    // style preferences, not position, so they're safe to round-trip.
+    const bearing = map.getBearing().toFixed(URL_FIXED_NUMBER);
+    if (parseFloat(bearing) !== DEFAULT_BEARING) {
+      url += `${joiner}${BEARING_PARAM}=${bearing}`;
+      joiner = "&";
+    }
+
+    const pitch = map.getPitch().toFixed(URL_FIXED_NUMBER);
+    if (parseFloat(pitch) !== DEFAULT_PITCH) {
+      url += `${joiner}${PITCH_PARAM}=${pitch}`;
+      joiner = "&";
+    }
+
+    const sat = map.getLayer("mapbox-satellite")
+      ? map.getLayoutProperty("mapbox-satellite", "visibility")
+      : DEFAULT_SATELLITE;
+    if (sat !== DEFAULT_SATELLITE) {
+      url += `${joiner}${SATELLITE_PARAM}=${sat}`;
       joiner = "&";
     }
   }

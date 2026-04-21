@@ -100,6 +100,11 @@ let backButton = false;
 let forcedClosePopup = false;
 let resetCoordinates = false;
 
+// True only when the user manually dragged or zoomed the map.
+// When false, buildURL omits z and cords from the URL so that
+// a marker-centered URL reloads cleanly without coordinate drift.
+let userMovedMap_ = false;
+
 /* ---------- Startup ---------- */
 
 if (window.NorthavenUtils) {
