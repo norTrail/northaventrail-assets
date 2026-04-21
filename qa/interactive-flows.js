@@ -263,13 +263,19 @@ async function trailmapPopupLightboxFlow(browser) {
     await page.$eval(".nc-desktop-card .nc-thumb-wrap[data-hires]", (el) => el.click());
 
     await page.waitForFunction(() => {
-      const lightbox = document.getElementById("lightbox-map");
-      return lightbox && lightbox.style.display === "flex";
+      const legacyLightbox = document.getElementById("lightbox-map");
+      const modernLightbox = document.querySelector(".nc-lightbox");
+      return Boolean(
+        (legacyLightbox && legacyLightbox.style.display === "flex") ||
+        modernLightbox
+      );
     }, { timeout: 10000 });
 
     const lightboxState = await page.evaluate(() => {
-      const lightbox = document.getElementById("lightbox-map");
-      const img = lightbox ? lightbox.querySelector(".lightbox-image") : null;
+      const legacyLightbox = document.getElementById("lightbox-map");
+      const modernLightbox = document.querySelector(".nc-lightbox");
+      const img = legacyLightbox?.querySelector(".lightbox-image") ||
+        modernLightbox?.querySelector(".nc-lightbox-img");
       return {
         hasImage: !!img,
         imgSrc: img ? img.getAttribute("src") : ""
@@ -284,8 +290,10 @@ async function trailmapPopupLightboxFlow(browser) {
     // Fix (e4f2f8f): check display !== "none" instead.
     await page.keyboard.press("Escape");
     await page.waitForFunction(() => {
-      const lb = document.getElementById("lightbox-map");
-      return !lb || !lb.style.display || lb.style.display === "none";
+      const legacyLightbox = document.getElementById("lightbox-map");
+      const modernLightbox = document.querySelector(".nc-lightbox");
+      const legacyClosed = !legacyLightbox || !legacyLightbox.style.display || legacyLightbox.style.display === "none";
+      return legacyClosed && !modernLightbox;
     }, { timeout: 10000 });
 
     const sidecarStillOpen = await page.evaluate(() => !!document.querySelector(".nc-desktop-card:not([hidden])"));
