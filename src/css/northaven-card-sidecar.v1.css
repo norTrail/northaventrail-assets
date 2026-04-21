@@ -667,10 +667,13 @@ body.nc-mapillary-open {
     display: flex;
     flex-direction: column;
     pointer-events: auto;
+    transition: opacity 120ms ease, visibility 120ms ease;
   }
 
   .nc-desktop-card.is-collapsed .nc-desktop-card__panel {
     pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
   }
 
   .nc-desktop-card__body {

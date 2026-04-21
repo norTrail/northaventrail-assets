@@ -597,6 +597,28 @@
     }
   }
 
+  function scheduleDesktopPan(map, coords) {
+    if (!map || !coords) return;
+
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() {
+        panDesktopCardIntoView(map, coords);
+      });
+    });
+
+    window.setTimeout(function() {
+      panDesktopCardIntoView(map, coords);
+    }, 240);
+
+    if (typeof map.once === 'function') {
+      map.once('moveend', function() {
+        window.setTimeout(function() {
+          panDesktopCardIntoView(map, coords);
+        }, 40);
+      });
+    }
+  }
+
   function showDesktopCard(html, map, coords, mId) {
     var shell = ensureDesktopCard();
     if (!shell) return;
@@ -615,14 +637,8 @@
 
     requestAnimationFrame(function() {
       shell.querySelector('.nc-desktop-card__panel')?.focus?.({ preventScroll: true });
-      panDesktopCardIntoView(map, coords);
+      scheduleDesktopPan(map, coords);
     });
-
-    if (map && typeof map.once === 'function' && (map.isMoving?.() || map.isEasing?.())) {
-      map.once('moveend', function() {
-        panDesktopCardIntoView(map, coords);
-      });
-    }
   }
 
   function syncPeekStateIfNeeded(scope) {
