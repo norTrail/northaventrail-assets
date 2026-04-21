@@ -693,22 +693,43 @@
 
   // ── Hours open/closed status ──────────────────────────────────
 
-  function hoursStatus(hrStr) {
-    if (!hrStr) return null;
-    // Expects format like "5:00 AM - 11:00 PM"
-    var m = hrStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)\s*[-–]\s*(\d{1,2}):(\d{2})\s*(AM|PM)/i);
-    if (!m) return null;
-    function toMins(h, min, ampm) {
-      h = parseInt(h, 10); min = parseInt(min, 10);
-      if (/pm/i.test(ampm) && h !== 12) h += 12;
-      if (/am/i.test(ampm) && h === 12) h = 0;
-      return h * 60 + min;
-    }
-    var start = toMins(m[1], m[2], m[3]);
-    var end   = toMins(m[4], m[5], m[6]);
-    var now   = new Date();
-    var cur   = now.getHours() * 60 + now.getMinutes();
-    var open  = end > start ? (cur >= start && cur < end) : (cur >= start || cur < end);
+  // Parse an ISO timestamp from GAS (e.g. "1899-12-30T11:00:00.000Z") into
+  // total minutes using local time so comparison works in the visitor's timezone.
+  function isoToLocalMins(isoStr) {
+    if (!isoStr) return null;
+    var d = new Date(isoStr);
+    if (isNaN(d)) return null;
+    return d.getHours() * 60 + d.getMinutes();
+  }
+
+  // Format an ISO timestamp as "5:00 AM" / "11:00 PM" in local time.
+  function isoToLocalDisplay(isoStr) {
+    if (!isoStr) return null;
+    var d = new Date(isoStr);
+    if (isNaN(d)) return null;
+    var h = d.getHours(), min = d.getMinutes();
+    var ampm = h >= 12 ? 'PM' : 'AM';
+    var h12  = h % 12 || 12;
+    return h12 + ':' + (min < 10 ? '0' : '') + min + ' ' + ampm;
+  }
+
+  // Build the "5:00 AM - 11:00 PM" display string from the two ISO fields.
+  function buildHoursDisplay(hrOpen, hrClose) {
+    var o = isoToLocalDisplay(hrOpen);
+    var c = isoToLocalDisplay(hrClose);
+    if (!o && !c) return '';
+    if (o && c) return o + ' \u2013 ' + c;
+    return o || c;
+  }
+
+  // Return 'open' or 'closed' by comparing current local time to the two ISO fields.
+  function hoursStatus(hrOpen, hrClose) {
+    var start = isoToLocalMins(hrOpen);
+    var end   = isoToLocalMins(hrClose);
+    if (start === null || end === null) return null;
+    var now = new Date();
+    var cur = now.getHours() * 60 + now.getMinutes();
+    var open = end > start ? (cur >= start && cur < end) : (cur >= start || cur < end);
     return open ? 'open' : 'closed';
   }
 
@@ -723,7 +744,9 @@
 
     const name      = esc(String(p.l   || (td && td.l)  || '').trim());
     const near      = esc(String(p.r   || '').trim());
-    const hours     = esc(String(p.hr  || (td && td.hr) || '').trim());  // hr = hours
+    const hrOpen    = String(p.hr_open  || (td && td.hr_open)  || '').trim();
+    const hrClose   = String(p.hr_close || (td && td.hr_close) || '').trim();
+    const hours     = buildHoursDisplay(hrOpen, hrClose);  // formatted display string
     const category  = esc(String(p.b   || (td && td.l)  || '').trim());
     const desc      =     String(p.d   || (td && td.d)  || '').trim();
     const linkText  = esc(String(p.e   || (td && td.e)  || '').trim());
@@ -815,7 +838,7 @@
         <h2 class="nc-name">${name}</h2>
       </div>
       ${near  ? `<div class="nc-near">Near ${near}</div>`  : ''}
-      ${hours ? `<div class="nc-hours">${(function(){ var s = hoursStatus(hours); return s ? `<strong class="nc-hours-status nc-hours-${s}">${s === 'open' ? 'Open' : 'Closed'}</strong> ` : ''; })()}${hours}</div>` : ''}
+      ${hours ? `<div class="nc-hours">${(function(){ var s = hoursStatus(hrOpen, hrClose); return s ? `<strong class="nc-hours-status nc-hours-${s}">${s === 'open' ? 'Open' : 'Closed'}</strong> ` : ''; })()}${esc(hours)}</div>` : ''}
     </div>
   </div>
 
