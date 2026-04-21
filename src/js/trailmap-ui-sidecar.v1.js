@@ -261,12 +261,17 @@
     const clickedPoint = features[0];
     const clickedId = String(clickedPoint?.id ?? '');
     const activeCardId = String(window.NorthavenCard?.getActiveFeatureId?.() ?? '');
+    const desktopCard = document.getElementById('nc-desktop-card');
+    const isCollapsed = Boolean(desktopCard && desktopCard.classList.contains('is-collapsed'));
 
     if (
       clickedId &&
       String(activeFeatureID ?? '') === clickedId &&
       activeCardId === clickedId
     ) {
+      if (isCollapsed && window.innerWidth >= 768) {
+        window.NorthavenCard?.expand?.();
+      }
       return;
     }
 

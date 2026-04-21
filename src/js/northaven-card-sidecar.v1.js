@@ -771,6 +771,23 @@
     };
   }
 
+  function parseLegacyHoursRange(rawHours) {
+    var value = String(rawHours || '').trim();
+    if (!value) return null;
+
+    var parts = value.split(/\s*[-–—]\s*/);
+    if (parts.length < 2) return null;
+
+    var openRaw = String(parts[0] || '').trim();
+    var closeRaw = String(parts.slice(1).join(' - ') || '').trim();
+    if (!openRaw || !closeRaw) return null;
+
+    return {
+      open: openRaw,
+      close: closeRaw,
+    };
+  }
+
   // Build the "5:00 AM - 11:00 PM" display string from the two ISO fields.
   function buildHoursDisplay(hrOpen, hrClose) {
     var openInfo = parseClockValue(hrOpen);
@@ -806,9 +823,11 @@
 
     const name      = esc(String(p.l   || (td && td.l)  || '').trim());
     const near      = esc(String(p.r   || '').trim());
-    const hrOpen    = readHoursField(p, ['hr_open']) || readHoursField(td, ['hr_open']);
-    const hrClose   = readHoursField(p, ['hr_closed', 'hr_close']) || readHoursField(td, ['hr_closed', 'hr_close']);
-    const hours     = buildHoursDisplay(hrOpen, hrClose) || String(p.hr || (td && td.hr) || '').trim();
+    const rawHours   = String(p.hr || (td && td.hr) || '').trim();
+    const legacyRange = parseLegacyHoursRange(rawHours);
+    const hrOpen    = readHoursField(p, ['hr_open']) || readHoursField(td, ['hr_open']) || legacyRange?.open || '';
+    const hrClose   = readHoursField(p, ['hr_close', 'hr_closed']) || readHoursField(td, ['hr_close', 'hr_closed']) || legacyRange?.close || '';
+    const hours     = buildHoursDisplay(hrOpen, hrClose) || rawHours;
     const category  = esc(String(p.b   || (td && td.l)  || '').trim());
     const desc      =     String(p.d   || (td && td.d)  || '').trim();
     const linkText  = esc(String(p.e   || (td && td.e)  || '').trim());
