@@ -774,11 +774,17 @@ function createPopUp(currentFeature) {
 
   const p     = fullFeature.properties || {};
   const title = String(p.l || p.n || '').trim();
+  const cardApi = window.NorthavenCard;
+  const shouldUpdateOpenMobileCard =
+    window.innerWidth < 768 &&
+    typeof cardApi?.updateInPlace === 'function' &&
+    cardApi?.isSheetVisible?.() &&
+    String(cardApi?.getActiveFeatureId?.() ?? '') !== idStr;
 
   // Sync listing table highlight
   window.TrailmapListing?.highlightFeature?.(idStr);
 
-  window.NorthavenCard.show(fullFeature, poiData, map, {
+  const cardOptions = {
     onShare: () => {
       clickShare(
         'Northaven Trail Map',
@@ -799,7 +805,14 @@ function createPopUp(currentFeature) {
       if (!forcedClosePopup) resetPageDetails();
       removeActive();
     },
-  });
+  };
+
+  if (shouldUpdateOpenMobileCard) {
+    cardApi.updateInPlace(fullFeature, poiData, map, cardOptions);
+    return;
+  }
+
+  cardApi.show(fullFeature, poiData, map, cardOptions);
 }
 
 /* ---------- URL + filter helpers (kept) ---------- */

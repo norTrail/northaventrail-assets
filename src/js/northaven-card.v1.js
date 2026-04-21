@@ -969,11 +969,50 @@
     _opts = null;
   }
 
+  // Update the mobile bottom sheet in-place when the user taps a different
+  // marker while the card is already open. Avoids the jarring slide-down +
+  // slide-up animation by swapping content and panning the map directly.
+  function updateInPlace(feature, poiData, map, opts) {
+    if (_sheetState === SHEET_STATE_HIDDEN || !_sheetEl()) {
+      show(feature, poiData, map, opts);
+      return;
+    }
+
+    _opts = opts || {};
+    _opts.map = map;
+    _activeFeatureId = feature.id;
+
+    var p      = feature.properties || {};
+    var mId    = normalizeMid(p.m_id);
+    var html   = buildHTML(feature, poiData);
+    var coords = feature.geometry && feature.geometry.coordinates;
+    var bodyEl = document.getElementById(SHEET_BODY_ID);
+
+    if (bodyEl) bodyEl.innerHTML = html;
+    if (isValidMid(mId)) loadMapillaryHero(mId, bodyEl);
+
+    // Pan map so new marker stays above the already-peeked card.
+    if (map && coords) {
+      var sheet       = _sheetEl();
+      var cardVisible = sheet ? (sheet.offsetHeight - _peekY) : 180;
+      var point       = map.project(coords);
+      var vh          = map.getCanvas().clientHeight;
+      var safeBottom  = vh - cardVisible - 20;
+      var targetY     = Math.max(60, Math.min(safeBottom, point.y));
+      var offsetY     = targetY - (vh / 2);
+      map.easeTo({ center: coords, offset: [0, offsetY], duration: 350, essential: true });
+    }
+  }
+
+  function isSheetVisible() {
+    return _sheetState !== SHEET_STATE_HIDDEN;
+  }
+
   function getActiveFeatureId() {
     if (_sheetState !== SHEET_STATE_HIDDEN) return _activeFeatureId;
     if (_popup) return _activeFeatureId;
     return null;
   }
 
-  window.NorthavenCard = { show: show, hide: hide, getActiveFeatureId: getActiveFeatureId };
+  window.NorthavenCard = { show: show, hide: hide, getActiveFeatureId: getActiveFeatureId, updateInPlace: updateInPlace, isSheetVisible: isSheetVisible };
 })();

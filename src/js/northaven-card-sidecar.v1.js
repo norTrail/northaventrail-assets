@@ -1294,6 +1294,53 @@
     _opts = null;
   }
 
+  function updateInPlace(feature, poiData, map, opts) {
+    if (_sheetState === SHEET_STATE_HIDDEN || !_sheetEl()) {
+      show(feature, poiData, map, opts);
+      return;
+    }
+
+    _opts = Object.assign({}, opts || {}, { map: map });
+    _activeFeatureId = feature.id;
+    _activeFeature = feature;
+    _activePoiData = poiData;
+    _lastMobileMode = true;
+    ensureResponsiveSync();
+
+    var p      = feature.properties || {};
+    var mId    = normalizeMid(p.m_id);
+    var html   = buildHTML(feature, poiData);
+    var coords = feature.geometry && feature.geometry.coordinates;
+    var bodyEl = document.getElementById(SHEET_BODY_ID);
+
+    if (bodyEl) bodyEl.innerHTML = html;
+    if (isValidMid(mId)) {
+      loadMapillaryHero(mId, bodyEl);
+    }
+
+    if (map && coords) {
+      var sheet = _sheetEl();
+      var cardVisible = sheet ? (sheet.offsetHeight - _peekY) : 180;
+      var point = map.project(coords);
+      var viewportHeight = map.getCanvas().clientHeight;
+      var safeBottom = viewportHeight - cardVisible - 20;
+      var safeTop = 60;
+      var targetY = Math.max(safeTop, Math.min(safeBottom, point.y));
+      var offsetY = targetY - (viewportHeight / 2);
+
+      map.easeTo({
+        center: coords,
+        offset: [0, offsetY],
+        duration: 350,
+        essential: true,
+      });
+    }
+  }
+
+  function isSheetVisible() {
+    return _sheetState !== SHEET_STATE_HIDDEN;
+  }
+
   function getActiveFeatureId() {
     if (_sheetState !== SHEET_STATE_HIDDEN) return _activeFeatureId;
     if (getDesktopCardEl() && !getDesktopCardEl().hidden) return _activeFeatureId;
@@ -1303,6 +1350,8 @@
   window.NorthavenCard = {
     show: show,
     hide: hide,
+    updateInPlace: updateInPlace,
+    isSheetVisible: isSheetVisible,
     expand: expandDesktopCard,
     collapse: collapseDesktopCard,
     getActiveFeatureId: getActiveFeatureId
