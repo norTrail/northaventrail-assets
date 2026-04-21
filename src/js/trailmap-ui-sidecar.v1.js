@@ -9,6 +9,8 @@
   const ACTIVE_MARKER_BASE_SIZE = 0.68;
   const ACTIVE_MARKER_BASE_OFFSET = [0, -23];
   const ACTIVE_MARKER_BOUNCE_MS = 520;
+  const DESKTOP_SIDECAR_WIDTH_FALLBACK = 400;
+  const DESKTOP_SIDECAR_INSET_FALLBACK = 12;
   let activeMarkerBounceFrame = null;
 
   function setActiveLayerLayout(size, offsetY) {
@@ -50,6 +52,51 @@
     }
 
     activeMarkerBounceFrame = requestAnimationFrame(frame);
+  }
+
+  function flyToMarkerForDesktopSidecar(currentFeature, zoomLevel, coords) {
+    forceClosePopups();
+    clearFlyToPopupFallback_();
+
+    let zl = zoomLevel;
+    if (!zl) {
+      zl = Number(map.getZoom().toFixed(URL_FIXED_NUMBER));
+      if (zl < DEFAULT_FLYTO_ZOOM) zl = DEFAULT_FLYTO_ZOOM;
+    }
+
+    if (activeFeatureID) {
+      map.setFeatureState({ source: 'trail_markers_source', id: activeFeatureID }, { active: false });
+      activeFeatureID = null;
+    }
+
+    if (currentFeature?.id) {
+      map.setFeatureState({ source: 'trail_markers_source', id: currentFeature.id }, { active: true });
+    }
+
+    flyToFeature = currentFeature;
+    activeFeatureID = currentFeature.id;
+
+    const flyToCoords = coords || currentFeature.geometry.coordinates;
+    const mapHost = document.getElementById('mapView') || document.getElementById('map');
+    const computed = mapHost ? getComputedStyle(mapHost) : null;
+    const sidecarWidth = computed
+      ? parseFloat(computed.getPropertyValue('--nc-sidecar-width')) || DESKTOP_SIDECAR_WIDTH_FALLBACK
+      : DESKTOP_SIDECAR_WIDTH_FALLBACK;
+    const sidecarInset = computed
+      ? parseFloat(computed.getPropertyValue('--nc-sidecar-inset')) || DESKTOP_SIDECAR_INSET_FALLBACK
+      : DESKTOP_SIDECAR_INSET_FALLBACK;
+    const offsetX = Math.round((sidecarWidth + sidecarInset) / 2);
+
+    map.flyTo({
+      center: flyToCoords,
+      zoom: zl,
+      offset: [offsetX, 0],
+      speed: 0.9,
+      curve: 1,
+      easing(t) { return t; }
+    });
+
+    scheduleFlyToPopupFallback_(currentFeature);
   }
 
   function resolveFeature(currentFeature) {
@@ -197,7 +244,11 @@
 
     const { feature: fullFeature } = resolveFeature(clickedPoint);
 
-    flyToMarker(fullFeature);
+    if (window.innerWidth >= 768) {
+      flyToMarkerForDesktopSidecar(fullFeature);
+    } else {
+      flyToMarker(fullFeature);
+    }
     updatePageDetails(fullFeature);
 
     resetCoordinates = false;

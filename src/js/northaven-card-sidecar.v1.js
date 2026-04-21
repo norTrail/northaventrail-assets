@@ -692,6 +692,27 @@
       });
   }
 
+  // ── Hours open/closed status ──────────────────────────────────
+
+  function hoursStatus(hrStr) {
+    if (!hrStr) return null;
+    // Expects format like "5:00 AM - 11:00 PM"
+    var m = hrStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)\s*[-–]\s*(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+    if (!m) return null;
+    function toMins(h, min, ampm) {
+      h = parseInt(h, 10); min = parseInt(min, 10);
+      if (/pm/i.test(ampm) && h !== 12) h += 12;
+      if (/am/i.test(ampm) && h === 12) h = 0;
+      return h * 60 + min;
+    }
+    var start = toMins(m[1], m[2], m[3]);
+    var end   = toMins(m[4], m[5], m[6]);
+    var now   = new Date();
+    var cur   = now.getHours() * 60 + now.getMinutes();
+    var open  = end > start ? (cur >= start && cur < end) : (cur >= start || cur < end);
+    return open ? 'open' : 'closed';
+  }
+
   // ── Card HTML ─────────────────────────────────────────────────
 
   function buildHTML(feature, poiData) {
@@ -795,7 +816,7 @@
         <h2 class="nc-name">${name}</h2>
       </div>
       ${near  ? `<div class="nc-near">Near ${near}</div>`  : ''}
-      ${hours ? `<div class="nc-hours">${hours}</div>` : ''}
+      ${hours ? `<div class="nc-hours">${(function(){ var s = hoursStatus(hours); return s ? `<strong class="nc-hours-status nc-hours-${s}">${s === 'open' ? 'Open' : 'Closed'}</strong> ` : ''; })()}${hours}</div>` : ''}
     </div>
   </div>
 

@@ -203,6 +203,14 @@ body.is-map-fullscreen .nc-sheet {
   color: #444;
 }
 
+.nc-hours-status {
+  font-weight: 700;
+  margin-right: 4px;
+}
+
+.nc-hours-open  { color: #1a7a1a; }
+.nc-hours-closed { color: #c0392b; }
+
 /* ── Divider ─────────────────────────────────────────────────── */
 
 .nc-divider {
