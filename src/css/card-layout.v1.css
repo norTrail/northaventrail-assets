@@ -46,6 +46,17 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+@media (prefers-reduced-motion: reduce){
+  .nt-card{
+    transition: none;
+  }
+
+  .nt-card:hover,
+  .nt-card:active{
+    transform: none;
+  }
+}
+
 /* Icon sizing */
 .nt-card__icon{
   flex: 0 0 92px;

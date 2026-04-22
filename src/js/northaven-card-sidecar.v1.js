@@ -125,6 +125,12 @@
   let _mapillaryOpenToken = 0;
   let _mapillaryStatusTimer = null;
   let _mapillaryFocusReturn = null;
+  let _mapillaryHeroAbortController = null;
+  let _desktopPanToken = 0;
+  let _desktopPanFrameA = null;
+  let _desktopPanFrameB = null;
+  let _desktopPanTimeout = null;
+  let _desktopPanMoveEndTimeout = null;
 
   function openLightbox(src) {
     if (_lightbox) { _lightbox.remove(); _lightbox = null; }
@@ -569,6 +575,7 @@
 
   function hideDesktopCard() {
     var shell = getDesktopCardEl();
+    cancelDesktopPanSchedule();
     if (!shell) return;
     var toggle = shell.querySelector('.nc-desktop-card__toggle');
     shell.hidden = true;
@@ -616,29 +623,76 @@
 
   function scheduleDesktopPan(map, coords) {
     if (!map || !coords) return;
+    var token = ++_desktopPanToken;
 
-    requestAnimationFrame(function() {
-      requestAnimationFrame(function() {
+    if (_desktopPanFrameA != null) {
+      window.cancelAnimationFrame(_desktopPanFrameA);
+      _desktopPanFrameA = null;
+    }
+    if (_desktopPanFrameB != null) {
+      window.cancelAnimationFrame(_desktopPanFrameB);
+      _desktopPanFrameB = null;
+    }
+    if (_desktopPanTimeout != null) {
+      window.clearTimeout(_desktopPanTimeout);
+      _desktopPanTimeout = null;
+    }
+    if (_desktopPanMoveEndTimeout != null) {
+      window.clearTimeout(_desktopPanMoveEndTimeout);
+      _desktopPanMoveEndTimeout = null;
+    }
+
+    _desktopPanFrameA = requestAnimationFrame(function() {
+      _desktopPanFrameA = null;
+      _desktopPanFrameB = requestAnimationFrame(function() {
+        _desktopPanFrameB = null;
+        if (token !== _desktopPanToken) return;
         panDesktopCardIntoView(map, coords);
       });
     });
 
-    window.setTimeout(function() {
+    _desktopPanTimeout = window.setTimeout(function() {
+      _desktopPanTimeout = null;
+      if (token !== _desktopPanToken) return;
       panDesktopCardIntoView(map, coords);
     }, 240);
 
     if (typeof map.once === 'function') {
       map.once('moveend', function() {
-        window.setTimeout(function() {
+        if (token !== _desktopPanToken) return;
+        _desktopPanMoveEndTimeout = window.setTimeout(function() {
+          _desktopPanMoveEndTimeout = null;
+          if (token !== _desktopPanToken) return;
           panDesktopCardIntoView(map, coords);
         }, 40);
       });
     }
   }
 
+  function cancelDesktopPanSchedule() {
+    _desktopPanToken += 1;
+    if (_desktopPanFrameA != null) {
+      window.cancelAnimationFrame(_desktopPanFrameA);
+      _desktopPanFrameA = null;
+    }
+    if (_desktopPanFrameB != null) {
+      window.cancelAnimationFrame(_desktopPanFrameB);
+      _desktopPanFrameB = null;
+    }
+    if (_desktopPanTimeout != null) {
+      window.clearTimeout(_desktopPanTimeout);
+      _desktopPanTimeout = null;
+    }
+    if (_desktopPanMoveEndTimeout != null) {
+      window.clearTimeout(_desktopPanMoveEndTimeout);
+      _desktopPanMoveEndTimeout = null;
+    }
+  }
+
   function showDesktopCard(html, map, coords, mId) {
     var shell = ensureDesktopCard();
     if (!shell) return;
+    cancelDesktopPanSchedule();
 
     var body = shell.querySelector('#' + DESKTOP_CARD_BODY_ID);
     if (!body) return;
@@ -672,6 +726,10 @@
     const heroEl = scope && scope.querySelector('.nc-hero');
     if (!heroEl) return;
     const normalizedMid = normalizeMid(mId);
+    if (_mapillaryHeroAbortController) {
+      _mapillaryHeroAbortController.abort();
+      _mapillaryHeroAbortController = null;
+    }
     if (!normalizedMid) {
       heroEl.remove();
       syncPeekStateIfNeeded(scope);
@@ -683,10 +741,14 @@
     if (heroLink) heroLink.href = MAPILLARY_VIEW + normalizedMid;
 
     const tok = MAPILLARY_TOKEN.replace(/\|/g, '%7C');
-    fetch(`${MAPILLARY_API}${encodeURIComponent(normalizedMid)}?fields=thumb_1024_url&access_token=${tok}`)
+    const controller = typeof AbortController === 'function' ? new AbortController() : null;
+    _mapillaryHeroAbortController = controller;
+    fetch(`${MAPILLARY_API}${encodeURIComponent(normalizedMid)}?fields=thumb_1024_url&access_token=${tok}`, controller ? { signal: controller.signal } : undefined)
       .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
       .then(data => {
+        if (controller && controller.signal.aborted) return;
         if (loadToken !== _mapillaryLoadToken || !heroEl.isConnected) return;
+        if (_mapillaryHeroAbortController === controller) _mapillaryHeroAbortController = null;
         const src = data && data.thumb_1024_url;
         if (!src) {
           heroEl.remove();
@@ -695,16 +757,22 @@
         }
         const img = heroEl.querySelector('.nc-hero-img');
         if (img) {
-          img.src     = src;
-          img.onload  = () => heroEl.classList.add('nc-hero--loaded');
+          img.src = src;
+          img.onload = () => {
+            if (loadToken !== _mapillaryLoadToken || !heroEl.isConnected) return;
+            heroEl.classList.add('nc-hero--loaded');
+          };
           img.onerror = () => {
             heroEl.remove();
             syncPeekStateIfNeeded(scope);
           };
         }
       })
-      .catch(() => {
+      .catch((err) => {
+        if (controller && controller.signal.aborted) return;
+        if (err && err.name === 'AbortError') return;
         if (loadToken !== _mapillaryLoadToken || !heroEl.isConnected) return;
+        if (_mapillaryHeroAbortController === controller) _mapillaryHeroAbortController = null;
         heroEl.remove();
         syncPeekStateIfNeeded(scope);
       });
@@ -959,6 +1027,7 @@
   let _peekY      = 0;
   let _dragData   = null;  // { startY, startTime, startPx, h, pointerId }
   let _suppressHandleClickUntil = 0;
+  let _dragMoveListenerActive = false;
 
   function _sheetEl() {
     return document.getElementById(SHEET_ID);
@@ -1054,6 +1123,45 @@
     }
   }
 
+  function _removeDragListeners() {
+    if (!_dragMoveListenerActive) return;
+    window.removeEventListener('pointermove', _onSheetPointerMove, { passive: false });
+    window.removeEventListener('pointerup', _onSheetPointerEnd, { passive: false });
+    window.removeEventListener('pointercancel', _onSheetPointerEnd, { passive: false });
+    _dragMoveListenerActive = false;
+  }
+
+  function _onSheetPointerMove(e) {
+    var el = _sheetEl();
+    if (!_dragData || !el) {
+      _removeDragListeners();
+      return;
+    }
+    if (_dragData.pointerId != null && e.pointerId !== _dragData.pointerId) return;
+    e.preventDefault();
+    _moveDrag(el, _dragPointY(e));
+  }
+
+  function _onSheetPointerEnd(e) {
+    var el = _sheetEl();
+    if (!_dragData || !el) {
+      _removeDragListeners();
+      return;
+    }
+    if (_dragData.pointerId != null && e.pointerId !== _dragData.pointerId) return;
+    e.preventDefault();
+    _endDrag(el, _dragPointY(e));
+    _removeDragListeners();
+  }
+
+  function _addDragListeners() {
+    if (_dragMoveListenerActive) return;
+    window.addEventListener('pointermove', _onSheetPointerMove, { passive: false });
+    window.addEventListener('pointerup', _onSheetPointerEnd, { passive: false });
+    window.addEventListener('pointercancel', _onSheetPointerEnd, { passive: false });
+    _dragMoveListenerActive = true;
+  }
+
   function ensureSheet() {
     var el = _sheetEl();
     if (el) return el;
@@ -1110,26 +1218,12 @@
       }
     }, true);
 
-    // ── Drag to expand / collapse ─────────────────────────────
-    function onPointerMove(e) {
-      if (!_dragData) return;
-      if (_dragData.pointerId != null && e.pointerId !== _dragData.pointerId) return;
-      e.preventDefault();
-      _moveDrag(el, _dragPointY(e));
-    }
-
-    function onPointerEnd(e) {
-      if (!_dragData) return;
-      if (_dragData.pointerId != null && e.pointerId !== _dragData.pointerId) return;
-      e.preventDefault();
-      _endDrag(el, _dragPointY(e));
-    }
-
     if (handleTrack) {
       handleTrack.addEventListener('pointerdown', function(e) {
         if (e.pointerType === 'mouse' && e.button !== 0) return;
         e.preventDefault();
         _beginDrag(el, _dragPointY(e), e.pointerId);
+        _addDragListeners();
       });
 
       function toggleExpand() {
@@ -1149,10 +1243,6 @@
         }
       });
     }
-
-    window.addEventListener('pointermove', onPointerMove, { passive: false });
-    window.addEventListener('pointerup', onPointerEnd, { passive: false });
-    window.addEventListener('pointercancel', onPointerEnd, { passive: false });
 
     return el;
   }
@@ -1188,6 +1278,8 @@
   function hideSheet() {
     var el = _sheetEl();
     if (!el || _sheetState === SHEET_STATE_HIDDEN) return;
+    _dragData = null;
+    _removeDragListeners();
     _animate(el, el.offsetHeight + 30, '220ms ease');
     _sheetState = SHEET_STATE_HIDDEN;
   }
@@ -1285,8 +1377,13 @@
     var silent = opts && opts.silent ? true : false;
     _silentHide = silent;
     closeMapillaryModal();
+    if (_mapillaryHeroAbortController) {
+      _mapillaryHeroAbortController.abort();
+      _mapillaryHeroAbortController = null;
+    }
     hideSheet();
     hideDesktopCard();
+    cancelDesktopPanSchedule();
 
     _silentHide = false;
     _activeFeatureId = null;
