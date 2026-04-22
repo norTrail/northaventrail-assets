@@ -261,7 +261,7 @@ html, body {
  width: 44px;
  height: 44px;
  pointer-events: auto;
- padding: 6px;
+ padding: 0;
  border-radius: 6px;
  margin: 2px;
  cursor: pointer;
