@@ -68,6 +68,14 @@
     );
   }
 
+  function getRequestedGardenId_() {
+    try {
+      return String(new URLSearchParams(window.location.search).get("id") || "").trim();
+    } catch (_err) {
+      return "";
+    }
+  }
+
   // ------------------------------------------------------------------
   // Extract garden features from the full trail-poi features array
   // Returns { unclaimed: [...], claimed: [...] }
@@ -106,15 +114,24 @@
   // Injected into .ag-header if present on the page
   // ------------------------------------------------------------------
 
-  function renderHeader(headerEl, unclaimedCount, total) {
-    const summaryHtml = unclaimedCount === 0
-      ? "All <strong>" + total + "</strong> gardens are currently maintained."
-      : "<strong>" + unclaimedCount + "</strong> of " + total + " gardens need adoption.";
+  function renderHeader(headerEl, unclaimedCount, total, featuredGarden) {
+    const summaryHtml = featuredGarden
+      ? "Interested in <strong>" + escHtml(featuredGarden.name) + "</strong>" +
+        (featuredGarden.road ? " near " + escHtml(featuredGarden.road) : "") +
+        "? Start your adoption request here."
+      : (unclaimedCount === 0
+        ? "All <strong>" + total + "</strong> gardens are currently maintained."
+        : "<strong>" + unclaimedCount + "</strong> of " + total + " gardens need adoption.");
+
+    const ctaHref = featuredGarden
+      ? buildMailtoHref(featuredGarden.name)
+      : buildMailtoHref();
+    const ctaLabel = featuredGarden ? "Adopt This Garden \u2192" : "Adopt a Garden \u2192";
 
     headerEl.innerHTML =
       '<div class="ag-header-bar">' +
         '<p class="ag-summary-text">' + summaryHtml + "</p>" +
-        '<a class="nt-cta-btn" href="' + escHtml(buildMailtoHref()) + '">Adopt a Garden \u2192</a>' +
+        '<a class="nt-cta-btn" href="' + escHtml(ctaHref) + '">' + ctaLabel + "</a>" +
       "</div>";
   }
 
@@ -239,9 +256,13 @@
         const features = (data && data.features) || [];
         const gardens  = extractGardens(features);
         const total    = gardens.unclaimed.length + gardens.claimed.length;
+        const requestedGardenId = getRequestedGardenId_();
+        const featuredGarden = requestedGardenId
+          ? gardens.unclaimed.find(function (garden) { return garden.id === requestedGardenId; }) || null
+          : null;
 
         headerEls.forEach(function (headerEl) {
-          renderHeader(headerEl, gardens.unclaimed.length, total);
+          renderHeader(headerEl, gardens.unclaimed.length, total, featuredGarden);
         });
 
         containers.forEach(function (el) {

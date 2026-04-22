@@ -1170,10 +1170,15 @@ function buildURL(urlParams = {}, makeShort = false) {
 // Cache URL params between navigations — invalidated on pushState
 let _urlParamsCache = null;
 (function () {
-  const _orig = history.pushState.bind(history);
+  const _origPush = history.pushState.bind(history);
+  const _origReplace = history.replaceState.bind(history);
   history.pushState = function (...args) {
     _urlParamsCache = null;
-    return _orig(...args);
+    return _origPush(...args);
+  };
+  history.replaceState = function (...args) {
+    _urlParamsCache = null;
+    return _origReplace(...args);
   };
 })();
 
@@ -1201,6 +1206,26 @@ function getURLParams() {
   _urlParamsCache = result;
   return result;
 }
+
+let _trailmapPopstateWired = false;
+
+function wireTrailmapHistorySync_() {
+  if (_trailmapPopstateWired) return;
+  _trailmapPopstateWired = true;
+
+  window.addEventListener("popstate", function () {
+    _urlParamsCache = null;
+    closeSearchControl();
+    goToElement();
+
+    const markerId = getURLParams()?.[LOCATION_PARM];
+    if (!markerId) {
+      window.TrailmapListing?.highlightFeature?.(null);
+    }
+  });
+}
+
+wireTrailmapHistorySync_();
 
 window.initTrailmapSearch = function initTrailmapSearch(map) {
   const inputDiv = document.getElementById("locationListDiv");
