@@ -1,4 +1,4 @@
 /* GENERATED FILE - DO NOT EDIT.
  * Source: src/css/gesture-control.v1.css
  */
-.mapboxgl-canvas{touch-action:pan-y}#gesture-tip{width:fit-content;position:absolute;left:50%;bottom:45px;transform:translateX(-50%);background:rgba(0,0,0,.78);color:#fff;padding:8px 12px;border-radius:10px;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:14px;line-height:1.2;pointer-events:none;opacity:0;transition:opacity .2s;z-index:6;text-align:center}
+.mapboxgl-canvas{touch-action:pan-y}#gesture-tip{width:fit-content;position:absolute;left:50%;bottom:var(--gesture-tip-bottom,45px);transform:translateX(-50%);background:rgba(0,0,0,.78);color:#fff;padding:8px 12px;border-radius:10px;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:14px;line-height:1.2;pointer-events:none;opacity:0;transition:opacity .2s;z-index:6;text-align:center;max-width:calc(100% - 32px)}

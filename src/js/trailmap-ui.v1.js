@@ -1542,6 +1542,14 @@ function normalizeOnlyShowList(value) {
   return normalizeOnlyShowListLabels_(value);
 }
 
+function isWhereToParkPath_() {
+  return window.location.pathname.replace(/\/$/, "") === "/where-to-park";
+}
+
+function shouldShowMonarchWay_() {
+  return (typeof SHOW_MONARCH_WAY !== "undefined" && !!SHOW_MONARCH_WAY) || isWhereToParkPath_();
+}
+
 
 function buildAllowedTypeKeySetByLabels_(data, labelSetLower) {
   const out = new Set();
@@ -1683,8 +1691,7 @@ function ensureLegendExists(options = {}) {
     { iconName: "expansion_trail", label: "Future Expansions", iconClass: "legend_future_expansions", clickable: false }
   ];
 
-  const showMonarch =
-    typeof SHOW_MONARCH_WAY !== "undefined" && !!SHOW_MONARCH_WAY;
+  const showMonarch = shouldShowMonarchWay_();
 
   const ALWAYS_ITEMS = [
     ...BASE_ALWAYS_ITEMS,

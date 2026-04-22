@@ -523,10 +523,12 @@
     const imgHiresUrl = resolveImage(p, td, 1200);
 
     // ── Mapillary hero ────────────────────────────────────────
+    const heroTitle = isMobile() ? 'Tap to open Street View' : 'Click to open Street View';
     const heroHtml = mId ? `
   <div class="nc-hero">
-    <a class="nc-hero-link" href="${esc(MAPILLARY_VIEW + mId)}" target="_blank" rel="noopener noreferrer" aria-label="Open interactive street-level viewer" data-mid="${esc(mId)}">
-      <img class="nc-hero-img" alt="Street-level photo">
+    <a class="nc-hero-link" href="${esc(MAPILLARY_VIEW + mId)}" target="_blank" rel="noopener noreferrer" aria-label="Open Street View for this point of interest" title="${heroTitle}" data-mid="${esc(mId)}">
+      <img class="nc-hero-img" alt="Street-level photo" title="${heroTitle}">
+      <span class="nc-hero-cta" aria-hidden="true">${heroTitle}</span>
     </a>
     <span class="nc-hero-badge">Street View</span>
   </div>` : '';

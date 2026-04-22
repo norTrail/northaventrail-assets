@@ -180,17 +180,16 @@ html, body {
   outline-offset: 2px;
 }
 
-/* Override Mapbox GL's 44px default button size. Mapbox GL injects its CSS
-   dynamically (after our CSS loads), so !important is required here. Do not
-   remove !important or change these sizes — without them Mapbox GL wins. */
+/* Keep all map controls at accessible touch-target sizes. Mapbox GL injects
+   its CSS after ours, so !important is required for these dimensions to win. */
 .mapboxgl-ctrl-group button,
 .mapboxgl-ctrl-attrib-button,
 .search-custom-control,
 .satellite-custom-control {
-  width: 29px !important;
-  height: 29px !important;
-  min-width: 0 !important;
-  min-height: 0 !important;
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  min-height: 44px !important;
 }
 
 .mapboxgl-ctrl-group button,
@@ -259,11 +258,11 @@ html, body {
    Satellite Contro
    ========================= */
 .satellite-custom-control {
- width: 30px;
- height: 30px;
+ width: 44px;
+ height: 44px;
  pointer-events: auto;
- padding: 2px;
- border-radius: 4px;
+ padding: 6px;
+ border-radius: 6px;
  margin: 2px;
  cursor: pointer;
 }

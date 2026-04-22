@@ -173,9 +173,18 @@
     window.TrailmapListing?.highlightFeature?.(featureId);
   }
 
+  function clearLegendFilterForSearchSelection_() {
+    const hasActiveLegendFilter = document.querySelector('.legendElement.clickable.active');
+    if (!hasActiveLegendFilter) return;
+    clearLegendSelection_?.();
+    filterData?.(null);
+  }
+
   window.NorthavenSidecarOpenFromSearch = function openFromSearchSidecar_(featureId) {
     if (window.innerWidth < 768) return false;
     if (!featureId || !Array.isArray(poiData?.features)) return false;
+
+    clearLegendFilterForSearchSelection_();
 
     const fullFeature = poiData.features.find((f) => String(f?.id ?? '') === String(featureId));
     if (!fullFeature?.geometry?.coordinates) return false;
@@ -183,8 +192,22 @@
     resetCoordinates = true;
     flyToMarkerForDesktopSidecar(fullFeature);
     updatePageDetails(fullFeature);
-    createPopUp(fullFeature);
-    resetCoordinates = false;
+
+    let finished = false;
+    const finishSelection = () => {
+      if (finished) return;
+      finished = true;
+      createPopUp(fullFeature);
+      resetCoordinates = false;
+    };
+
+    if (typeof map?.once === 'function') {
+      map.once('moveend', finishSelection);
+      window.setTimeout(finishSelection, 650);
+    } else {
+      finishSelection();
+    }
+
     return true;
   };
 

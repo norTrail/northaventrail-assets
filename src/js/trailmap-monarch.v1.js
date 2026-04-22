@@ -1,12 +1,18 @@
 // trailmap-monarch.js
 (function () {
+  function shouldShowMonarchWay_() {
+    const isWhereToParkPage =
+      window.location.pathname.replace(/\/$/, "") === "/where-to-park";
+    return (typeof SHOW_MONARCH_WAY !== "undefined" && !!SHOW_MONARCH_WAY) || isWhereToParkPage;
+  }
+
   function initMonarchWayPopups(map) {
     if (!map || typeof map.on !== "function" || typeof map.getStyle !== "function") {
       console.warn("[MonarchWay] map missing / not Mapbox");
       return;
     }
 
-    if (typeof SHOW_MONARCH_WAY === "undefined" || !SHOW_MONARCH_WAY) {
+    if (!shouldShowMonarchWay_()) {
       return;
     }
 

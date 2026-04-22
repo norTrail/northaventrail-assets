@@ -38,6 +38,42 @@ function initGestureControl(mapboxMap) {
     gestureTip.setAttribute("aria-live", "polite");
   }
 
+  function positionTip_() {
+    if (!gestureTip) return;
+
+    const mapView = document.getElementById("mapView") || canvas.parentElement;
+    const desktopCard = document.getElementById("nc-desktop-card");
+    const bottomSheet = document.getElementById("nc-bottom-sheet");
+    const defaultBottom = 45;
+
+    gestureTip.style.left = "50%";
+    gestureTip.style.bottom = `${defaultBottom}px`;
+    gestureTip.style.transform = "translateX(-50%)";
+
+    if (isFullscreen || !mapView) return;
+
+    if (bottomSheet && window.innerWidth < 768 && !bottomSheet.hidden) {
+      const sheetRect = bottomSheet.getBoundingClientRect();
+      const visibleHeight = Math.max(0, window.innerHeight - sheetRect.top);
+      if (visibleHeight > 0) {
+        gestureTip.style.bottom = `${visibleHeight + 16}px`;
+      }
+      return;
+    }
+
+    if (
+      desktopCard &&
+      window.innerWidth >= 768 &&
+      !desktopCard.hidden &&
+      !desktopCard.classList.contains("is-collapsed")
+    ) {
+      const mapRect = mapView.getBoundingClientRect();
+      const cardRect = desktopCard.getBoundingClientRect();
+      const openViewportCenter = ((cardRect.right - mapRect.left) + mapRect.width) / 2;
+      gestureTip.style.left = `${openViewportCenter}px`;
+    }
+  }
+
   function showTip(message = "Use two fingers to move the map") {
     if (!gestureTip) return;
 
@@ -50,6 +86,7 @@ function initGestureControl(mapboxMap) {
     lastTipMsg = msg;
     lastTipAt = now;
 
+    positionTip_();
     gestureTip.textContent = msg;
     gestureTip.style.opacity = "1";
     clearTimeout(tipTimeout);
@@ -107,6 +144,7 @@ function initGestureControl(mapboxMap) {
     }
   };
   window.addEventListener("blur", onWindowBlur, { passive: true });
+  window.addEventListener("resize", positionTip_, { passive: true });
 
   // ------------------------------------------------------------
   // Drag intent (mouse) — show tip if user tries to drag locked map
@@ -247,6 +285,8 @@ function initGestureControl(mapboxMap) {
     } else {
       lockEmbeddedMode_();
     }
+
+    positionTip_();
   };
 
   function destroyGestureControl() {
@@ -255,6 +295,7 @@ function initGestureControl(mapboxMap) {
     hideTip();
     removeCtrlDragUnlock?.();
     window.removeEventListener("blur", onWindowBlur);
+    window.removeEventListener("resize", positionTip_);
     window.removeEventListener("mouseup", onMouseUp);
     canvas.removeEventListener("mousedown", onMouseDown);
     canvas.removeEventListener("mousemove", onMouseMove);

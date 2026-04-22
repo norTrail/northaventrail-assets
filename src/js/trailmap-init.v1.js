@@ -400,9 +400,8 @@ function loadWindow() {
             getMarkerData();
             if (typeof setShareButton === "function") setShareButton();
             if (typeof initGestureControl === "function") initGestureControl(newMap);
-            if (typeof SHOW_MONARCH_WAY !== "undefined" && SHOW_MONARCH_WAY &&
-              typeof window.initMonarchWayPopups === "function") {
-              newMap.once("idle", () => window.initMonarchWayPopups(newMap));
+            if (shouldShowMonarchWay_()) {
+              newMap.once("idle", () => initMonarchWayIfNeeded_(newMap));
             }
           }
         }
@@ -502,10 +501,9 @@ function loadWindow() {
             newMap.once("idle", () => { mapInitialIdleCompleted = true; });
             if (typeof initGestureControl === "function") initGestureControl(newMap);
             // ✅ Re-init Monarch Way on rebuilt map
-            if (typeof SHOW_MONARCH_WAY !== "undefined" && SHOW_MONARCH_WAY &&
-              typeof window.initMonarchWayPopups === "function") {
+            if (shouldShowMonarchWay_()) {
               // style is loaded when onReinit fires, but idle is a safe "everything settled" moment
-              setTimeout(() => window.initMonarchWayPopups(newMap), 0);
+              setTimeout(() => initMonarchWayIfNeeded_(newMap), 0);
             }
           }
 
@@ -569,10 +567,7 @@ function loadWindow() {
       document.getElementById("map-loading-overlay")?.remove();
 
       // Setup Monarch Way
-      if (typeof SHOW_MONARCH_WAY !== "undefined" && SHOW_MONARCH_WAY &&
-        typeof window.initMonarchWayPopups === "function") {
-        window.initMonarchWayPopups(map);
-      }
+      initMonarchWayIfNeeded_(map);
 
       // Setup the legend
       /*if (typeof SHOW_LEGEND !== 'undefined' && SHOW_LEGEND) {
@@ -1078,13 +1073,28 @@ function addControlOnce(map, key, makeControl, position) {
   return control;
 }
 
+function isWhereToParkPage_() {
+  return window.location.pathname.replace(/\/$/, "") === "/where-to-park";
+}
+
+function shouldShowMonarchWay_() {
+  return (typeof SHOW_MONARCH_WAY !== "undefined" && !!SHOW_MONARCH_WAY) || isWhereToParkPage_();
+}
+
+function initMonarchWayIfNeeded_(targetMap) {
+  if (!shouldShowMonarchWay_()) return;
+  if (typeof window.initMonarchWayPopups === "function") {
+    window.initMonarchWayPopups(targetMap);
+  }
+}
+
 function addFullscreenOnce(map) {
   const FS = window.TrailmapFullscreen;
 
-  // If our custom fullscreen control isn't available, silently skip (or fallback)
+  // Fall back to the native control so pages still expose fullscreen
+  // even if the shared CSS-fullscreen helper script is not present.
   if (!FS?.FullscreenMapControl) {
-    // Optional fallback:
-    // addControlOnce(map, "fullscreen", () => new mapboxgl.FullscreenControl(), "top-right");
+    addControlOnce(map, "fullscreen", () => new mapboxgl.FullscreenControl(), "top-right");
     return;
   }
 
