@@ -17,6 +17,19 @@
   const DESKTOP_SIDECAR_INSET_FALLBACK = 12;
   let activeMarkerBounceFrame = null;
 
+  function mapCenterMatchesCoords_(coords) {
+    if (!Array.isArray(coords) || coords.length !== 2 || typeof map?.getCenter !== 'function') return false;
+    const center = map.getCenter();
+    const lng = Number(coords[0]);
+    const lat = Number(coords[1]);
+    return (
+      Number.isFinite(lng) &&
+      Number.isFinite(lat) &&
+      Math.abs(center.lng - lng) < 0.00001 &&
+      Math.abs(center.lat - lat) < 0.00001
+    );
+  }
+
   function setActiveLayerLayout(size, offsetY) {
     if (!map?.getLayer?.(ACTIVE_MARKER_LAYER_ID)) return;
     map.setLayoutProperty(ACTIVE_MARKER_LAYER_ID, 'icon-size', size);
@@ -189,6 +202,7 @@
     const fullFeature = poiData.features.find((f) => String(f?.id ?? '') === String(featureId));
     if (!fullFeature?.geometry?.coordinates) return false;
 
+    userMovedMap_ = false;
     resetCoordinates = true;
     flyToMarkerForDesktopSidecar(fullFeature);
     updatePageDetails(fullFeature);
@@ -197,6 +211,9 @@
     const finishSelection = () => {
       if (finished) return;
       finished = true;
+      if (!mapCenterMatchesCoords_(fullFeature.geometry.coordinates)) {
+        flyToMarkerForDesktopSidecar(fullFeature, null, null, { immediate: true });
+      }
       createPopUp(fullFeature);
       resetCoordinates = false;
     };
@@ -346,6 +363,7 @@
       return;
     }
 
+    userMovedMap_ = false;
     resetCoordinates = true;
 
     const { feature: fullFeature } = resolveFeature(clickedPoint);
