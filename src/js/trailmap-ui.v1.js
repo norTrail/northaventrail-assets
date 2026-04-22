@@ -7,6 +7,8 @@
 let rotateEndTimer = null;
 let popupEscapeWired = false;
 let flyToPopupFallbackTimer = null;
+let featureByIdCache_ = null;
+let featureByIdCacheSource_ = null;
 
 function clearFlyToPopupFallback_() {
   if (flyToPopupFallbackTimer) {
@@ -34,6 +36,35 @@ function scheduleFlyToPopupFallback_(feature) {
     createPopUp(feature);
     flyToFeature = null;
   }, 600);
+}
+
+function getFeatureById_(featureId) {
+  if (!featureId || !Array.isArray(poiData?.features)) return null;
+  if (featureByIdCacheSource_ !== poiData.features) {
+    featureByIdCacheSource_ = poiData.features;
+    featureByIdCache_ = new Map();
+    for (let i = 0; i < poiData.features.length; i += 1) {
+      const candidate = poiData.features[i];
+      if (!candidate || candidate.id == null) continue;
+      featureByIdCache_.set(String(candidate.id), candidate);
+    }
+  }
+  return featureByIdCache_.get(String(featureId)) || null;
+}
+
+function selectFeatureById_(featureId) {
+  const fullFeature = getFeatureById_(featureId);
+  if (!fullFeature?.geometry?.coordinates) return false;
+
+  userMovedMap_ = false;
+  resetCoordinates = true;
+  flyToMarker(fullFeature);
+  updatePageDetails(fullFeature);
+  resetCoordinates = false;
+
+  removeActive();
+  window.TrailmapListing?.highlightFeature?.(String(fullFeature.id));
+  return true;
 }
 
 function wireMapEventsAfterMarkers_() {
@@ -791,6 +822,9 @@ function createPopUp(currentFeature) {
         title ? `${title} on the Northaven Trail` : 'Northaven Trail Map',
         buildURL({ markerID: idStr, markerTitle: title }, true)
       );
+    },
+    onSelectRelatedFeature: (featureId) => {
+      selectFeatureById_(featureId);
     },
     onClose: () => {
       if (activeFeatureID) {

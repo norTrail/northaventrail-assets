@@ -93,12 +93,144 @@
     return u.resolveIconUrl(iconValue);
   }
 
+  function buildFeatureLookupMap_(poiData) {
+    const lookup = new Map();
+    const features = Array.isArray(poiData && poiData.features) ? poiData.features : [];
+    for (let i = 0; i < features.length; i += 1) {
+      const candidate = features[i];
+      if (!candidate || candidate.id == null) continue;
+      lookup.set(String(candidate.id), candidate);
+    }
+    return lookup;
+  }
+
+  function normalizeRelatedFeatureId_(value) {
+    if (Array.isArray(value)) {
+      value = value.length ? value[0] : '';
+    }
+
+    const normalized = String(value == null ? '' : value).trim();
+    if (!normalized) return null;
+    const parts = normalized.split(',');
+    for (let i = 0; i < parts.length; i += 1) {
+      const part = String(parts[i] || '').trim();
+      if (part) return part;
+    }
+    return null;
+  }
+
+  function normalizeRelatedFeatureIds_(value) {
+    const rawValues = Array.isArray(value) ? value : String(value == null ? '' : value).split(',');
+    const seen = new Set();
+    const normalized = [];
+
+    for (let i = 0; i < rawValues.length; i += 1) {
+      const id = String(rawValues[i] == null ? '' : rawValues[i]).trim();
+      if (!id || seen.has(id)) continue;
+      seen.add(id);
+      normalized.push(id);
+    }
+
+    return normalized;
+  }
+
+  function resolveFeatureById_(featureId, featureById) {
+    if (!featureId || !featureById) return null;
+    return featureById.get(String(featureId)) || null;
+  }
+
+  function isParkingFeature_(feature) {
+    const typeKey = String(feature?.properties?.t || '').trim().toLowerCase();
+    return typeKey === 'pl';
+  }
+
+  function getFeatureDisplayLabel_(feature, poiData) {
+    if (!feature) return 'Point of Interest';
+    const p = feature.properties || {};
+    const td = poiData && poiData.defs && poiData.defs.types && poiData.defs.types[p.t]
+      ? poiData.defs.types[p.t]
+      : null;
+    return String(p.l || p.n || (td && td.l) || 'Point of Interest').trim();
+  }
+
+  function renderClosestParkingRow_(feature, poiData, featureById) {
+    if (!feature || isParkingFeature_(feature)) return '';
+
+    const parkingId = normalizeRelatedFeatureId_(feature.properties && feature.properties.cp);
+    const relatedFeature = resolveFeatureById_(parkingId, featureById);
+    if (!relatedFeature || String(relatedFeature.id) === String(feature.id)) return '';
+
+    const parkingLabel = esc(getFeatureDisplayLabel_(relatedFeature, poiData));
+    const parkingIcon = resolveLegendIcon(
+      poiData && poiData.defs && poiData.defs.types && poiData.defs.types.pl
+        ? poiData.defs.types.pl.i
+        : 'parking.svg'
+    );
+
+    return `
+    <div class="nc-related-group">
+      <div class="nc-related-label">Closest Parking</div>
+      <button class="nc-related-row nc-related-button" type="button" data-related-feature-id="${esc(String(relatedFeature.id))}" data-related-kind="cp" aria-label="View closest parking: ${parkingLabel}">
+        <span class="nc-related-row-icon" aria-hidden="true">${parkingIcon ? `<img src="${esc(parkingIcon)}" alt="" class="nc-related-icon-img" onerror="this.remove()">` : ''}</span>
+        <span class="nc-related-row-text">
+          <span class="nc-related-row-meta">Closest Parking</span>
+          <span class="nc-related-row-title">${parkingLabel}</span>
+        </span>
+        <span class="nc-related-chevron" aria-hidden="true">&#8250;</span>
+      </button>
+    </div>`;
+  }
+
+  function renderNearbyAmenitiesRow_(feature, poiData, featureById) {
+    const rawIds = normalizeRelatedFeatureIds_(feature?.properties?.nf);
+    if (!rawIds.length) return '';
+
+    const buttons = [];
+    const seen = new Set();
+
+    for (let i = 0; i < rawIds.length; i += 1) {
+      const id = rawIds[i];
+      if (!id || seen.has(id) || String(id) === String(feature.id)) continue;
+      const relatedFeature = resolveFeatureById_(id, featureById);
+      if (!relatedFeature) continue;
+      seen.add(id);
+
+      const relatedLabel = esc(getFeatureDisplayLabel_(relatedFeature, poiData));
+      buttons.push(
+        `<button class="nc-related-chip nc-related-button" type="button" data-related-feature-id="${esc(String(id))}" data-related-kind="nf" aria-label="View nearby amenity: ${relatedLabel}">${relatedLabel}</button>`
+      );
+    }
+
+    if (!buttons.length) return '';
+
+    return `
+    <div class="nc-related-group">
+      <div class="nc-related-label">Nearby Amenities</div>
+      <div class="nc-related-chip-list">
+        ${buttons.join('')}
+      </div>
+    </div>`;
+  }
+
+  function renderRelatedFeatureBlock_(feature, poiData, featureById) {
+    const closestParkingHtml = renderClosestParkingRow_(feature, poiData, featureById);
+    const nearbyAmenitiesHtml = renderNearbyAmenitiesRow_(feature, poiData, featureById);
+    if (!closestParkingHtml && !nearbyAmenitiesHtml) return '';
+
+    return `
+  <div class="nc-related" aria-label="Related places">
+    ${closestParkingHtml}
+    ${nearbyAmenitiesHtml}
+  </div>`;
+  }
+
   function getFeatureContext(feature, poiData) {
     var properties = feature.properties || {};
+    var featureById = buildFeatureLookupMap_(poiData);
     return {
       properties: properties,
       mapillaryId: normalizeMid(properties.m_id),
-      html: buildHTML(feature, poiData),
+      html: buildHTML(feature, poiData, featureById),
       coords: feature.geometry && feature.geometry.coordinates,
     };
   }
@@ -531,7 +663,7 @@
 
   // ── Card HTML ─────────────────────────────────────────────────
 
-  function buildHTML(feature, poiData) {
+  function buildHTML(feature, poiData, featureById) {
     const p  = feature.properties || {};
     const td = poiData && poiData.defs && poiData.defs.types && poiData.defs.types[p.t]
              ? poiData.defs.types[p.t]
@@ -621,6 +753,7 @@
         <span class="nc-action-label">Share</span>
       </button>`,
     ].filter(Boolean).join('');
+    const relatedHtml = renderRelatedFeatureBlock_(feature, poiData, featureById);
 
     return `
 <div class="nc-card">
@@ -638,6 +771,8 @@
   <hr class="nc-divider">
 
   ${footerBtns ? `<div class="nc-actions">${footerBtns}</div>` : ''}
+
+  ${relatedHtml}
 
   ${heroHtml}
 
@@ -844,6 +979,15 @@
         openMapillaryModal(heroLink.getAttribute('data-mid'));
         return;
       }
+      var relatedButton = e.target.closest('[data-related-feature-id]');
+      if (relatedButton) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (_opts && typeof _opts.onSelectRelatedFeature === 'function') {
+          _opts.onSelectRelatedFeature(relatedButton.getAttribute('data-related-feature-id'));
+        }
+        return;
+      }
       if (e.target.closest('.nc-close-btn')) { hide();                         return; }
       if (e.target.closest('.nc-action-share') || e.target.closest('.nc-share-btn')) { _opts && _opts.onShare && _opts.onShare(); return; }
     });
@@ -976,6 +1120,15 @@
           if (heroLink) {
             e.preventDefault();
             openMapillaryModal(heroLink.getAttribute('data-mid'));
+            return;
+          }
+          var relatedButton = e.target.closest('[data-related-feature-id]');
+          if (relatedButton) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (_opts && typeof _opts.onSelectRelatedFeature === 'function') {
+              _opts.onSelectRelatedFeature(relatedButton.getAttribute('data-related-feature-id'));
+            }
             return;
           }
           if (e.target.closest('.nc-close-btn')) { hide();                         return; }

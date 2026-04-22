@@ -16,6 +16,8 @@
   const DESKTOP_SIDECAR_WIDTH_FALLBACK = 400;
   const DESKTOP_SIDECAR_INSET_FALLBACK = 12;
   let activeMarkerBounceFrame = null;
+  let featureByIdCache_ = null;
+  let featureByIdCacheSource_ = null;
 
   function mapCenterMatchesCoords_(coords) {
     if (!Array.isArray(coords) || coords.length !== 2 || typeof map?.getCenter !== 'function') return false;
@@ -166,12 +168,26 @@
     const idStr = String(currentFeature?.id ?? '');
     const fullFeature =
       idStr && Array.isArray(poiData?.features)
-        ? poiData.features.find((f) => String(f.id) === idStr) || currentFeature
+        ? getFeatureById_(idStr) || currentFeature
         : currentFeature;
     return {
       id: idStr,
       feature: fullFeature,
     };
+  }
+
+  function getFeatureById_(featureId) {
+    if (!featureId || !Array.isArray(poiData?.features)) return null;
+    if (featureByIdCacheSource_ !== poiData.features) {
+      featureByIdCacheSource_ = poiData.features;
+      featureByIdCache_ = new Map();
+      for (let i = 0; i < poiData.features.length; i += 1) {
+        const candidate = poiData.features[i];
+        if (!candidate || candidate.id == null) continue;
+        featureByIdCache_.set(String(candidate.id), candidate);
+      }
+    }
+    return featureByIdCache_.get(String(featureId)) || null;
   }
 
   function clearListingSelection() {
@@ -191,6 +207,26 @@
     if (!hasActiveLegendFilter) return;
     clearLegendSelection_?.();
     filterData?.(null);
+  }
+
+  function selectFeatureById_(featureId) {
+    const fullFeature = getFeatureById_(featureId);
+    if (!fullFeature?.geometry?.coordinates) return false;
+
+    userMovedMap_ = false;
+    resetCoordinates = true;
+
+    if (window.innerWidth >= 768) {
+      flyToMarkerForDesktopSidecar(fullFeature);
+    } else {
+      flyToMarker(fullFeature);
+    }
+    updatePageDetails(fullFeature);
+    resetCoordinates = false;
+
+    removeActive();
+    highlightListing(String(fullFeature.id));
+    return true;
   }
 
   window.NorthavenSidecarOpenFromSearch = function openFromSearchSidecar_(featureId) {
@@ -276,6 +312,9 @@
           title ? `${title} on the Northaven Trail` : 'Northaven Trail Map',
           buildURL({ markerID: idStr, markerTitle: title }, true)
         );
+      },
+      onSelectRelatedFeature: (featureId) => {
+        selectFeatureById_(featureId);
       },
       onClose: () => {
         clearActiveMarkerState();

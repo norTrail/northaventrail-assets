@@ -1,5 +1,5 @@
 /**
- * Populates closest parking (`cp`) and nearby amenities (`na`) columns
+ * Populates closest parking (`cp`) and nearby feature (`nf`) columns
  * for a POI sheet whose human labels live on row 3 and JSON keys on row 4.
  *
  * Column detection uses the row-4 key row first, with row-3 labels as fallback.
@@ -76,7 +76,7 @@ var DEFAULT_CP_NA_OPTIONS = {
   ],
   activeColumnKeys: ['a', 'active', 'display'],
   cpColumnKeys: ['cp'],
-  naColumnKeys: ['na']
+  nfColumnKeys: ['nf']
 };
 
 function populateCpAndNaForActiveSheet(options) {
@@ -130,7 +130,7 @@ function populateCpAndNaForSheet(sheetName, options) {
   ensureOutputColumns_(sheet, {
     headerRow: settings.headerRow,
     keyRow: settings.keyRow,
-    neededKeys: ['cp', 'na']
+    neededKeys: ['cp', 'nf']
   });
 
   var lastColumn = Math.max(sheet.getLastColumn(), 1);
@@ -233,7 +233,7 @@ function resolveColumnRefs_(headerMap, headerRowValues, options) {
     name: findFirstColumn_(headerMap, ['n', 'l', 'name', 'label']),
     near: findFirstColumn_(headerMap, ['r', 'near']),
     cp: findFirstColumn_(headerMap, options.cpColumnKeys),
-    na: findFirstColumn_(headerMap, options.naColumnKeys),
+    nf: findFirstColumn_(headerMap, options.nfColumnKeys),
     lock: findFirstColumn_(headerMap, options.lockColumnKeys) || findColumnByHeaderTitle_(headerRowValues, 'Force Override'),
     active: findFirstColumn_(headerMap, options.activeColumnKeys)
   };
@@ -266,7 +266,7 @@ function validateRequiredColumns_(columnRefs) {
   if (!columnRefs.lat) missing.push('lat');
   if (!columnRefs.lng) missing.push('lng');
   if (!columnRefs.cp) missing.push('cp');
-  if (!columnRefs.na) missing.push('na');
+  if (!columnRefs.nf) missing.push('nf');
   if (!columnRefs.active) missing.push('a / Display');
 
   if (missing.length) {
@@ -344,7 +344,7 @@ function parseRowsToFeatures_(values, columnRefs, options) {
       isActive: true,
       isLocked: isLocked,
       existingCp: String(getCell_(rawRow, columnRefs.cp) || ''),
-      existingNa: String(getCell_(rawRow, columnRefs.na) || ''),
+      existingNa: String(getCell_(rawRow, columnRefs.nf) || ''),
       rawRow: rawRow
     });
   }
@@ -649,9 +649,9 @@ function buildOutputArrays_(parsed, results, options) {
 
 function writeOutputColumns_(sheet, options, columnRefs, outputArrays, dataRowCount) {
   sheet.getRange(options.dataStartRow, columnRefs.cp, dataRowCount, 1).setNumberFormat('@STRING@');
-  sheet.getRange(options.dataStartRow, columnRefs.na, dataRowCount, 1).setNumberFormat('@STRING@');
+  sheet.getRange(options.dataStartRow, columnRefs.nf, dataRowCount, 1).setNumberFormat('@STRING@');
   sheet.getRange(options.dataStartRow, columnRefs.cp, dataRowCount, 1).setValues(outputArrays.cpValues);
-  sheet.getRange(options.dataStartRow, columnRefs.na, dataRowCount, 1).setValues(outputArrays.naValues);
+  sheet.getRange(options.dataStartRow, columnRefs.nf, dataRowCount, 1).setValues(outputArrays.naValues);
 }
 
 function writeDebugColumns_(sheet, options, outputArrays, dataRowCount) {
