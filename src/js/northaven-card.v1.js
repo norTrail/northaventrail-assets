@@ -93,6 +93,35 @@
     return u.resolveIconUrl(iconValue);
   }
 
+  function getFeatureContext(feature, poiData) {
+    var properties = feature.properties || {};
+    return {
+      properties: properties,
+      mapillaryId: normalizeMid(properties.m_id),
+      html: buildHTML(feature, poiData),
+      coords: feature.geometry && feature.geometry.coordinates,
+    };
+  }
+
+  function panMobileSheetIntoView(map, coords, duration) {
+    if (!map || !coords) return;
+
+    var sheet = _sheetEl();
+    var cardVisible = sheet ? (sheet.offsetHeight - _peekY) : 180;
+    var point = map.project(coords);
+    var viewportHeight = map.getCanvas().clientHeight;
+    var safeBottom = viewportHeight - cardVisible - 20;
+    var targetY = Math.max(60, Math.min(safeBottom, point.y));
+    var offsetY = targetY - (viewportHeight / 2);
+
+    map.easeTo({
+      center: coords,
+      offset: [0, offsetY],
+      duration: duration,
+      essential: true,
+    });
+  }
+
   // ── Lightbox ──────────────────────────────────────────────────
 
   let _lightbox = null;
@@ -907,36 +936,19 @@
     _opts = opts || {};
     _opts.map = map;
     _activeFeatureId = feature.id;
-    var p      = feature.properties || {};
-    var mId    = normalizeMid(p.m_id);
-    var html   = buildHTML(feature, poiData);
-    var coords = feature.geometry && feature.geometry.coordinates;
+    var context = getFeatureContext(feature, poiData);
+    var html = context.html;
+    var coords = context.coords;
 
     if (isMobile()) {
       if (_popup) { _popup.remove(); _popup = null; }
       showSheet(html);
-      if (isValidMid(mId)) {
-        loadMapillaryHero(mId, document.getElementById(SHEET_BODY_ID));
+      if (isValidMid(context.mapillaryId)) {
+        loadMapillaryHero(context.mapillaryId, document.getElementById(SHEET_BODY_ID));
       }
       // Pan so the tapped marker stays visible above the peeked card.
       // _peekY is set synchronously by showSheet(), so we can read it now.
-      if (map && coords) {
-        var sheet = _sheetEl();
-        var cardVisible = sheet ? (sheet.offsetHeight - _peekY) : 180;
-        var point = map.project(coords);
-        var viewportHeight = map.getCanvas().clientHeight;
-        var safeBottom = viewportHeight - cardVisible - 20;
-        var safeTop = 60;
-        var targetY = Math.max(safeTop, Math.min(safeBottom, point.y));
-        var offsetY = targetY - (viewportHeight / 2);
-
-        map.easeTo({
-          center: coords,
-          offset: [0, offsetY],
-          duration: 400,
-          essential: true,
-        });
-      }
+      panMobileSheetIntoView(map, coords, 400);
     } else {
       hideSheet();
       if (_popup) { _popup.remove(); _popup = null; }
@@ -970,8 +982,8 @@
           if (e.target.closest('.nc-action-share') || e.target.closest('.nc-share-btn')) { _opts && _opts.onShare && _opts.onShare(); return; }
         });
 
-        if (isValidMid(mId)) {
-          loadMapillaryHero(mId, popupEl);
+        if (isValidMid(context.mapillaryId)) {
+          loadMapillaryHero(context.mapillaryId, popupEl);
         }
 
         // ADA: Ensure popup is focusable and move focus to it
@@ -1026,27 +1038,19 @@
     _opts = opts || {};
     _opts.map = map;
     _activeFeatureId = feature.id;
-
-    var p      = feature.properties || {};
-    var mId    = normalizeMid(p.m_id);
-    var html   = buildHTML(feature, poiData);
-    var coords = feature.geometry && feature.geometry.coordinates;
+    var context = getFeatureContext(feature, poiData);
+    var coords = context.coords;
     var bodyEl = document.getElementById(SHEET_BODY_ID);
 
-    if (bodyEl) bodyEl.innerHTML = html;
-    if (isValidMid(mId)) loadMapillaryHero(mId, bodyEl);
+    if (bodyEl) {
+      bodyEl.innerHTML = context.html;
+      if (isValidMid(context.mapillaryId)) {
+        loadMapillaryHero(context.mapillaryId, bodyEl);
+      }
+    }
 
     // Pan map so new marker stays above the already-peeked card.
-    if (map && coords) {
-      var sheet       = _sheetEl();
-      var cardVisible = sheet ? (sheet.offsetHeight - _peekY) : 180;
-      var point       = map.project(coords);
-      var vh          = map.getCanvas().clientHeight;
-      var safeBottom  = vh - cardVisible - 20;
-      var targetY     = Math.max(60, Math.min(safeBottom, point.y));
-      var offsetY     = targetY - (vh / 2);
-      map.easeTo({ center: coords, offset: [0, offsetY], duration: 350, essential: true });
-    }
+    panMobileSheetIntoView(map, coords, 350);
   }
 
   function isSheetVisible() {

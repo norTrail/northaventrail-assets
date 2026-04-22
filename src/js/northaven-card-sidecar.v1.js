@@ -116,6 +116,35 @@
     return '';
   }
 
+  function getFeatureContext(feature, poiData) {
+    var properties = feature.properties || {};
+    return {
+      properties: properties,
+      mapillaryId: normalizeMid(properties.m_id),
+      html: buildHTML(feature, poiData),
+      coords: feature.geometry && feature.geometry.coordinates,
+    };
+  }
+
+  function panMobileSheetIntoView(map, coords, duration) {
+    if (!map || !coords) return;
+
+    var sheet = _sheetEl();
+    var cardVisible = sheet ? (sheet.offsetHeight - _peekY) : 180;
+    var point = map.project(coords);
+    var viewportHeight = map.getCanvas().clientHeight;
+    var safeBottom = viewportHeight - cardVisible - 20;
+    var targetY = Math.max(60, Math.min(safeBottom, point.y));
+    var offsetY = targetY - (viewportHeight / 2);
+
+    map.easeTo({
+      center: coords,
+      offset: [0, offsetY],
+      duration: duration,
+      essential: true,
+    });
+  }
+
   // ── Lightbox ──────────────────────────────────────────────────
 
   let _lightbox = null;
@@ -493,6 +522,15 @@
     btn.setAttribute('aria-expanded', String(!isCollapsed));
   }
 
+  function setDesktopCardCollapsed(shell, isCollapsed, opts) {
+    if (!shell) return;
+    var toggle = shell.querySelector('.nc-desktop-card__toggle');
+    shell.classList.toggle('is-collapsed', Boolean(isCollapsed));
+    syncDesktopHostClasses(true, Boolean(isCollapsed));
+    updateDesktopToggleLabels(toggle, Boolean(isCollapsed));
+    if (opts && opts.focusToggle && !shell.hidden) toggle?.focus({ preventScroll: true });
+  }
+
   function ensureDesktopCard() {
     var shell = getDesktopCardEl();
     if (shell) return shell;
@@ -555,34 +593,22 @@
 
   function collapseDesktopCard(opts) {
     var shell = getDesktopCardEl();
-    if (!shell || shell.hidden) return;
-    var toggle = shell.querySelector('.nc-desktop-card__toggle');
-    shell.classList.add('is-collapsed');
-    syncDesktopHostClasses(true, true);
-    updateDesktopToggleLabels(toggle, true);
-    if (opts && opts.focusToggle) toggle?.focus({ preventScroll: true });
+    setDesktopCardCollapsed(shell, true, opts);
   }
 
   function expandDesktopCard(opts) {
     var shell = getDesktopCardEl();
-    if (!shell || shell.hidden) return;
-    var toggle = shell.querySelector('.nc-desktop-card__toggle');
-    shell.classList.remove('is-collapsed');
-    syncDesktopHostClasses(true, false);
-    updateDesktopToggleLabels(toggle, false);
-    if (opts && opts.focusToggle) toggle?.focus({ preventScroll: true });
+    setDesktopCardCollapsed(shell, false, opts);
   }
 
   function hideDesktopCard() {
     var shell = getDesktopCardEl();
     cancelDesktopPanSchedule();
     if (!shell) return;
-    var toggle = shell.querySelector('.nc-desktop-card__toggle');
+    setDesktopCardCollapsed(shell, false);
     shell.hidden = true;
-    shell.classList.remove('is-collapsed');
     shell.querySelector('.nc-desktop-card__body')?.replaceChildren();
     syncDesktopHostClasses(false, false);
-    updateDesktopToggleLabels(toggle, false);
   }
 
   function panDesktopCardIntoView(map, coords) {
@@ -700,7 +726,7 @@
     body.innerHTML = html;
     body.scrollTop = 0;
     shell.hidden = false;
-    expandDesktopCard();
+    setDesktopCardCollapsed(shell, false);
 
     if (isValidMid(mId)) {
       loadMapillaryHero(mId, body);
@@ -1333,10 +1359,9 @@
     _lastMobileMode = isMobile();
     ensureResponsiveSync();
 
-    var p      = feature.properties || {};
-    var mId    = normalizeMid(p.m_id);
-    var html   = buildHTML(feature, poiData);
-    var coords = feature.geometry && feature.geometry.coordinates;
+    var context = getFeatureContext(feature, poiData);
+    var html = context.html;
+    var coords = context.coords;
 
     _silentHide = true;
     hideSheet();
@@ -1345,31 +1370,15 @@
 
     if (isMobile()) {
       showSheet(html);
-      if (isValidMid(mId)) {
-        loadMapillaryHero(mId, document.getElementById(SHEET_BODY_ID));
+      if (isValidMid(context.mapillaryId)) {
+        loadMapillaryHero(context.mapillaryId, document.getElementById(SHEET_BODY_ID));
       }
       // Pan so the tapped marker stays visible above the peeked card.
       // _peekY is set synchronously by showSheet(), so we can read it now.
-      if (map && coords) {
-        var sheet = _sheetEl();
-        var cardVisible = sheet ? (sheet.offsetHeight - _peekY) : 180;
-        var point = map.project(coords);
-        var viewportHeight = map.getCanvas().clientHeight;
-        var safeBottom = viewportHeight - cardVisible - 20;
-        var safeTop = 60;
-        var targetY = Math.max(safeTop, Math.min(safeBottom, point.y));
-        var offsetY = targetY - (viewportHeight / 2);
-
-        map.easeTo({
-          center: coords,
-          offset: [0, offsetY],
-          duration: 400,
-          essential: true,
-        });
-      }
+      panMobileSheetIntoView(map, coords, 400);
     } else {
       if (!coords) return;
-      showDesktopCard(html, map, coords, mId);
+      showDesktopCard(html, map, coords, context.mapillaryId);
     }
   }
 
@@ -1406,34 +1415,16 @@
     _lastMobileMode = true;
     ensureResponsiveSync();
 
-    var p      = feature.properties || {};
-    var mId    = normalizeMid(p.m_id);
-    var html   = buildHTML(feature, poiData);
-    var coords = feature.geometry && feature.geometry.coordinates;
+    var context = getFeatureContext(feature, poiData);
+    var coords = context.coords;
     var bodyEl = document.getElementById(SHEET_BODY_ID);
 
-    if (bodyEl) bodyEl.innerHTML = html;
-    if (isValidMid(mId)) {
-      loadMapillaryHero(mId, bodyEl);
+    if (bodyEl) bodyEl.innerHTML = context.html;
+    if (isValidMid(context.mapillaryId)) {
+      loadMapillaryHero(context.mapillaryId, bodyEl);
     }
 
-    if (map && coords) {
-      var sheet = _sheetEl();
-      var cardVisible = sheet ? (sheet.offsetHeight - _peekY) : 180;
-      var point = map.project(coords);
-      var viewportHeight = map.getCanvas().clientHeight;
-      var safeBottom = viewportHeight - cardVisible - 20;
-      var safeTop = 60;
-      var targetY = Math.max(safeTop, Math.min(safeBottom, point.y));
-      var offsetY = targetY - (viewportHeight / 2);
-
-      map.easeTo({
-        center: coords,
-        offset: [0, offsetY],
-        duration: 350,
-        essential: true,
-      });
-    }
+    panMobileSheetIntoView(map, coords, 350);
   }
 
   function isSheetVisible() {
