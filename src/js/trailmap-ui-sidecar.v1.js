@@ -10,7 +10,7 @@
   const TRAIL_MARKERS_SOURCE_ID  = 'trail_markers_source';
   const MONARCH_WAY_LAYER_ID     = 'monarch_way';
   const MAPBOX_POPUP_CLASS       = 'mapboxgl-popup';
-  const ACTIVE_MARKER_BASE_SIZE  = 0.68;
+  const ACTIVE_MARKER_BASE_SIZE  = 0.78;
   const ACTIVE_MARKER_BASE_OFFSET = [0, -23];
   const ACTIVE_MARKER_BOUNCE_MS  = 520;
   const DESKTOP_SIDECAR_WIDTH_FALLBACK = 400;

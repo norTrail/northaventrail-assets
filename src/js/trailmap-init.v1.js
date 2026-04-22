@@ -921,7 +921,7 @@ function applyMarkerPayload_(m, payload) {
           "icon-offset": [0, -23],
           "text-offset": [0.5, -0.25],
           "icon-padding": 1.1,
-          "icon-size": 0.5,
+          "icon-size": 0.58,
 
           // sortKey now comes from defs.types via properties.t
           "symbol-sort-key": ["number", ["coalesce", ["get", "s"], 10], 10]
@@ -975,7 +975,7 @@ function applyMarkerPayload_(m, payload) {
           "icon-offset": [0, -23],
           "text-offset": [0.5, -0.25],
           "icon-padding": 2,
-          "icon-size": 0.68,
+          "icon-size": 0.78,
           "symbol-sort-key": 9999,
           // Must allow overlap so inactive-but-rendered symbols don't suppress
           // the base trail_markers layer via Mapbox collision detection
