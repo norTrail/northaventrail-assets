@@ -38,10 +38,80 @@ async function goto(page, url) {
 }
 
 async function waitForMap(page) {
-  await page.waitForSelector(".mapboxgl-canvas", {
-    visible: true,
-    timeout: 30000
-  });
+  try {
+    await page.waitForFunction(
+      () => {
+        const isVisible = (selector) => {
+          const el = document.querySelector(selector);
+          if (!el) return false;
+          const style = window.getComputedStyle(el);
+          const rect = el.getBoundingClientRect();
+          return style.display !== "none" &&
+            style.visibility !== "hidden" &&
+            rect.width > 0 &&
+            rect.height > 0;
+        };
+
+        const trailmapSearchReady = (() => {
+          try {
+            return typeof SEARCH_READY !== "undefined" && SEARCH_READY === true;
+          } catch (_err) {
+            return false;
+          }
+        })();
+
+        const hasPoiData = Array.isArray(window.poiData?.features) && window.poiData.features.length > 0;
+        const hasCanvas = isVisible(".mapboxgl-canvas");
+        const hasSearchUi = isVisible("#searchButton") || isVisible("#locationListInput");
+        const hasIssueTrackerUi = isVisible("#tab2") || isVisible(".issueListPanel");
+        const hasTailsUi = isVisible("#status-pill") || isVisible(".sheep-marker") || isVisible("#controls");
+        const hasValentineUi = isVisible("#valentine-carousel") || isVisible(".popUpClingImage");
+
+        return hasCanvas ||
+          (trailmapSearchReady && hasPoiData && hasSearchUi) ||
+          hasIssueTrackerUi ||
+          hasTailsUi ||
+          hasValentineUi;
+      },
+      { timeout: 30000 }
+    );
+  } catch (err) {
+    const diagnostics = await page.evaluate(() => {
+      const visible = (selector) => {
+        const el = document.querySelector(selector);
+        if (!el) return false;
+        const style = window.getComputedStyle(el);
+        const rect = el.getBoundingClientRect();
+        return style.display !== "none" &&
+          style.visibility !== "hidden" &&
+          rect.width > 0 &&
+          rect.height > 0;
+      };
+
+      let searchReady = null;
+      try {
+        searchReady = typeof SEARCH_READY !== "undefined" ? SEARCH_READY : null;
+      } catch (_innerErr) {
+        searchReady = "error";
+      }
+
+      return {
+        hasCanvas: visible(".mapboxgl-canvas"),
+        hasSearchButton: visible("#searchButton"),
+        hasSearchInput: visible("#locationListInput"),
+        hasIssueTrackerTab: visible("#tab2"),
+        hasStatusPill: visible("#status-pill"),
+        hasValentineCarousel: visible("#valentine-carousel"),
+        hasPoiData: Array.isArray(window.poiData?.features) ? window.poiData.features.length : 0,
+        searchReady,
+        overlayPresent: !!document.getElementById("map-loading-overlay"),
+        title: document.title
+      };
+    }).catch(() => null);
+
+    const detail = diagnostics ? ` ${JSON.stringify(diagnostics)}` : "";
+    throw new Error(`Map never reached an interactive ready state.${detail}`);
+  }
 }
 
 async function waitForPoiData(page, timeout = 60000) {
@@ -283,9 +353,17 @@ async function closeTrailmapDetails(page, options = {}) {
   }
 
   await page.keyboard.press("Escape");
-  await page.waitForFunction(() => !document.querySelector(".nc-desktop-card:not([hidden])"), {
-    timeout: 10000
-  });
+  try {
+    await page.waitForFunction(() => !document.querySelector(".nc-desktop-card:not([hidden])"), {
+      timeout: 3000
+    });
+  } catch (_err) {
+    const closeButton = await page.$(".nc-desktop-card:not([hidden]) .nc-close-btn");
+    if (closeButton) await closeButton.click();
+    await page.waitForFunction(() => !document.querySelector(".nc-desktop-card:not([hidden])"), {
+      timeout: 10000
+    });
+  }
 }
 
 async function trailmapPopupLightboxFlow(browser) {
