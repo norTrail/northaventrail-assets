@@ -9,6 +9,23 @@ let popupEscapeWired = false;
 let flyToPopupFallbackTimer = null;
 let featureByIdCache_ = null;
 let featureByIdCacheSource_ = null;
+let historyNavigationDepth_ = 0;
+
+function runDuringHistoryNavigation_(callback) {
+  historyNavigationDepth_ += 1;
+  backButton = true;
+
+  try {
+    return callback();
+  } finally {
+    historyNavigationDepth_ = Math.max(0, historyNavigationDepth_ - 1);
+    if (!historyNavigationDepth_) {
+      window.setTimeout(() => {
+        if (!historyNavigationDepth_) backButton = false;
+      }, 0);
+    }
+  }
+}
 
 function clearFlyToPopupFallback_() {
   if (flyToPopupFallbackTimer) {
@@ -1214,14 +1231,16 @@ function wireTrailmapHistorySync_() {
   _trailmapPopstateWired = true;
 
   window.addEventListener("popstate", function () {
-    _urlParamsCache = null;
-    closeSearchControl();
-    goToElement();
+    runDuringHistoryNavigation_(() => {
+      _urlParamsCache = null;
+      closeSearchControl();
+      goToElement();
 
-    const markerId = getURLParams()?.[LOCATION_PARM];
-    if (!markerId) {
-      window.TrailmapListing?.highlightFeature?.(null);
-    }
+      const markerId = getURLParams()?.[LOCATION_PARM];
+      if (!markerId) {
+        window.TrailmapListing?.highlightFeature?.(null);
+      }
+    });
   });
 }
 
@@ -1519,11 +1538,9 @@ function goToElement(idOverride = null, options = {}) {
 
       // ✅ slim schema: id is on feature.id
       if (String(feature?.id) === targetStr) {
+        userMovedMap_ = false;
         const zoom = params?.[ZOOM_PARM] ?? DEFAULT_FLYTO_ZOOM;
-
-        const coords =
-          params?.[COORDINATES_PARM_ARRAY] ??
-          feature?.geometry?.coordinates;
+        const coords = feature?.geometry?.coordinates;
         if (!coords || coords.length !== 2) return;
         flyToMarker(feature, zoom, coords, options);
         updatePageDetails(feature); // ensure this reads feature.properties.n / d now
