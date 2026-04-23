@@ -1261,7 +1261,6 @@ function showModal(element){
   const imageSrc = element.getAttribute('data-src-large') || element.getAttribute('src_large') || '';
   const imageAlt = decodeClingTextSafe(
     element.getAttribute('data-alt') ||
-    element.getAttribute('aria-label') ||
     element.alt ||
     ''
   );
@@ -1767,13 +1766,6 @@ if (!valentinesRuntime.globalHandlersBound) {
     }
   });
 
-  document.addEventListener('keydown', (event) => {
-    const popupImage = event.target?.closest?.('.popUpClingImageButton');
-    if (!popupImage) return;
-    if (event.key !== 'Enter' && event.key !== ' ') return;
-    event.preventDefault();
-    showModal(popupImage);
-  });
 }
 
 if (!valentinesRuntime.pageLifecycleBound) {

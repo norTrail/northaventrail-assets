@@ -129,10 +129,6 @@ body.is-map-fullscreen .nc-sheet {
   cursor: zoom-in;
 }
 
-.nc-thumb-wrap[data-hires] .nc-thumb {
-  cursor: zoom-in;
-}
-
 .nc-thumb {
   display: block;
   width: 72px;

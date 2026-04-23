@@ -706,26 +706,30 @@ async function valentineModalFlow(browser) {
 
     assert.equal(opened, true, "Valentine page should be able to open a cling popup");
 
-    await page.waitForSelector(".popUpClingImage", { visible: true, timeout: 15000 });
-    await page.$eval(".popUpClingImage", (el) => {
-      if (typeof showModal === "function") {
-        showModal(el);
-      } else {
-        el.click();
-      }
-    });
+    // Regression (13def5e): popup image was a raw <img role="button"> with src_large attr;
+    // showModal(img) now reads data-src-large from the button wrapper, so passing the img
+    // produced a blank modal. Fix: wrapped in <button class="popUpClingImageButton"> with
+    // data-src-large / data-alt. Test must click the button (not call showModal on the img).
+    await page.waitForSelector(".popUpClingImageButton", { visible: true, timeout: 15000 });
+    await page.$eval(".popUpClingImageButton", (el) => el.click());
     await page.waitForFunction(() => {
       const modal = document.getElementById("myModal");
       return modal && modal.getAttribute("aria-hidden") === "false";
     }, { timeout: 10000 });
 
-    const modalState = await page.evaluate(() => ({
-      activeIsClose: document.activeElement?.classList?.contains("close") || false,
-      modalVisible: document.getElementById("myModal")?.getAttribute("aria-hidden") === "false"
-    }));
+    const modalState = await page.evaluate(() => {
+      const modal = document.getElementById("myModal");
+      const img = modal?.querySelector("#img01");
+      return {
+        activeIsClose: document.activeElement?.classList?.contains("close") || false,
+        modalVisible: modal?.getAttribute("aria-hidden") === "false",
+        modalImgSrc: img ? img.getAttribute("src") || "" : ""
+      };
+    });
 
     assert.equal(modalState.modalVisible, true, "Valentine modal should be visible");
     assert.equal(modalState.activeIsClose, true, "Valentine modal should move focus to close button");
+    assert.ok(modalState.modalImgSrc.length > 0, "Valentine modal image should have a non-empty src (regression: showModal(img) instead of showModal(button) produced a blank image)");
 
     await page.keyboard.press("Escape");
     const closedState = await page.waitForFunction(() => {

@@ -1543,7 +1543,7 @@ function goToElement(idOverride = null, options = {}) {
         const coords = feature?.geometry?.coordinates;
         if (!coords || coords.length !== 2) return;
         flyToMarker(feature, zoom, coords, options);
-        updatePageDetails(feature); // ensure this reads feature.properties.n / d now
+        updatePageDetails(feature);
         createPopUp(feature);
         flyToFeature = null;
         break;

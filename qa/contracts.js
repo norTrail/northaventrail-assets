@@ -485,6 +485,152 @@ function checkCollapsedSidecarTransform() {
   return { checked: 1 };
 }
 
+// Regression guard for: the popup image was a raw <img role="button"> with a src_large
+// attribute; showModal(img) reads data-src-large from the element, so passing the img
+// produced a blank/empty modal image. Fix (13def5e): wrapped in
+// <button class="popUpClingImageButton"> with data-src-large / data-alt. The click handler
+// passes the button to showModal(). Also: the carousel image was given role="button"
+// directly on the <img>; fix wraps it in <button class="val-carousel__img-btn">.
+function checkValentineImageButtons() {
+  const content = fs.readFileSync(
+    path.join(REPO_ROOT, "src", "js", "valentines.v2027.v1.js"), "utf8"
+  );
+
+  assert.ok(
+    /class="popUpClingImageButton"/.test(content),
+    "valentines.v2027.v1.js: popup image must use <button class=\"popUpClingImageButton\"> — " +
+    "raw <img role=\"button\"> with src_large broke showModal() which reads data-src-large from its argument"
+  );
+  assert.ok(
+    !/img[^>]*role=["']button["'][^>]*src_large/.test(content),
+    "valentines.v2027.v1.js: popup image must not have role='button' + src_large on the <img> — " +
+    "showModal() now reads data-src-large from the button wrapper, not the img"
+  );
+
+  assert.ok(
+    /class="val-carousel__img-btn"/.test(content),
+    "valentines.v2027.v1.js: carousel image must be inside <button class=\"val-carousel__img-btn\"> — " +
+    "interactive element must be a native button, not an img with role=\"button\""
+  );
+  assert.ok(
+    /closest\??\.?\s*\(\s*['"]\.?popUpClingImageButton['"]\s*\)/.test(content),
+    "valentines.v2027.v1.js: click handler must use .closest('.popUpClingImageButton') to resolve the button — " +
+    "passing the img to showModal() produces an empty modal image"
+  );
+
+  return { checked: 1 };
+}
+
+// Regression guard for: pressing browser back/forward while a POI card was open caused
+// the popstate handler to call goToElement() without setting the backButton flag,
+// so flyToMarker pushed a new history entry — trapping the user in an infinite forward loop.
+// Fix (4cac835): runDuringHistoryNavigation_() wraps the entire popstate callback, sets
+// backButton = true for the duration, and resets userMovedMap_ before flyToMarker.
+function checkTrailmapHistoryNavWrapper() {
+  const content = fs.readFileSync(
+    path.join(REPO_ROOT, "src", "js", "trailmap-ui.v1.js"), "utf8"
+  );
+
+  assert.ok(
+    /function\s+runDuringHistoryNavigation_\s*\(/.test(content),
+    "trailmap-ui.v1.js: runDuringHistoryNavigation_() must be defined — " +
+    "without it the popstate handler doesn't set backButton=true and flyToMarker pushes a new history entry"
+  );
+  assert.ok(
+    /addEventListener\s*\(\s*["']popstate["'][^)]*\)[\s\S]{1,200}runDuringHistoryNavigation_/.test(content),
+    "trailmap-ui.v1.js: popstate listener must call runDuringHistoryNavigation_() — " +
+    "bare popstate without this wrapper traps users in a back-navigation loop"
+  );
+  assert.ok(
+    /historyNavigationDepth_/.test(content),
+    "trailmap-ui.v1.js: must track historyNavigationDepth_ to handle nested popstate calls safely"
+  );
+
+  return { checked: 1 };
+}
+
+// Regression guard for: map.easeTo() calls inside panMobileSheetIntoView and show/hide
+// sequences triggered map move events, which fired suppressMapEvents checks at the wrong
+// time — back/forward navigation panned the map silently but left suppressMapEvents=true
+// or fired a spurious popstate. Fix (37abe11): easeMapSilently() wraps easeTo and manages
+// suppressMapEvents with a token-guarded moveend listener + timeout fallback.
+function checkCardEaseMapSilently() {
+  for (const [fileName, jsFile] of [
+    ["northaven-card.v1.js", "northaven-card.v1.js"],
+    ["northaven-card-sidecar.v1.js", "northaven-card-sidecar.v1.js"]
+  ]) {
+    const content = fs.readFileSync(path.join(REPO_ROOT, "src", "js", jsFile), "utf8");
+    assert.ok(
+      /function\s+easeMapSilently\s*\(/.test(content),
+      `${fileName}: easeMapSilently() must be defined — direct map.easeTo() triggered spurious map events during back/forward navigation`
+    );
+    assert.ok(
+      /panMobileSheetIntoView[\s\S]{1,600}easeMapSilently\s*\(/.test(content),
+      `${fileName}: panMobileSheetIntoView must delegate to easeMapSilently() instead of calling map.easeTo() directly`
+    );
+  }
+  return { checked: 2 };
+}
+
+// Regression guard for: initTurnstile relied on turnstile.ready() (a single callback)
+// which silently failed when the Turnstile script hadn't loaded yet. If the script loaded
+// late (slow network, CSP delay) the widget was never rendered and the form could not be
+// submitted. Fix (adcf031): initTurnstile now accepts attemptsRemaining and retries up to
+// 20 times (500 ms intervals) before giving up, with error-callback retry as well.
+function checkTurnstileRetryLoop() {
+  const content = fs.readFileSync(
+    path.join(REPO_ROOT, "src", "js", "issue-tracker.v1.js"), "utf8"
+  );
+  assert.ok(
+    /function\s+initTurnstile\s*\(\s*attemptsRemaining/.test(content),
+    "issue-tracker.v1.js: initTurnstile must accept an attemptsRemaining parameter — " +
+    "single turnstile.ready() callback failed silently when the Turnstile script loaded late"
+  );
+  assert.ok(
+    /attemptsRemaining\s*-\s*1/.test(content),
+    "issue-tracker.v1.js: initTurnstile must recurse with attemptsRemaining - 1 — " +
+    "without the decrement the retry loop runs forever or not at all"
+  );
+  assert.ok(
+    /attemptsRemaining\s*>\s*0/.test(content),
+    "issue-tracker.v1.js: initTurnstile must guard recursion with attemptsRemaining > 0 — " +
+    "missing guard causes infinite retry on persistent Turnstile failures"
+  );
+  return { checked: 1 };
+}
+
+// Regression guard for: POIs that belong to neighbouring parks or sponsors had no way
+// to opt out of the issue-tracker CTA — ni=FALSE on the feature or its type was ignored,
+// so non-trail POIs appeared as reportable locations. Fix (2fea76d): shouldShowReportIssueCta_()
+// reads the ni flag from the feature and its type definition and returns false when either
+// is explicitly false.
+function checkNiFilterFunctions() {
+  const content = fs.readFileSync(
+    path.join(REPO_ROOT, "src", "js", "northaven-card.v1.js"), "utf8"
+  );
+  assert.ok(
+    /function\s+normalizeFlagValue_\s*\(/.test(content),
+    "northaven-card.v1.js: normalizeFlagValue_() must be defined — " +
+    "ni flag values can be boolean, number, or string ('FALSE'/'false'/'0') and need normalization"
+  );
+  assert.ok(
+    /function\s+readNoIssueTrackerFlag_\s*\(/.test(content),
+    "northaven-card.v1.js: readNoIssueTrackerFlag_() must be defined — " +
+    "checks both 'ni' and 'NI' properties so GAS-generated JSON with either casing is handled"
+  );
+  assert.ok(
+    /function\s+shouldShowReportIssueCta_\s*\(/.test(content),
+    "northaven-card.v1.js: shouldShowReportIssueCta_() must be defined — " +
+    "missing function allows ni=FALSE POIs (non-trail parks, sponsors) to appear as reportable locations"
+  );
+  assert.ok(
+    /shouldShowReportIssueCta_\s*\(/.test(content.replace(/function\s+shouldShowReportIssueCta_/, "")),
+    "northaven-card.v1.js: shouldShowReportIssueCta_() must be called at the CTA build site — " +
+    "defining the function without calling it has no effect"
+  );
+  return { checked: 1 };
+}
+
 // Regression guard for: the CTA <a> link in buildDesktopCardHTML had no target
 // attribute — external CTAs (e.g. links to partner sites) opened in the same tab,
 // navigating the user away from the map. Fix: isExternalDomain() check added; external
@@ -523,6 +669,11 @@ function main() {
   const suppressResetCheck = checkSuppressMapEventsReset();
   const collapsedTransformCheck = checkCollapsedSidecarTransform();
   const ctaExternalCheck = checkCtaExternalTarget();
+  const valentineImageBtnCheck = checkValentineImageButtons();
+  const trailmapHistoryNavCheck = checkTrailmapHistoryNavWrapper();
+  const cardEaseSilentlyCheck = checkCardEaseMapSilently();
+  const turnstileRetryCheck = checkTurnstileRetryLoop();
+  const niFilterCheck = checkNiFilterFunctions();
 
   console.log("Contract checks passed:");
   for (const result of results) {
@@ -543,6 +694,11 @@ function main() {
   console.log(`- sidecar panDesktopCardIntoView resets suppressMapEvents on moveend (${suppressResetCheck.checked} file(s) checked)`);
   console.log(`- sidecar collapsed transform subtracts --nc-sidecar-inset (${collapsedTransformCheck.checked} file(s) checked)`);
   console.log(`- sidecar CTA link uses isExternalDomain for target=_blank (${ctaExternalCheck.checked} file(s) checked)`);
+  console.log(`- valentine popup/carousel use native button elements (not img role=button) (${valentineImageBtnCheck.checked} file(s) checked)`);
+  console.log(`- trailmap popstate wrapped in runDuringHistoryNavigation_ (${trailmapHistoryNavCheck.checked} file(s) checked)`);
+  console.log(`- card/sidecar easeTo calls use easeMapSilently (${cardEaseSilentlyCheck.checked} file(s) checked)`);
+  console.log(`- issue-tracker Turnstile init has retry loop with attemptsRemaining (${turnstileRetryCheck.checked} file(s) checked)`);
+  console.log(`- northaven-card ni=FALSE filter functions present and called (${niFilterCheck.checked} file(s) checked)`);
 }
 
 try {

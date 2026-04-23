@@ -181,7 +181,6 @@
 
     const typeNi = readNoIssueTrackerFlag_(td);
     if (typeNi === false) return false;
-    if (typeNi === true) return true;
     return true;
   }
 
@@ -288,8 +287,8 @@
   }
 
   function getFeatureContext(feature, poiData) {
-    var properties = feature.properties || {};
-    var featureById = buildFeatureLookupMap_(poiData);
+    const properties = feature.properties || {};
+    const featureById = buildFeatureLookupMap_(poiData);
     return {
       properties: properties,
       mapillaryId: normalizeMid(properties.m_id),
@@ -352,6 +351,7 @@
 
   let _lightbox = null;
   let _mapillaryAssetPromise = null;
+  let _mapillaryHeroCache = new Map();
   let _mapillaryModal = null;
   let _mapillaryViewer = null;
   let _mapillaryOpenToken = 0;
@@ -978,6 +978,24 @@
     const heroLink = heroEl.querySelector('.nc-hero-link');
     if (heroLink) heroLink.href = MAPILLARY_VIEW + normalizedMid;
 
+    function applyHeroSrc(src) {
+      if (!src) { heroEl.remove(); syncPeekStateIfNeeded(scope); return; }
+      const img = heroEl.querySelector('.nc-hero-img');
+      if (img) {
+        img.src = src;
+        img.onload = () => {
+          if (loadToken !== _mapillaryLoadToken || !heroEl.isConnected) return;
+          heroEl.classList.add('nc-hero--loaded');
+        };
+        img.onerror = () => { heroEl.remove(); syncPeekStateIfNeeded(scope); };
+      }
+    }
+
+    if (_mapillaryHeroCache.has(normalizedMid)) {
+      applyHeroSrc(_mapillaryHeroCache.get(normalizedMid));
+      return;
+    }
+
     const tok = MAPILLARY_TOKEN.replace(/\|/g, '%7C');
     const controller = typeof AbortController === 'function' ? new AbortController() : null;
     _mapillaryHeroAbortController = controller;
@@ -988,23 +1006,8 @@
         if (loadToken !== _mapillaryLoadToken || !heroEl.isConnected) return;
         if (_mapillaryHeroAbortController === controller) _mapillaryHeroAbortController = null;
         const src = data && data.thumb_1024_url;
-        if (!src) {
-          heroEl.remove();
-          syncPeekStateIfNeeded(scope);
-          return;
-        }
-        const img = heroEl.querySelector('.nc-hero-img');
-        if (img) {
-          img.src = src;
-          img.onload = () => {
-            if (loadToken !== _mapillaryLoadToken || !heroEl.isConnected) return;
-            heroEl.classList.add('nc-hero--loaded');
-          };
-          img.onerror = () => {
-            heroEl.remove();
-            syncPeekStateIfNeeded(scope);
-          };
-        }
+        _mapillaryHeroCache.set(normalizedMid, src || null);
+        applyHeroSrc(src);
       })
       .catch((err) => {
         if (controller && controller.signal.aborted) return;
@@ -1018,8 +1021,6 @@
 
   // ── Hours open/closed status ──────────────────────────────────
 
-  // Parse an ISO timestamp from GAS (e.g. "1899-12-30T11:00:00.000Z") into
-  // total minutes using local time so comparison works in the visitor's timezone.
   function formatMinutesDisplay(totalMinutes) {
     if (totalMinutes === null || totalMinutes === undefined) return null;
     var h = Math.floor(totalMinutes / 60) % 24;
@@ -1642,7 +1643,7 @@
     _activeFeatureId = feature.id;
     _activeFeature = feature;
     _activePoiData = poiData;
-    _lastMobileMode = true;
+    _lastMobileMode = isMobile();
     ensureResponsiveSync();
 
     var context = getFeatureContext(feature, poiData);
