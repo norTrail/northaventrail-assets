@@ -151,6 +151,46 @@
     return featureById.get(String(featureId)) || null;
   }
 
+  function normalizeFlagValue_(value) {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'number') return value !== 0;
+
+    const normalized = String(value == null ? '' : value).trim().toLowerCase();
+    if (!normalized) return null;
+    if (['true', '1', 'yes', 'y', 'on'].includes(normalized)) return true;
+    if (['false', '0', 'no', 'n', 'off'].includes(normalized)) return false;
+    return null;
+  }
+
+  function readNoIssueTrackerFlag_(obj) {
+    if (!obj || typeof obj !== 'object') return null;
+    if (Object.prototype.hasOwnProperty.call(obj, 'ni')) return normalizeFlagValue_(obj.ni);
+    if (Object.prototype.hasOwnProperty.call(obj, 'NI')) return normalizeFlagValue_(obj.NI);
+    return null;
+  }
+
+  function shouldShowReportIssueCta_(feature, poiData) {
+    const p = feature && feature.properties ? feature.properties : {};
+    const td = poiData && poiData.defs && poiData.defs.types && poiData.defs.types[p.t]
+      ? poiData.defs.types[p.t]
+      : null;
+
+    const featureNi = readNoIssueTrackerFlag_(p);
+    if (featureNi === false) return false;
+    if (featureNi === true) return true;
+
+    const typeNi = readNoIssueTrackerFlag_(td);
+    if (typeNi === false) return false;
+    if (typeNi === true) return true;
+    return true;
+  }
+
+  function buildReportIssueHref_(feature) {
+    const featureId = feature && feature.id != null ? String(feature.id).trim() : '';
+    if (!featureId) return '';
+    return '/report-trail-issue?id=' + encodeURIComponent(featureId);
+  }
+
   function isParkingFeature_(feature) {
     const typeKey = String(feature?.properties?.t || '').trim().toLowerCase();
     return typeKey === 'pl';
@@ -1079,6 +1119,9 @@
 
     const resolvedLink = u ? u.normalizeAbsUrl(linkUrl) : linkUrl;
     const resolvedCta  = u ? u.normalizeAbsUrl(ctaUrl)  : ctaUrl;
+    const reportIssueHref = shouldShowReportIssueCta_(feature, poiData)
+      ? (u ? u.normalizeAbsUrl(buildReportIssueHref_(feature)) : buildReportIssueHref_(feature))
+      : '';
 
     const coords = feature.geometry && feature.geometry.coordinates;
     const lat = coords && coords[1];
@@ -1140,6 +1183,9 @@
 
     const footerBtns = [
       resolvedCta && ctaLabel && `<a class="nc-action nc-cta" href="${esc(resolvedCta)}" title="${ctaLabel}" aria-label="${ctaLabel}"${ctaTarget}><span class="nc-action-label">${ctaLabel}</span></a>`,
+      reportIssueHref && `<a class="nc-action" href="${esc(reportIssueHref)}" title="Report an issue at this location" aria-label="Report an issue at this location">
+        <span class="nc-action-label">Report Issue</span>
+      </a>`,
       directionsHref && `<a class="nc-action" href="${directionsHref}" target="_blank" rel="noopener noreferrer" aria-label="Get directions in Google Maps" title="Get directions in Google Maps">
         <svg class="nc-action-icon" aria-hidden="true"><use href="#google-logo"></use></svg>
         <span class="nc-action-label">Directions</span>

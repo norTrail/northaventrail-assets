@@ -65,6 +65,49 @@
         }
     }
 
+    function getRequestedPoiId_() {
+        try {
+            const params = new URLSearchParams(window.location.search || '');
+            return String(params.get('id') || '').trim();
+        } catch (_) {
+            return '';
+        }
+    }
+
+    function normalizeFlagValue_(value) {
+        if (typeof value === 'boolean') return value;
+        if (typeof value === 'number') return value !== 0;
+
+        const normalized = String(value == null ? '' : value).trim().toLowerCase();
+        if (!normalized) return null;
+        if (['true', '1', 'yes', 'y', 'on'].includes(normalized)) return true;
+        if (['false', '0', 'no', 'n', 'off'].includes(normalized)) return false;
+        return null;
+    }
+
+    function readNoIssueTrackerFlag_(obj) {
+        if (!obj || typeof obj !== 'object') return null;
+        if (Object.prototype.hasOwnProperty.call(obj, 'ni')) return normalizeFlagValue_(obj.ni);
+        if (Object.prototype.hasOwnProperty.call(obj, 'NI')) return normalizeFlagValue_(obj.NI);
+        return null;
+    }
+
+    function isIssueTrackerPoiAllowed_(feature, payload) {
+        const p = feature && feature.properties ? feature.properties : {};
+        const td = payload && payload.defs && payload.defs.types && payload.defs.types[p.t]
+            ? payload.defs.types[p.t]
+            : null;
+
+        const featureNi = readNoIssueTrackerFlag_(p);
+        if (featureNi === false) return false;
+        if (featureNi === true) return true;
+
+        const typeNi = readNoIssueTrackerFlag_(td);
+        if (typeNi === false) return false;
+        if (typeNi === true) return true;
+        return true;
+    }
+
     function getPoiCache_() {
         const cache = window.__trailPoiCache;
         if (!cache || !cache.data || !Array.isArray(cache.data.features) || !cache.sourceUrl) {
@@ -901,6 +944,7 @@
         let _searchListenersAttached = false;
         let _activeOptionIndex = -1;
         let _searchRenderTimer = null;
+        let _requestedPoiIdApplied = '';
         const MAX_SEARCH_RESULTS = 25;
 
         function decodeHTML_(str) {
@@ -928,6 +972,25 @@
             }
         }
 
+        function activateListTab_() {
+            if (tabs && tabs[1]) activateTab(tabs[1], 1);
+        }
+
+        function applyRequestedPoiFromUrl_() {
+            const requestedId = getRequestedPoiId_();
+            if (!requestedId || requestedId === _requestedPoiIdApplied) return false;
+            if (!Array.isArray(_poiSearchIndex) || !_poiSearchIndex.length) return false;
+
+            const item = _poiSearchIndex.find((candidate) => String(candidate.id) === requestedId);
+            if (!item) return false;
+
+            _requestedPoiIdApplied = requestedId;
+            activateListTab_();
+            selectPOIOption_(item);
+            scrollToIssueTracker();
+            return true;
+        }
+
         function syncActivePOIOption_() {
             const options = locationList.querySelectorAll('.optionDropdown[role="option"]');
             options.forEach((opt, idx) => {
@@ -947,12 +1010,14 @@
 
         function buildPOISearchIndex_(features) {
             return features.reduce((items, feat) => {
+                if (!isIssueTrackerPoiAllowed_(feat, window.poiData)) return items;
                 const p = feat.properties || {};
+                const id = String(feat && feat.id != null ? feat.id : '').trim();
                 const rawName = String(p.l || p.n || '').trim();
                 const coords = feat.geometry?.coordinates;
-                if (!rawName || !coords || coords.length !== 2) return items;
+                if (!id || !rawName || !coords || coords.length !== 2) return items;
                 const name = decodeHTML_(rawName);
-                items.push({ name, nameLower: name.toLowerCase(), coords });
+                items.push({ id, name, nameLower: name.toLowerCase(), coords });
                 return items;
             }, []);
         }
@@ -1155,6 +1220,7 @@
                     _poiFeatures = payload.features || [];
                     _poiSearchIndex = buildPOISearchIndex_(_poiFeatures);
                     renderPOIResult_(_poiSearchIndex.slice(0, MAX_SEARCH_RESULTS));
+                    applyRequestedPoiFromUrl_();
                 } catch (e) {
                     console.error("Failed to load POIs", e);
                     logClientEvent("issue_tracker_poi_fetch_error", e, {
