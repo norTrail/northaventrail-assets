@@ -275,6 +275,37 @@
     };
   }
 
+  let _silentMapPanToken = 0;
+
+  function easeMapSilently(map, options) {
+    if (!map || !options) return;
+
+    var token = ++_silentMapPanToken;
+    var duration = Number(options.duration) || 0;
+
+    if (typeof suppressMapEvents !== 'undefined') {
+      suppressMapEvents = true;
+    }
+
+    map.easeTo(options);
+
+    if (typeof map.once === 'function') {
+      map.once('moveend', function() {
+        if (token !== _silentMapPanToken) return;
+        if (typeof suppressMapEvents !== 'undefined') {
+          suppressMapEvents = false;
+        }
+      });
+    }
+
+    window.setTimeout(function() {
+      if (token !== _silentMapPanToken) return;
+      if (typeof suppressMapEvents !== 'undefined') {
+        suppressMapEvents = false;
+      }
+    }, duration + 120);
+  }
+
   function panMobileSheetIntoView(map, coords, duration) {
     if (!map || !coords) return;
 
@@ -286,7 +317,7 @@
     var targetY = Math.max(60, Math.min(safeBottom, point.y));
     var offsetY = targetY - (viewportHeight / 2);
 
-    map.easeTo({
+    easeMapSilently(map, {
       center: coords,
       offset: [0, offsetY],
       duration: duration,
@@ -1195,7 +1226,7 @@
         if (!_silentHide && _opts && _opts.onClose) _opts.onClose();
       });
 
-      map.easeTo({
+      easeMapSilently(map, {
         center:  coords,
         padding: { top: 80, bottom: 120, left: 20, right: 20 },
         duration: 250,
@@ -1216,7 +1247,7 @@
     
     var map = _opts && _opts.map;
     if (map) {
-      map.easeTo({ padding: { top: 0, bottom: 0, left: 0, right: 0 }, duration: 300 });
+      easeMapSilently(map, { padding: { top: 0, bottom: 0, left: 0, right: 0 }, duration: 300 });
     }
 
     _silentHide = false;

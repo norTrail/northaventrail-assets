@@ -298,6 +298,37 @@
     };
   }
 
+  let _silentMobilePanToken = 0;
+
+  function easeMapSilently(map, options) {
+    if (!map || !options) return;
+
+    var token = ++_silentMobilePanToken;
+    var duration = Number(options.duration) || 0;
+
+    if (typeof suppressMapEvents !== 'undefined') {
+      suppressMapEvents = true;
+    }
+
+    map.easeTo(options);
+
+    if (typeof map.once === 'function') {
+      map.once('moveend', function() {
+        if (token !== _silentMobilePanToken) return;
+        if (typeof suppressMapEvents !== 'undefined') {
+          suppressMapEvents = false;
+        }
+      });
+    }
+
+    window.setTimeout(function() {
+      if (token !== _silentMobilePanToken) return;
+      if (typeof suppressMapEvents !== 'undefined') {
+        suppressMapEvents = false;
+      }
+    }, duration + 120);
+  }
+
   function panMobileSheetIntoView(map, coords, duration) {
     if (!map || !coords) return;
 
@@ -309,7 +340,7 @@
     var targetY = Math.max(60, Math.min(safeBottom, point.y));
     var offsetY = targetY - (viewportHeight / 2);
 
-    map.easeTo({
+    easeMapSilently(map, {
       center: coords,
       offset: [0, offsetY],
       duration: duration,

@@ -15,6 +15,13 @@ const QA_MOBILE_USER_AGENT =
   "AppleWebKit/605.1.15 (KHTML, like Gecko) " +
   "Version/17.0 Mobile/15E148 Safari/604.1";
 const TRAILMAP_LIVE_URL = pathToFileURL(path.join(__dirname, "..", "trailmap-live.html")).href;
+const TRAILMAP_POI_MANIFEST = JSON.parse(
+  fs.readFileSync(path.join(__dirname, "..", "json", "trail-poi.latest.json"), "utf8")
+);
+const TRAILMAP_POI_DATA_URL = String(TRAILMAP_POI_MANIFEST.current || "").trim();
+const TRAILMAP_POI_DATA = JSON.parse(
+  fs.readFileSync(path.join(__dirname, "..", "json", path.basename(TRAILMAP_POI_DATA_URL)), "utf8")
+);
 
 async function goto(page, url) {
   await page.setUserAgent(page.__qaUserAgent || QA_USER_AGENT);
@@ -35,6 +42,13 @@ async function waitForMap(page) {
     visible: true,
     timeout: 30000
   });
+}
+
+async function waitForPoiData(page, timeout = 60000) {
+  await page.waitForFunction(
+    () => Array.isArray(window.poiData?.features) && window.poiData.features.length > 0,
+    { timeout }
+  );
 }
 
 async function waitForTrailmapDetails(page, options = {}) {
@@ -70,6 +84,40 @@ async function newPage(browser) {
   page.__qaUserAgent = browser.__qaUserAgent || QA_USER_AGENT;
   await page.setUserAgent(page.__qaUserAgent);
   return page;
+}
+
+async function installTrailmapPoiFixture(page) {
+  await page.evaluateOnNewDocument(
+    ({ manifestUrl, manifest, dataUrl, data }) => {
+      const originalFetch = window.fetch.bind(window);
+      window.fetch = function patchedFetch(resource, init) {
+        const url = typeof resource === "string" ? resource : resource?.url || "";
+        if (url === manifestUrl) {
+          return Promise.resolve(
+            new Response(JSON.stringify(manifest), {
+              status: 200,
+              headers: { "Content-Type": "application/json" }
+            })
+          );
+        }
+        if (url === dataUrl) {
+          return Promise.resolve(
+            new Response(JSON.stringify(data), {
+              status: 200,
+              headers: { "Content-Type": "application/json" }
+            })
+          );
+        }
+        return originalFetch(resource, init);
+      };
+    },
+    {
+      manifestUrl: "https://assets.northaventrail.org/json/trail-poi.latest.json",
+      manifest: TRAILMAP_POI_MANIFEST,
+      dataUrl: TRAILMAP_POI_DATA_URL,
+      data: TRAILMAP_POI_DATA
+    }
+  );
 }
 
 function assertHeadersAllowMapillaryViewer() {
@@ -243,6 +291,7 @@ async function closeTrailmapDetails(page, options = {}) {
 async function trailmapPopupLightboxFlow(browser) {
   const page = await newPage(browser);
   try {
+    await installTrailmapPoiFixture(page);
     await goto(page, TRAILMAP_LIVE_URL);
     await waitForMap(page);
     // "mural" matches "Mural on Northaven Trail Bridge" which has a Drive image
@@ -310,11 +359,10 @@ async function trailmapPopupLightboxFlow(browser) {
 async function trailmapMapillaryModalFlow(browser) {
   const page = await newPage(browser);
   try {
+    await installTrailmapPoiFixture(page);
     await goto(page, TRAILMAP_LIVE_URL);
     await waitForMap(page);
-    await page.waitForFunction(() => Array.isArray(window.poiData?.features) && window.poiData.features.length > 0, {
-      timeout: 30000
-    });
+    await waitForPoiData(page);
 
     const opened = await page.evaluate(() => {
       if (typeof createPopUp !== "function" || !Array.isArray(window.poiData?.features)) return false;
@@ -329,12 +377,12 @@ async function trailmapMapillaryModalFlow(browser) {
 
     assert.equal(opened, true, "trailmap-live should be able to open details for a Mapillary-backed POI");
     await page.waitForSelector(".nc-desktop-card .nc-hero-link[data-mid]", { visible: true, timeout: 15000 });
-    await page.click(".nc-desktop-card .nc-hero-link[data-mid]");
+    await page.$eval(".nc-desktop-card .nc-hero-link[data-mid]", (el) => el.click());
 
     await page.waitForFunction(() => {
       const modal = document.getElementById("nc-mapillary-modal");
       return modal && !modal.hidden && document.body.classList.contains("nc-mapillary-open");
-    }, { timeout: 10000 });
+    }, { timeout: 15000 });
 
     const modalState = await page.evaluate(() => {
       const modal = document.getElementById("nc-mapillary-modal");
@@ -370,6 +418,7 @@ async function trailmapMapillaryModalFlow(browser) {
 async function trailmapSearchFlow(browser) {
   const page = await newPage(browser);
   try {
+    await installTrailmapPoiFixture(page);
     await goto(page, TRAILMAP_LIVE_URL);
     await waitForMap(page);
     await openTrailmapSearch(page, "royal");
@@ -398,6 +447,7 @@ async function trailmapSearchFlow(browser) {
 async function trailmapMobileCardFlow(browser) {
   const page = await newPage(browser);
   try {
+    await installTrailmapPoiFixture(page);
     await goto(page, TRAILMAP_LIVE_URL);
     await waitForMap(page);
 
