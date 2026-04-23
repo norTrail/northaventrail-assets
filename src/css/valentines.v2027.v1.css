@@ -384,6 +384,14 @@
   }
 }
 
+.popUpClingImageButton {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
 .popUpClingImage {
   width: 130px;
 }
@@ -392,7 +400,7 @@
   cursor: pointer;
 }
 
-.popUpClingImage:focus-visible {
+.popUpClingImageButton:focus-visible {
   outline: 3px solid #108452;
   outline-offset: 3px;
   border-radius: 6px;
@@ -459,11 +467,20 @@
   background: #f6f6f6
 }
 
+.val-carousel__img-btn {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: zoom-in;
+}
+
 .val-carousel__img {
   display: block;
   width: 100%;
   height: auto;
-  cursor: zoom-in
+  cursor: inherit
 }
 
 .val-carousel__caption {
@@ -499,7 +516,7 @@
   outline-offset: 2px
 }
 
-.val-carousel__img:focus-visible {
+.val-carousel__img-btn:focus-visible {
   outline: 3px solid #108452;
   outline-offset: 3px;
 }

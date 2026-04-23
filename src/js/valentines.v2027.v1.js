@@ -496,15 +496,18 @@ function renderCarousel() {
   const mount = document.getElementById(CAROUSEL_MOUNT_ID);
   if (!mount || !carouselState.items.length) return;
 
+  const openBtn = mount.querySelector(".val-carousel__img-btn");
   const img = mount.querySelector(".val-carousel__img");
   const caption = mount.querySelector(".val-carousel__caption");
   const counter = mount.querySelector(".val-carousel__counter");
-  if (!img || !caption || !counter) return;
+  if (!openBtn || !img || !caption || !counter) return;
 
   const item = carouselState.items[carouselState.index];
   img.src = item.large;
-  img.setAttribute("src_large", item.large); // showModal reads this
-  img.alt = item.alt || "Valentine cling image";
+  img.alt = "";
+  openBtn.setAttribute("data-src-large", item.large);
+  openBtn.setAttribute("data-alt", item.alt || "Valentine cling image");
+  openBtn.setAttribute("aria-label", item.alt ? `Open larger image: ${item.alt}` : "Open larger Valentine cling image");
   caption.textContent = item.alt || "";
   counter.textContent = `${carouselState.index + 1} / ${carouselState.items.length}`;
 }
@@ -520,15 +523,18 @@ function initCarouselUIOnce() {
         <button type="button" class="val-carousel__btn" data-dir="1" aria-label="Next image">›</button>
       </div>
       <div class="val-carousel__counter" aria-live="polite" aria-atomic="true"></div>
-      <img class="val-carousel__img" alt="" />
+      <button type="button" class="val-carousel__img-btn" aria-label="Open larger Valentine cling image">
+        <img class="val-carousel__img" alt="" />
+      </button>
     </div>
     <div class="val-carousel__caption" aria-live="polite"></div>
   `;
 
   const prevBtn = mount.querySelector('[data-dir="-1"]');
   const nextBtn = mount.querySelector('[data-dir="1"]');
+  const openBtn = mount.querySelector(".val-carousel__img-btn");
   const img = mount.querySelector(".val-carousel__img");
-  if (!prevBtn || !nextBtn || !img) return;
+  if (!prevBtn || !nextBtn || !openBtn || !img) return;
 
   function go(dir) {
     if (!carouselState.items.length) return;
@@ -539,9 +545,6 @@ function initCarouselUIOnce() {
 
   prevBtn.addEventListener("click", () => go(-1), { passive: true });
   nextBtn.addEventListener("click", () => go(1), { passive: true });
-  img.tabIndex = 0;
-  img.setAttribute("role", "button");
-  img.setAttribute("aria-label", "Open larger Valentine cling image");
 
   mount.tabIndex = 0;
   mount.setAttribute('role', 'region');
@@ -551,17 +554,10 @@ function initCarouselUIOnce() {
     if (e.key === "ArrowRight") { e.preventDefault(); go(1); }
   });
 
-  img.addEventListener("click", () => {
+  openBtn.addEventListener("click", () => {
     carouselState.paused = true;
     stopCarousel();
-    if (typeof window.showModal === "function") window.showModal(img);
-  });
-  img.addEventListener("keydown", (e) => {
-    if (e.key !== "Enter" && e.key !== " ") return;
-    e.preventDefault();
-    carouselState.paused = true;
-    stopCarousel();
-    if (typeof window.showModal === "function") window.showModal(img);
+    if (typeof window.showModal === "function") window.showModal(openBtn);
   });
 
   carouselState.inited = true;
@@ -658,14 +654,17 @@ function buildPopupHTMLFromProps(props) {
     if (hasImage) {
       return `
         <div class="popupWrapper">
-          <img
-            alt="${escapeHtmlAttr(clingText)}"
-            class="popUpClingImage"
-            src="${escapeHtmlAttr(bigURL)}"
-            src_large="${escapeHtmlAttr(bigURL)}"
-            role="button"
-            tabindex="0"
+          <button
+            type="button"
+            class="popUpClingImageButton"
+            data-src-large="${escapeHtmlAttr(bigURL)}"
+            data-alt="${escapeHtmlAttr(clingText)}"
             aria-label="${escapeHtmlAttr(`Open larger image for cling location ${locId}`)}">
+            <img
+              alt=""
+              class="popUpClingImage"
+              src="${escapeHtmlAttr(bigURL)}">
+          </button>
         </div>
       `;
     }
@@ -1259,12 +1258,19 @@ function showModal(element){
   modal.setAttribute('aria-hidden', 'false');
 
   const modalImg = getElementById('img01');
+  const imageSrc = element.getAttribute('data-src-large') || element.getAttribute('src_large') || '';
+  const imageAlt = decodeClingTextSafe(
+    element.getAttribute('data-alt') ||
+    element.getAttribute('aria-label') ||
+    element.alt ||
+    ''
+  );
   if (modalImg) {
-    modalImg.src = element.getAttribute('src_large') || '';
-    modalImg.alt = decodeClingTextSafe(element.alt || '');
+    modalImg.src = imageSrc;
+    modalImg.alt = imageAlt;
   }
 
-  const captionText = decodeClingTextSafe(element.alt || '');
+  const captionText = imageAlt;
   setTextSafe(getElementById('caption'), captionText);
   querySelectorSingle('.close', modal)?.focus();
 }
@@ -1754,7 +1760,7 @@ if (!valentinesRuntime.globalHandlersBound) {
       return;
     }
 
-    const popupImage = event.target?.closest?.('.popUpClingImage');
+    const popupImage = event.target?.closest?.('.popUpClingImageButton');
     if (popupImage) {
       event.preventDefault();
       showModal(popupImage);
@@ -1762,7 +1768,7 @@ if (!valentinesRuntime.globalHandlersBound) {
   });
 
   document.addEventListener('keydown', (event) => {
-    const popupImage = event.target?.closest?.('.popUpClingImage');
+    const popupImage = event.target?.closest?.('.popUpClingImageButton');
     if (!popupImage) return;
     if (event.key !== 'Enter' && event.key !== ' ') return;
     event.preventDefault();
