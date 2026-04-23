@@ -60,7 +60,13 @@ async function waitForMap(page) {
           }
         })();
 
-        const hasPoiData = Array.isArray(window.poiData?.features) && window.poiData.features.length > 0;
+        const hasPoiData = (() => {
+          try {
+            return Array.isArray(poiData?.features) && poiData.features.length > 0;
+          } catch (_err) {
+            return Array.isArray(window.poiData?.features) && window.poiData.features.length > 0;
+          }
+        })();
         const hasCanvas = isVisible(".mapboxgl-canvas");
         const hasSearchUi = isVisible("#searchButton") || isVisible("#locationListInput");
         const hasIssueTrackerUi = isVisible("#tab2") || isVisible(".issueListPanel");
@@ -102,7 +108,13 @@ async function waitForMap(page) {
         hasIssueTrackerTab: visible("#tab2"),
         hasStatusPill: visible("#status-pill"),
         hasValentineCarousel: visible("#valentine-carousel"),
-        hasPoiData: Array.isArray(window.poiData?.features) ? window.poiData.features.length : 0,
+        hasPoiData: (() => {
+          try {
+            return Array.isArray(poiData?.features) ? poiData.features.length : 0;
+          } catch (_innerErr) {
+            return Array.isArray(window.poiData?.features) ? window.poiData.features.length : 0;
+          }
+        })(),
         searchReady,
         overlayPresent: !!document.getElementById("map-loading-overlay"),
         title: document.title
@@ -116,7 +128,13 @@ async function waitForMap(page) {
 
 async function waitForPoiData(page, timeout = 60000) {
   await page.waitForFunction(
-    () => Array.isArray(window.poiData?.features) && window.poiData.features.length > 0,
+    () => {
+      try {
+        return Array.isArray(poiData?.features) && poiData.features.length > 0;
+      } catch (_err) {
+        return Array.isArray(window.poiData?.features) && window.poiData.features.length > 0;
+      }
+    },
     { timeout }
   );
 }
@@ -440,18 +458,17 @@ async function trailmapMapillaryModalFlow(browser) {
     await installTrailmapPoiFixture(page);
     await goto(page, TRAILMAP_LIVE_URL);
     await waitForMap(page);
-    await waitForPoiData(page);
-
-    const opened = await page.evaluate(() => {
-      if (typeof createPopUp !== "function" || !Array.isArray(window.poiData?.features)) return false;
-      const feature = window.poiData.features.find((item) => {
+    const opened = await page.evaluate((fixtureData) => {
+      if (typeof createPopUp !== "function" || !Array.isArray(fixtureData?.features)) return false;
+      window.poiData = fixtureData;
+      const feature = fixtureData.features.find((item) => {
         const mid = String(item?.properties?.m_id || "").trim();
         return /^\d+$/.test(mid) && Array.isArray(item?.geometry?.coordinates) && item.geometry.coordinates.length === 2;
       });
       if (!feature) return false;
       createPopUp(feature);
       return true;
-    });
+    }, TRAILMAP_POI_DATA);
 
     assert.equal(opened, true, "trailmap-live should be able to open details for a Mapillary-backed POI");
     await page.waitForSelector(".nc-desktop-card .nc-hero-link[data-mid]", { visible: true, timeout: 15000 });
