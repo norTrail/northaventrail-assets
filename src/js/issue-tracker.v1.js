@@ -724,22 +724,39 @@
             issueMapEl.setAttribute('aria-roledescription', 'interactive map');
         }
 
-        function initTurnstile() {
-            if (typeof turnstile !== 'undefined' && !turnstileWidgetId) {
-                turnstile.ready(() => {
-                    setTimeout(() => {
-                        // Double check container existence
-                        const container = document.getElementById('nt-turnstile-container');
-                        if (!container) return;
+        function initTurnstile(attemptsRemaining = 20) {
+            if (turnstileWidgetId) return;
 
-                        turnstileWidgetId = turnstile.render(container, {
-                            sitekey: TURNSTILE_SITE_KEY,
-                            callback: (token) => { turnstileToken = token; },
-                            'expired-callback': () => { turnstileToken = null; },
-                            'error-callback': () => { turnstileToken = null; },
-                        });
-                    }, 500);
+            const container = document.getElementById('nt-turnstile-container');
+            if (!container) return;
+
+            const canRender = typeof turnstile !== 'undefined'
+                && turnstile
+                && typeof turnstile.render === 'function';
+
+            if (!canRender) {
+                if (attemptsRemaining > 0) {
+                    setTimeout(() => initTurnstile(attemptsRemaining - 1), 500);
+                }
+                return;
+            }
+
+            try {
+                turnstileWidgetId = turnstile.render(container, {
+                    sitekey: TURNSTILE_SITE_KEY,
+                    callback: (token) => { turnstileToken = token; },
+                    'expired-callback': () => { turnstileToken = null; },
+                    'error-callback': () => { turnstileToken = null; },
                 });
+            } catch (err) {
+                turnstileToken = null;
+                logClientEvent("issue_tracker_turnstile_init_error", err, {
+                    phase: "turnstile_init"
+                });
+
+                if (attemptsRemaining > 0) {
+                    setTimeout(() => initTurnstile(attemptsRemaining - 1), 1000);
+                }
             }
         }
 
