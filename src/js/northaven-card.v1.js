@@ -207,12 +207,12 @@
     );
 
     return `
-    <div class="nc-related-group">
-      <div class="nc-related-label">Closest Parking</div>
-      <button class="nc-related-row nc-related-button" type="button" data-related-feature-id="${esc(String(relatedFeature.id))}" data-related-kind="cp" aria-label="View closest parking: ${parkingLabel}">
+    <div class="nc-related-group" role="group" aria-label="Closest Parking">
+      <div class="nc-related-label" aria-hidden="true">Closest Parking</div>
+      <button class="nc-related-row nc-related-button" type="button" data-related-feature-id="${esc(String(relatedFeature.id))}" data-related-kind="cp" aria-label="View closest parking: ${parkingLabel}" title="View closest parking: ${parkingLabel}">
         <span class="nc-related-row-icon" aria-hidden="true">${parkingIcon ? `<img src="${esc(parkingIcon)}" alt="" class="nc-related-icon-img" onerror="this.remove()">` : ''}</span>
         <span class="nc-related-row-text">
-          <span class="nc-related-row-meta">Closest Parking</span>
+          <span class="nc-related-row-meta" aria-hidden="true">Closest Parking</span>
           <span class="nc-related-row-title">${parkingLabel}</span>
         </span>
         <span class="nc-related-chevron" aria-hidden="true">&#8250;</span>
@@ -236,15 +236,15 @@
 
       const relatedLabel = esc(getFeatureDisplayLabel_(relatedFeature, poiData));
       buttons.push(
-        `<button class="nc-related-chip nc-related-button" type="button" data-related-feature-id="${esc(String(id))}" data-related-kind="nf" aria-label="View nearby amenity: ${relatedLabel}">${relatedLabel}</button>`
+        `<button class="nc-related-chip nc-related-button" type="button" data-related-feature-id="${esc(String(id))}" data-related-kind="nf" aria-label="View nearby amenity: ${relatedLabel}" title="View nearby amenity: ${relatedLabel}">${relatedLabel}</button>`
       );
     }
 
     if (!buttons.length) return '';
 
     return `
-    <div class="nc-related-group">
-      <div class="nc-related-label">Nearby Amenities</div>
+    <div class="nc-related-group" role="group" aria-label="Nearby Amenities">
+      <div class="nc-related-label" aria-hidden="true">Nearby Amenities</div>
       <div class="nc-related-chip-list">
         ${buttons.join('')}
       </div>
