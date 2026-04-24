@@ -122,9 +122,17 @@
     z-index: 70;
   }
 
-  /* Collapsed bar flush with left map edge — no margin offset */
+  /* Collapsed bar flush with left map edge */
   .nc-desktop-card.is-collapsed {
     left: 0;
     margin-left: 0;
+    width: var(--nc-sidecar-handle-width);
+    max-width: var(--nc-sidecar-handle-width);
+    overflow: hidden; /* clip panel so its border can't push the toggle right */
+  }
+
+  /* Strip the border when collapsed so it doesn't contribute layout width */
+  .nc-desktop-card.is-collapsed .nc-desktop-card__panel {
+    border: none;
   }
 }
