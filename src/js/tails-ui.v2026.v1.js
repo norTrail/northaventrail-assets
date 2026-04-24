@@ -133,7 +133,7 @@ function updateOverlayState(state) {
 
       UI.overlayMessage.innerHTML =
         startDateLabel
-          ? `The sheep and goats are coming!<br>${startDateLabel}`
+          ? `The sheep and goats are coming!<br><span class="overlay-date">${startDateLabel}</span>`
           : `The sheep and goats are coming!`;
 
       UI.statusPill.innerText = "Coming";
@@ -476,7 +476,12 @@ function attachNoMowMarkerDelegationOnce() {
 
   mapContainer.addEventListener("click", event => {
     const markerEl = event.target.closest(".no-mow-marker");
-    if (!markerEl || !mapContainer.contains(markerEl)) return;
+    if (!markerEl || !mapContainer.contains(markerEl)) {
+      if (event.target.closest(".mapboxgl-canvas")) {
+        closeAllPopups();
+      }
+      return;
+    }
 
     event.stopPropagation();
     openNoMowZonePopup_(markerEl.dataset.zoneCode, markerEl);

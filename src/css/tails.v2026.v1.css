@@ -228,10 +228,7 @@ body {
    Overlay banner
    ---------------------------- */
 #overlay-banner {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+  position: relative;
   padding: 16px;
   background: #e6f0ff;
   border-radius: 16px;
@@ -252,6 +249,11 @@ body {
   font-family: 'Fredoka', sans-serif;
   font-size: 2em;
   font-weight: 600;
+  line-height: 1;
+}
+
+.overlay-date {
+  color: #108452;
 }
 
 #countdown {

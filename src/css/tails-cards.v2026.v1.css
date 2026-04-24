@@ -120,5 +120,41 @@
 @media (min-width: 768px) {
   .nc-desktop-card {
     z-index: 70;
+    left: auto;
+    right: var(--nc-sidecar-inset);
+    flex-direction: row-reverse;
+    transition: right 220ms cubic-bezier(0.32, 0.72, 0, 1), width 220ms cubic-bezier(0.32, 0.72, 0, 1), max-width 220ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  .nc-desktop-card.is-collapsed {
+    left: auto;
+    right: 0;
+  }
+
+  .nc-desktop-card:not(.is-collapsed) {
+    left: auto;
+    right: var(--nc-sidecar-inset);
+  }
+
+  .nc-desktop-card__panel {
+    border-radius: 0 16px 16px 0;
+  }
+
+  .nc-desktop-card__toggle {
+    border-radius: 16px 0 0 16px;
+    box-shadow: -4px 10px 20px rgba(0, 0, 0, 0.12);
+  }
+
+  .nc-desktop-card.is-collapsed .nc-desktop-card__panel {
+    transform: translateX(var(--nc-sidecar-width));
+  }
+
+  /* Chevron: open = points right (→) toward map to indicate collapse; collapsed = points left (←) to indicate expand */
+  .nc-desktop-card__chevron {
+    transform: rotate(180deg);
+  }
+
+  .nc-desktop-card.is-collapsed .nc-desktop-card__chevron {
+    transform: rotate(0deg);
   }
 }
