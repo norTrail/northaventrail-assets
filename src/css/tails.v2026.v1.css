@@ -302,7 +302,6 @@ body {
   z-index: 2;
   background: transparent;
   border: none;
-  transition: transform 120ms ease;
   /* Minimum 48×48px touch target (WCAG 2.1 AA updated) */
   min-width: 48px;
   min-height: 48px;
@@ -353,7 +352,6 @@ body {
   cursor: pointer;
   z-index: 5;
   padding: 0;
-  transition: transform 120ms ease;
   filter: drop-shadow(0 3px 5px rgba(0,0,0,0.3));
 }
 
