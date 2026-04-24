@@ -612,6 +612,7 @@ body.nc-mapillary-open {
   .nc-desktop-card__panel {
     width: var(--nc-sidecar-width);
     max-width: var(--nc-sidecar-width);
+    height: 100%;
     min-width: 0;
     background: #fff;
     border-radius: 16px 0 0 16px;
@@ -626,6 +627,7 @@ body.nc-mapillary-open {
   }
 
   .nc-desktop-card__body {
+    height: 100%;
     overflow-y: auto;
     overscroll-behavior: contain;
     flex: 1;

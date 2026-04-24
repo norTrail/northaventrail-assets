@@ -40,6 +40,33 @@ let isZoomedToHerd = false;
 let lastVisibleZoneCode = null;
 let userHasScrolledTable = false;
 
+function preferredZoneCenter_(feature) {
+  const props = feature?.properties || {};
+  const centerLng = Number(props.centerLng);
+  const centerLat = Number(props.centerLat);
+  return (Number.isFinite(centerLng) && Number.isFinite(centerLat) ? [centerLng, centerLat] : null)
+    || props.center
+    || featureCenter(feature?.geometry)
+    || null;
+}
+
+function syncMapMarkerPositions_() {
+  Object.values(noMowZoneMarkers || {}).forEach(obj => {
+    const center = preferredZoneCenter_(obj?.feature);
+    if (center && obj?.marker?.setLngLat) {
+      obj.marker.setLngLat(center);
+    }
+  });
+
+  Object.entries(herdMarkers || {}).forEach(([herdCode, marker]) => {
+    const feature = marker?.__tailsFeature;
+    const coords = feature?.geometry?.coordinates;
+    if (Array.isArray(coords) && coords.length >= 2 && marker?.setLngLat) {
+      marker.setLngLat([coords[0], coords[1]]);
+    }
+  });
+}
+
 function queueMapResize_() {
   const mapInstance = window.TAILS?.getMap?.();
   if (!mapInstance || typeof mapInstance.resize !== "function") return;
@@ -48,6 +75,7 @@ function queueMapResize_() {
     mapInstance.resize();
     window.requestAnimationFrame(() => {
       mapInstance.resize();
+      syncMapMarkerPositions_();
     });
   });
 }
@@ -258,6 +286,7 @@ function updateMarker(herdCode, herdObj, map) {
   })
     .setLngLat([lng, lat])
     .addTo(map);
+  herdMarkers[herdCode].__tailsFeature = feature;
 
 
   const hamburgerElement = document.getElementById("hamburger");
@@ -391,14 +420,7 @@ function openNoMowZonePopup_(zoneCode, markerEl) {
   const map = window.TAILS?.getMap?.();
   if (!obj || !obj.feature || !markerEl || !map) return;
 
-  const props = obj.feature.properties || {};
-  const centerLng = Number(props.centerLng);
-  const centerLat = Number(props.centerLat);
-  const center =
-    (Number.isFinite(centerLng) && Number.isFinite(centerLat) ? [centerLng, centerLat] : null) ||
-    props.center ||
-    featureCenter(obj.feature.geometry) ||
-    [props.centerLng, props.centerLat];
+  const center = preferredZoneCenter_(obj.feature);
   if (!center) return;
 
   closeAllPopups();
@@ -517,12 +539,7 @@ function updateNoMowLayers(map, geojson, force = false) {
     if (!feature?.geometry) return;
 
     const props = feature.properties || {};
-    const centerLng = Number(props.centerLng);
-    const centerLat = Number(props.centerLat);
-    const center =
-      (Number.isFinite(centerLng) && Number.isFinite(centerLat) ? [centerLng, centerLat] : null) ||
-      props.center ||
-      featureCenter(feature.geometry);
+    const center = preferredZoneCenter_(feature);
 
     if (!center) return;
 

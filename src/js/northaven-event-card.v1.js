@@ -860,9 +860,9 @@
         hide();
     }, true);
 
-    shell.addEventListener('wheel', function (e) {
+    function trapDesktopWheel(e) {
       const body = shell.querySelector('.nc-desktop-card__body');
-      if (!body || shell.hidden) return;
+      if (!body || shell.hidden || !body.contains(e.target)) return;
 
       const deltaY = Number(e.deltaY) || 0;
       if (!deltaY) {
@@ -877,8 +877,13 @@
       }
 
       body.scrollTop += deltaY;
+      e.stopPropagation();
       e.preventDefault();
-    }, { passive: false });
+    }
+
+    shell.addEventListener('wheel', trapDesktopWheel, { passive: false });
+    shell.querySelector('.nc-desktop-card__panel')?.addEventListener('wheel', trapDesktopWheel, { passive: false });
+    shell.querySelector('.nc-desktop-card__body')?.addEventListener('wheel', trapDesktopWheel, { passive: false });
 
     host.appendChild(shell);
     return shell;
