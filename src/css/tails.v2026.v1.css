@@ -37,6 +37,22 @@
   box-sizing: border-box;
 }
 
+#tails-skip-link {
+  position: absolute !important;
+  top: -120px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+#tails-skip-link:focus,
+#tails-skip-link:focus-visible {
+  top: 0 !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
 /* ----------------------------
    Base layout
    ---------------------------- */

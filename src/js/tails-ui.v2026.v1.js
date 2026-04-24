@@ -392,7 +392,10 @@ function openNoMowZonePopup_(zoneCode, markerEl) {
   if (!obj || !obj.feature || !markerEl || !map) return;
 
   const props = obj.feature.properties || {};
+  const centerLng = Number(props.centerLng);
+  const centerLat = Number(props.centerLat);
   const center =
+    (Number.isFinite(centerLng) && Number.isFinite(centerLat) ? [centerLng, centerLat] : null) ||
     props.center ||
     featureCenter(obj.feature.geometry) ||
     [props.centerLng, props.centerLat];
@@ -514,8 +517,12 @@ function updateNoMowLayers(map, geojson, force = false) {
     if (!feature?.geometry) return;
 
     const props = feature.properties || {};
+    const centerLng = Number(props.centerLng);
+    const centerLat = Number(props.centerLat);
     const center =
-      props.center || featureCenter(feature.geometry);
+      (Number.isFinite(centerLng) && Number.isFinite(centerLat) ? [centerLng, centerLat] : null) ||
+      props.center ||
+      featureCenter(feature.geometry);
 
     if (!center) return;
 
@@ -570,6 +577,7 @@ function updateNoMowLayers(map, geojson, force = false) {
   });
 
   UI.tableBtn.style.display = Object.keys(noMowZoneMarkers).length > 0 ? "block" : "none";
+  queueMapResize_();
 }
 
 
