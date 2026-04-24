@@ -587,7 +587,8 @@ body.nc-mapillary-open {
   #mapView,
   #map {
     --nc-sidecar-width: 400px;
-    --nc-sidecar-handle-width: 9px;
+    --nc-sidecar-handle-width: 15px;
+    --nc-sidecar-collapsed-handle-width: 9px;
     --nc-sidecar-inset: 12px;
   }
 
@@ -687,8 +688,8 @@ body.nc-mapillary-open {
   .nc-desktop-card.is-collapsed {
     left: 0;
     margin-left: 0;
-    width: var(--nc-sidecar-handle-width);
-    max-width: var(--nc-sidecar-handle-width);
+    width: var(--nc-sidecar-collapsed-handle-width);
+    max-width: var(--nc-sidecar-collapsed-handle-width);
   }
 
   .nc-desktop-card:not(.is-collapsed) {
