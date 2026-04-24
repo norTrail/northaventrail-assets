@@ -840,6 +840,14 @@ body.is-map-fullscreen {
   color: #fff !important;
 }
 
+/* When the desktop sidecar card is collapsed, nudge the hamburger past the 28px bar */
+@media (min-width: 768px) {
+  #mapView.nc-sidecar-open.nc-sidecar-collapsed #hamburger,
+  #mapView.nc-sidecar-open.nc-sidecar-collapsed #controls {
+    left: calc(var(--nc-sidecar-handle-width) + 8px);
+  }
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   * {
