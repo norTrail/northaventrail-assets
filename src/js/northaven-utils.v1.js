@@ -206,6 +206,11 @@
           mainNav.setAttribute("aria-label", "Main navigation");
         }
 
+        const secondaryNav = document.querySelector("#secondaryNavigation");
+        if (secondaryNav && !secondaryNav.getAttribute("aria-label")) {
+          secondaryNav.setAttribute("aria-label", "Secondary navigation");
+        }
+
         const iconNav = document.querySelector("nav.sqs-svg-icon--list");
         if (iconNav && !iconNav.getAttribute("aria-label")) {
           iconNav.setAttribute("aria-label", "Social links");

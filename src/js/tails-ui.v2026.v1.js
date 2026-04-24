@@ -40,6 +40,25 @@ let isZoomedToHerd = false;
 let lastVisibleZoneCode = null;
 let userHasScrolledTable = false;
 
+function formatMarkerStatusLabel_(props) {
+  const status = String(props?.status || "").trim().toLowerCase();
+  const icon = String(props?.icon || "").trim();
+
+  if (status === "coming" || icon === "🌼") return "coming up";
+  if (status === "grazing" || status === "active" || icon === "🐐" || icon === "🐑") return "grazing now";
+  if (status === "finished" || status === "history" || status === "complete" || icon === "🌱") return "grazed / finished";
+  return status || "grazing area";
+}
+
+function buildMarkerAriaLabel_(name, props) {
+  const cleanName = String(name || "Grazing area").trim();
+  const statusLabel = formatMarkerStatusLabel_(props);
+  const dateLabel = formatDateISOLong(props?.estimatedDate) || String(props?.estimatedDateLong || "").trim();
+  const zoneCode = String(props?.zoneCode || "").trim();
+  const suffix = [statusLabel, dateLabel, zoneCode ? `zone ${zoneCode}` : ""].filter(Boolean).join(", ");
+  return suffix ? `${cleanName}, ${suffix}: open details` : `${cleanName}: open details`;
+}
+
 function preferredZoneCenter_(feature) {
   const props = feature?.properties || {};
   const centerLng = Number(props.centerLng);
@@ -263,7 +282,10 @@ function updateMarker(herdCode, herdObj, map) {
   el.style.color = color;
   el.dataset.outline = color;
   el.title = herdName;
-  el.setAttribute("aria-label", `${herdName}: open details`);
+  el.setAttribute("aria-label", buildMarkerAriaLabel_(herdName, {
+    status: "grazing",
+    estimatedDateLong: trailSectionShort || shortText
+  }));
   el.setAttribute("role", "button");
   el.setAttribute("aria-pressed", "false");
   el.setAttribute("aria-expanded", "false");
@@ -563,7 +585,7 @@ function updateNoMowLayers(map, geojson, force = false) {
 
     const name = (props.zoneName || "No-Mow Zone").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 
-    el.setAttribute("aria-label", `${name}: open details`);
+    el.setAttribute("aria-label", buildMarkerAriaLabel_(name, props));
     el.setAttribute("aria-expanded", "false");
     el.dataset.zoneCode = code;
 
