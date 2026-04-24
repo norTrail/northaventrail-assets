@@ -862,7 +862,7 @@
 
     function trapDesktopWheel(e) {
       const body = shell.querySelector('.nc-desktop-card__body');
-      if (!body || shell.hidden || !body.contains(e.target)) return;
+      if (!body || shell.hidden || !shell.contains(e.target)) return;
 
       const deltaY = Number(e.deltaY) || 0;
       if (!deltaY) {
@@ -876,7 +876,7 @@
         return;
       }
 
-      body.scrollTop += deltaY;
+      body.scrollTop = Math.max(0, Math.min(maxScroll, body.scrollTop + deltaY));
       e.stopPropagation();
       e.preventDefault();
     }

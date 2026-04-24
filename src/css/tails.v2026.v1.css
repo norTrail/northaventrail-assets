@@ -67,7 +67,6 @@ body {
              'Caveat', 'Chewy', sans-serif;
   font-size: clamp(14px, 2.5vw, 18px);
   background: #f8f8f8;
-  overscroll-behavior: none;
 }
 
 /* Root container — flex column so #ada-info can be ordered above #mapView */

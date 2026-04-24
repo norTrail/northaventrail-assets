@@ -95,6 +95,7 @@ body.is-map-fullscreen .nc-sheet {
   display: flex;
   flex-direction: column;
   flex: 1;
+  min-height: 0;
 }
 
 .nc-header {
@@ -325,6 +326,7 @@ body.is-map-fullscreen .nc-sheet {
 .nc-body {
   padding: 12px 14px 8px;
   flex: 1;
+  min-height: 0;
 }
 
 .nc-category-row {
