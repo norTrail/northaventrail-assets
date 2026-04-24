@@ -746,6 +746,168 @@ async function valentineModalFlow(browser) {
   }
 }
 
+async function trailmapBrowserHistoryFlow(browser) {
+  // Regression guard for 37abe11: the popstate handler called map.easeTo() which
+  // fired 'moveend', which triggered another URL pushState — creating a history
+  // loop where browser back could never actually leave the POI URL.
+  // Fix: wrap popstate handler in runDuringHistoryNavigation_() so
+  // suppressMapEvents is true during the pan and moveend is silenced.
+  const page = await newPage(browser);
+  try {
+    await installTrailmapPoiFixture(page);
+    await goto(page, TRAILMAP_LIVE_URL);
+    await waitForMap(page);
+
+    await openTrailmapSearch(page, "royal");
+    await page.waitForFunction(() => window.location.search.includes("loc="), { timeout: 15000 });
+    await waitForTrailmapDetails(page);
+
+    const historyLenAfterNav = await page.evaluate(() => history.length);
+
+    // Simulate browser back — fires popstate without a full page reload
+    await page.evaluate(() => history.back());
+    await page.waitForFunction(() => !window.location.search.includes("loc="), { timeout: 10000 });
+
+    // Card should be gone
+    await page.waitForFunction(
+      () => !document.querySelector(".nc-desktop-card:not([hidden])"),
+      { timeout: 10000 }
+    );
+
+    const historyLenAfterBack = await page.evaluate(() => history.length);
+    assert.equal(
+      historyLenAfterBack,
+      historyLenAfterNav,
+      "Browser back should not push additional history entries (regression: moveend handler was re-pushing state)"
+    );
+
+    console.log("trailmap browser history: pass");
+  } finally {
+    await page.close();
+  }
+}
+
+async function trailmapDesktopCardModeFlow(browser) {
+  // Regression guard for 6ea3fb9: when opening a card, _lastMobileMode was
+  // hardcoded to `true` instead of `isMobile()`. On a desktop viewport this
+  // triggered a spurious mobile→desktop responsive-sync pass immediately after
+  // the card opened, which could briefly show/hide the wrong panel or lose state.
+  // Fix: initialise _lastMobileMode = isMobile() so no spurious transition fires.
+  const page = await newPage(browser);
+  try {
+    await installTrailmapPoiFixture(page);
+    await goto(page, TRAILMAP_LIVE_URL);
+    await waitForMap(page);
+
+    await openTrailmapSearch(page, "royal");
+    await page.waitForFunction(() => window.location.search.includes("loc="), { timeout: 15000 });
+    await waitForTrailmapDetails(page);
+
+    const cardState = await page.evaluate(() => {
+      const desktopCard = document.querySelector(".nc-desktop-card:not([hidden])");
+      const mobileSheet = document.querySelector("#nc-bottom-sheet");
+      return {
+        desktopCardVisible: !!desktopCard,
+        mobileSheetVisible: mobileSheet
+          ? window.getComputedStyle(mobileSheet).display !== "none" &&
+            mobileSheet.getBoundingClientRect().height > 0
+          : false
+      };
+    });
+
+    assert.equal(
+      cardState.desktopCardVisible,
+      true,
+      "Desktop card should be visible after search on a desktop viewport (regression: spurious mobile sync hid desktop card)"
+    );
+    assert.equal(
+      cardState.mobileSheetVisible,
+      false,
+      "Mobile bottom sheet should NOT be visible on a desktop viewport (regression: _lastMobileMode=true triggered wrong layout)"
+    );
+
+    console.log("trailmap desktop card mode: pass");
+  } finally {
+    await page.close();
+  }
+}
+
+async function cardRelatedGroupADAFlow(browser) {
+  // Regression guard for 61459e9: .nc-related-group divs were missing role="group"
+  // and aria-label. The visible label text was read twice by screen readers —
+  // once from .nc-related-label and again from the button's aria-label.
+  // Fix: add role="group" aria-label to the wrapper div, and aria-hidden="true"
+  // to the redundant label spans. Also add title to each related button.
+  const page = await newPage(browser);
+  try {
+    await installTrailmapPoiFixture(page);
+    await goto(page, TRAILMAP_LIVE_URL);
+    await waitForMap(page);
+
+    // Open a POI that has a closest-parking reference (cp property) so that
+    // the related-group markup is rendered.
+    const opened = await page.evaluate((fixtureData) => {
+      if (typeof createPopUp !== "function" || !Array.isArray(fixtureData?.features)) return false;
+      window.poiData = fixtureData;
+      const featureById = new Map(fixtureData.features.map((f) => [String(f.id), f]));
+      const feature = fixtureData.features.find((f) => {
+        const cp = String(f?.properties?.cp || "").trim();
+        return cp && featureById.has(cp);
+      });
+      if (!feature) return false;
+      createPopUp(feature);
+      return true;
+    }, TRAILMAP_POI_DATA);
+
+    if (!opened) {
+      console.log("card related group ADA: skip (no POI with closest-parking reference in fixture)");
+      return;
+    }
+
+    await waitForTrailmapDetails(page);
+
+    const hasRelatedGroup = await page.waitForFunction(
+      () => !!document.querySelector(".nc-desktop-card .nc-related-group"),
+      { timeout: 8000 }
+    ).then(() => true).catch(() => false);
+
+    if (!hasRelatedGroup) {
+      console.log("card related group ADA: skip (selected POI rendered no related groups)");
+      return;
+    }
+
+    const adaState = await page.evaluate(() => {
+      const groups = Array.from(document.querySelectorAll(".nc-desktop-card .nc-related-group"));
+      return groups.map((group) => ({
+        role: group.getAttribute("role"),
+        ariaLabel: group.getAttribute("aria-label") || "",
+        labelAriaHidden: group.querySelector(".nc-related-label")?.getAttribute("aria-hidden") || "",
+        metaAriaHidden: group.querySelector(".nc-related-row-meta")?.getAttribute("aria-hidden") || "",
+        buttons: Array.from(group.querySelectorAll(".nc-related-button")).map((btn) => ({
+          hasTitle: btn.hasAttribute("title"),
+          hasAriaLabel: btn.hasAttribute("aria-label")
+        }))
+      }));
+    });
+
+    assert.ok(adaState.length > 0, "At least one .nc-related-group should be present in the card");
+
+    for (const group of adaState) {
+      assert.equal(group.role, "group", "nc-related-group should have role='group'");
+      assert.ok(group.ariaLabel.length > 0, "nc-related-group should have a non-empty aria-label");
+      assert.equal(group.labelAriaHidden, "true", "nc-related-label should have aria-hidden='true'");
+      for (const btn of group.buttons) {
+        assert.equal(btn.hasAriaLabel, true, "nc-related-button should have an aria-label");
+        assert.equal(btn.hasTitle, true, "nc-related-button should have a title attribute");
+      }
+    }
+
+    console.log("card related group ADA: pass");
+  } finally {
+    await page.close();
+  }
+}
+
 async function main() {
   assertHeadersAllowMapillaryViewer();
   const browser = await launchBrowser();
@@ -758,6 +920,9 @@ async function main() {
     await trailmapMapillaryModalFlow(browser);
     await trailmapSearchFlow(browser);
     await trailmapMobileCardFlow(mobileBrowser);
+    await trailmapBrowserHistoryFlow(browser);
+    await trailmapDesktopCardModeFlow(browser);
+    await cardRelatedGroupADAFlow(browser);
     await mapsMenuPageFlow(browser, "https://northaventrail.org/map-points-of-interest", "listing maps menu");
     await mapsMenuPageFlow(browser, "https://northaventrail.org/hawk-lights", "hawk lights maps menu");
     await issueTrackerSearchFlow(browser);
