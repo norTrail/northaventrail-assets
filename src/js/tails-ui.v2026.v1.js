@@ -40,6 +40,45 @@ let isZoomedToHerd = false;
 let lastVisibleZoneCode = null;
 let userHasScrolledTable = false;
 
+function queueMapResize_() {
+  const mapInstance = window.TAILS?.getMap?.();
+  if (!mapInstance || typeof mapInstance.resize !== "function") return;
+
+  window.requestAnimationFrame(() => {
+    mapInstance.resize();
+    window.requestAnimationFrame(() => {
+      mapInstance.resize();
+    });
+  });
+}
+
+function parseEventDate_(value) {
+  if (!value) return null;
+  if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
+
+  const raw = String(value).trim();
+  if (!raw) return null;
+
+  const nativeDate = new Date(raw);
+  if (!Number.isNaN(nativeDate.getTime())) return nativeDate;
+
+  const dayMatch = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!dayMatch) return null;
+
+  const parsed = new Date(Number(dayMatch[1]), Number(dayMatch[2]) - 1, Number(dayMatch[3]));
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function formatEventDateLong_(value) {
+  const parsed = parseEventDate_(value);
+  if (!parsed) return "";
+  return parsed.toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric"
+  });
+}
+
 
 /* ============================================================
    OVERLAY STATE RENDERING
@@ -62,8 +101,12 @@ function updateOverlayState(state) {
       hideMapButtonAndLocation();
       UI.controls.style.display = "none";
 
+      const startDateLabel = formatEventDateLong_(state.startDate);
+
       UI.overlayMessage.innerHTML =
-        `The sheep and goats are coming!<br>${formatLongDate(state.startDate)}`;
+        startDateLabel
+          ? `The sheep and goats are coming!<br>${startDateLabel}`
+          : `The sheep and goats are coming!`;
 
       UI.statusPill.innerText = "Coming";
       UI.statusPill.dataset.state = "coming";
@@ -71,6 +114,8 @@ function updateOverlayState(state) {
 
       UI.overlayImage.src = state.image || "";
       UI.overlayImage.alt = "The sheep and goats are coming to the Northaven Trail.";
+      UI.overlayImage.onload = () => queueMapResize_();
+      UI.overlayImage.onerror = () => queueMapResize_();
       startCountdown(state.startDate);
 
       break;
@@ -85,6 +130,8 @@ function updateOverlayState(state) {
       UI.overlayMessage.innerHTML = "SHHHH!<br>The sheep and goats are sleeping!";
       UI.overlayImage.src = state.image || "";
       UI.overlayImage.alt = "The herd is resting overnight off the trail.";
+      UI.overlayImage.onload = () => queueMapResize_();
+      UI.overlayImage.onerror = () => queueMapResize_();
 
       UI.statusPill.innerText = "Sleeping";
       UI.statusPill.dataset.state = "sleeping";
@@ -113,6 +160,8 @@ function updateOverlayState(state) {
 
       UI.overlayImage.src = state.image || "";
       UI.overlayImage.alt = "The herd has completed grazing on this section of the Northaven Trail.";
+      UI.overlayImage.onload = () => queueMapResize_();
+      UI.overlayImage.onerror = () => queueMapResize_();
 
       UI.statusPill.innerText = "Finished";
       UI.statusPill.dataset.state = "history";
@@ -897,10 +946,12 @@ document.addEventListener("DOMContentLoaded", () => {
 function showBanner() {
   if (UI.overlayBanner) UI.overlayBanner.style.display = "block";
   if (UI.statusPill) UI.statusPill.style.display = "none";
+  queueMapResize_();
 }
 
 function hideBanner() {
-  UI.overlayBanner.style.display = "none";
+  if (UI.overlayBanner) UI.overlayBanner.style.display = "none";
+  queueMapResize_();
 }
 
 function showSheepUI() {
@@ -930,7 +981,11 @@ function hideSheepUI() {
    ============================================================ */
 
 function startCountdown(startDate) {
-  const start = new Date(startDate);
+  const start = parseEventDate_(startDate);
+  if (!start) {
+    if (UI.countdown) UI.countdown.innerText = "";
+    return;
+  }
 
   function tick() {
     const now = new Date();

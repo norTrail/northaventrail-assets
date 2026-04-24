@@ -840,11 +840,11 @@ body.is-map-fullscreen {
   }
 
   #overlay-banner img {
-    float: none;
+    float: right;
     display: block;
-    width: 100%;
-    max-width: 100%;
-    margin: 0 0 12px;
+    width: min(34%, 132px);
+    max-width: 34%;
+    margin: 0 0 8px 12px;
   }
 
   #overlayMessage {
