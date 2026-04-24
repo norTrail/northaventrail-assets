@@ -656,13 +656,27 @@ async function tailsMarkerFlow(browser) {
       assert.ok(pillText.length > 0, "TAILS status pill should have text when not active");
       console.log(`tails status ui (${overlayState}): pass`);
     } else {
-      // Active: verify a sheep marker is present and opens a popup
+      // Active: verify a sheep marker is present and opens the new card UI
       await page.waitForSelector(".sheep-marker", { visible: true, timeout: 30000 });
       await page.click(".sheep-marker");
-      await page.waitForSelector(".mapboxgl-popup", { visible: true, timeout: 15000 });
-      const popupHeading = await page.$eval(".mapboxgl-popup h3", (el) => (el.textContent || "").trim());
-      assert.ok(popupHeading.length > 0, "TAILS popup should have a heading");
-      console.log("tails marker popup: pass");
+      await page.waitForFunction(() => {
+        const sidecarHeading = document.querySelector(".nc-desktop-card:not([hidden]) .nc-name");
+        const sheetHeading = document.querySelector(".nc-sheet .nc-name");
+        return Boolean(
+          (sidecarHeading && sidecarHeading.textContent && sidecarHeading.textContent.trim()) ||
+          (sheetHeading && sheetHeading.textContent && sheetHeading.textContent.trim())
+        );
+      }, { timeout: 15000 });
+
+      const cardHeading = await page.evaluate(() => {
+        const sidecarHeading = document.querySelector(".nc-desktop-card:not([hidden]) .nc-name");
+        if (sidecarHeading) return (sidecarHeading.textContent || "").trim();
+        const sheetHeading = document.querySelector(".nc-sheet .nc-name");
+        return sheetHeading ? (sheetHeading.textContent || "").trim() : "";
+      });
+
+      assert.ok(cardHeading.length > 0, "TAILS card should have a heading");
+      console.log("tails marker card: pass");
     }
   } finally {
     await page.close();

@@ -200,35 +200,7 @@ function updateMarker(herdCode, herdObj, map) {
     e.stopPropagation();
 
     closeAllPopups();
-    el.setAttribute("aria-pressed", "true");
-    el.setAttribute("aria-expanded", "true");
-
-    const shareText = trailSectionShort
-      ? `${herdName} is currently grazing at ${trailSectionShort}`
-      : `${herdName} is out grazing on the Northaven Trail`;
-
-    const popupHTML = `
-    <h3>${escapeHtml(herdName)}</h3>
-    <p>${escapeHtml(sheepInfo)}</p>
-    ${buildPopupNavIcons(lat, lng, shareText)}
-  `;
-    const popup = new mapboxgl.Popup({ offset: [0, -76], focusAfterOpen: false })
-      .setLngLat([lng, lat])
-      .setHTML(popupHTML)
-      .addTo(map);
-    wirePopupShare(popup);
-    window.NorthavenUtils?.focusFirstPopupElement?.(popup);
-    openPopups.push(popup);
-    popup.on("close", () => {
-      el.setAttribute("aria-pressed", "false"); // reset toggle state when popup closes
-      el.setAttribute("aria-expanded", "false");
-      if (window.NorthavenUtils?.shouldFocusPopupForA11y?.()) {
-        el.focus();                              // return focus to the marker button for keyboard/screen-reader users
-      }
-      const i = openPopups.indexOf(popup);
-      if (i !== -1) openPopups.splice(i, 1);
-    });
-    currentFullPopup = popup;
+    window.TailsCards?.showHerd?.(feature, el, map);
   });
 
   herdMarkers[herdCode] = new mapboxgl.Marker({
@@ -377,53 +349,13 @@ function openNoMowZonePopup_(zoneCode, markerEl) {
     [props.centerLng, props.centerLat];
   if (!center) return;
 
-  const [lng, lat] = center;
-  const name = (props.zoneName || "No-Mow Zone")
-    .replace(/<[^>]*>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-  const desc = String(props.description || "");
-
   closeAllPopups();
   selectedZoneCode = zoneCode;
-
-  const noMowShareText = desc
-    ? `${name} — ${desc}`
-    : `${name} on the Northaven Trail`;
-
-  const popupHTML = `
-        <div class="popup-container">
-          <h3>${escapeHtml(name)}</h3>
-          <p>${escapeHtml(desc)}</p>
-          ${buildPopupNavIcons(lat, lng, noMowShareText)}
-        </div>
-      `;
-
-  const popup = new mapboxgl.Popup({
-    closeButton: true,
-    closeOnClick: true,
-    focusAfterOpen: false,
-    offset: 15,
-    className: props.popupClass || "custom-popup-brown"
-  })
-    .setLngLat(center)
-    .setHTML(popupHTML)
-    .addTo(map);
-
-  markerEl.setAttribute("aria-expanded", "true");
-  wirePopupShare(popup);
-  window.NorthavenUtils?.focusFirstPopupElement?.(popup);
-  popup.on("close", () => {
-    selectedZoneCode = null;
-    markerEl.setAttribute("aria-expanded", "false");
-    const i = openPopups.indexOf(popup);
-    if (i !== -1) openPopups.splice(i, 1);
-    pruneOpenPopups();
+  window.TailsCards?.showNoMowZone?.(obj.feature, markerEl, map, {
+    onClose: () => {
+      selectedZoneCode = null;
+    }
   });
-
-  pruneOpenPopups();
-  openPopups.push(popup);
-  currentFullPopup = popup;
 }
 
 function attachNoMowMarkerDelegationOnce() {
@@ -1190,6 +1122,7 @@ function closeAllPopups() {
     while (openPopups.length) {
       openPopups.pop().remove();
     }
+    window.TailsCards?.hide?.();
     selectedZoneCode = null;
     currentFullPopup = null;
   } catch (error) {
