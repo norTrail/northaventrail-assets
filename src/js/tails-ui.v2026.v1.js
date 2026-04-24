@@ -68,16 +68,8 @@ function syncMapMarkerPositions_() {
 }
 
 function queueMapResize_() {
-  const mapInstance = window.TAILS?.getMap?.();
-  if (!mapInstance || typeof mapInstance.resize !== "function") return;
-
-  window.requestAnimationFrame(() => {
-    mapInstance.resize();
-    window.requestAnimationFrame(() => {
-      mapInstance.resize();
-      syncMapMarkerPositions_();
-    });
-  });
+  // Temporarily disabled while we isolate marker drift tied to overlay/banner
+  // reflow. If this proves unrelated, restore the resize + sync path.
 }
 
 function parseEventDate_(value) {
