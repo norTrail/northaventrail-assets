@@ -227,6 +227,7 @@
     activeMarkerEl.classList.remove('is-active');
     activeMarkerEl.setAttribute('aria-pressed', 'false');
     activeMarkerEl.setAttribute('aria-expanded', 'false');
+    activeMarkerEl.__mapboxMarker?.setOffset([0, 0]);
     if (restoreFocus && window.NorthavenUtils?.shouldFocusPopupForA11y?.()) {
       try { activeMarkerEl.focus({ preventScroll: true }); } catch (_err) { }
     }
@@ -249,6 +250,8 @@
     markerEl.classList.add('is-active');
     markerEl.setAttribute('aria-pressed', 'true');
     markerEl.setAttribute('aria-expanded', 'true');
+    // Shift up half the active element height (56px) so the pin tip sits on the location
+    markerEl.__mapboxMarker?.setOffset([0, -28]);
 
     const eventCardConfig = {
       key: config.key,

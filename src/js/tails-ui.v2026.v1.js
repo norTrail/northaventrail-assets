@@ -571,6 +571,7 @@ function updateNoMowLayers(map, geojson, force = false) {
       .setLngLat(center)
       .addTo(map);
     el.removeAttribute("role"); // MapboxGL may inject role="img"; remove it — <button> has implicit role
+    el.__mapboxMarker = marker; // stash so cards layer can call setOffset on activate/deactivate
 
     noMowZoneMarkers[code] = { marker, element: el, feature };
   });
