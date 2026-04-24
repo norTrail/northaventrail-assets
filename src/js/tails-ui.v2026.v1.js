@@ -544,7 +544,8 @@ function updateNoMowLayers(map, geojson, force = false) {
     if (!feature?.geometry) return;
 
     const props = feature.properties || {};
-    const center = preferredZoneCenter_(feature);
+    const center =
+      props.center || featureCenter(feature.geometry);
 
     if (!center) return;
 

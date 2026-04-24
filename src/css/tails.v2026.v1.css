@@ -295,7 +295,6 @@ body {
 
 /* No-mow zone markers (circular emoji style) */
 .no-mow-marker {
-  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -303,6 +302,7 @@ body {
   z-index: 2;
   background: transparent;
   border: none;
+  transition: transform 120ms ease;
   /* Minimum 48×48px touch target (WCAG 2.1 AA updated) */
   min-width: 48px;
   min-height: 48px;
