@@ -212,6 +212,11 @@ function initMap(container) {
       this._container.innerHTML = `
         <p class="nomow-legend-title">Grazing Area Key</p>
         <div class="legend-item">
+          <span class="legend-swatch" style="background:rgb(150,75,0)" aria-hidden="true"></span>
+          <span class="legend-emoji" aria-hidden="true">🌱</span>
+          <span class="legend-label">Grazed / finished</span>
+        </div>
+        <div class="legend-item">
           <span class="legend-swatch" style="background:rgb(95,160,219)" aria-hidden="true"></span>
           <span class="legend-emoji" aria-hidden="true">🐐</span>
           <span class="legend-label">Grazing now</span>
@@ -220,11 +225,6 @@ function initMap(container) {
           <span class="legend-swatch" style="background:rgb(102,187,102)" aria-hidden="true"></span>
           <span class="legend-emoji" aria-hidden="true">🌼</span>
           <span class="legend-label">Coming up</span>
-        </div>
-        <div class="legend-item">
-          <span class="legend-swatch" style="background:rgb(150,75,0)" aria-hidden="true"></span>
-          <span class="legend-emoji" aria-hidden="true">🌱</span>
-          <span class="legend-label">Grazed / finished</span>
         </div>
       `;
       return this._container;
