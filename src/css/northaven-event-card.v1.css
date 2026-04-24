@@ -601,6 +601,8 @@ body.nc-mapillary-open {
     gap: 0;
     z-index: 61;
     pointer-events: auto;
+    overflow: visible;
+    transition: width 220ms cubic-bezier(0.32, 0.72, 0, 1), max-width 220ms cubic-bezier(0.32, 0.72, 0, 1);
   }
 
   .nc-desktop-card[hidden] {
@@ -669,8 +671,30 @@ body.nc-mapillary-open {
     pointer-events: none;
   }
 
+  .nc-desktop-card.is-collapsed {
+    width: var(--nc-sidecar-handle-width);
+    max-width: var(--nc-sidecar-handle-width);
+  }
+
   .nc-desktop-card.is-collapsed .nc-desktop-card__chevron {
     transform: rotate(180deg);
+  }
+
+  #hamburger,
+  #controls,
+  #map .mapboxgl-ctrl-top-left,
+  #map .mapboxgl-ctrl-bottom-left {
+    transition: left 220ms cubic-bezier(0.32, 0.72, 0, 1), margin-left 220ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  #mapView.nc-sidecar-open:not(.nc-sidecar-collapsed) #hamburger,
+  #mapView.nc-sidecar-open:not(.nc-sidecar-collapsed) #controls {
+    left: calc(var(--nc-sidecar-width) + 28px);
+  }
+
+  #map.nc-sidecar-open:not(.nc-sidecar-collapsed) .mapboxgl-ctrl-top-left,
+  #map.nc-sidecar-open:not(.nc-sidecar-collapsed) .mapboxgl-ctrl-bottom-left {
+    margin-left: calc(var(--nc-sidecar-width) + 16px);
   }
 }
 

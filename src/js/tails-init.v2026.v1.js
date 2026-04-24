@@ -207,10 +207,10 @@ function initMap(container) {
       this._container = document.createElement("div");
       this._container.className = "mapboxgl-ctrl nomow-legend-ctrl";
       this._container.setAttribute("role", "region");
-      this._container.setAttribute("aria-label", "No-mow zone map key");
+      this._container.setAttribute("aria-label", "Grazing area map key");
 
       this._container.innerHTML = `
-        <p class="nomow-legend-title">No-Mow Key</p>
+        <p class="nomow-legend-title">Grazing Area Key</p>
         <div class="legend-item">
           <span class="legend-swatch" style="background:rgb(95,160,219)" aria-hidden="true"></span>
           <span class="legend-emoji" aria-hidden="true">🐐</span>

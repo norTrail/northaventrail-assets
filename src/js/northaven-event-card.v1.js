@@ -892,10 +892,11 @@
     const canvas = map.getCanvas();
     if (!canvas) return;
 
-    const minVisibleX = Math.min(canvas.clientWidth - 64, DESKTOP_CARD_WIDTH + DESKTOP_CARD_GAP + 16);
-    if (point.x >= minVisibleX) return;
+    const visibleLeft = Math.min(canvas.clientWidth - 96, DESKTOP_CARD_WIDTH + DESKTOP_CARD_GAP + 16);
+    const visibleWidth = Math.max(96, canvas.clientWidth - visibleLeft - 24);
+    const targetX = visibleLeft + (visibleWidth / 2);
+    if (Math.abs(point.x - targetX) < 20) return;
 
-    const targetX = minVisibleX;
     const offsetX = targetX - (canvas.clientWidth / 2);
     const clampedY = Math.max(72, Math.min(canvas.clientHeight - 72, point.y));
     const offsetY = clampedY - (canvas.clientHeight / 2);

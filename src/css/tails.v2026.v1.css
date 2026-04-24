@@ -72,7 +72,7 @@ body {
 #mapView {
   position: relative;
   width: 100%;
-  height: 75vh;
+  height: 600px;
   overflow: hidden;
   touch-action: pan-y;        /* allow 1-finger page scroll; JS handles 2-finger pan/pinch */
 }
@@ -81,7 +81,7 @@ body {
   position: absolute;
   inset: 0;
   width: 100%;
-  height: 90%;
+  height: 100%;
 }
 
 .mapboxgl-control-container {
