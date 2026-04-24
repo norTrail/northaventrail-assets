@@ -587,7 +587,7 @@ body.nc-mapillary-open {
   #mapView,
   #map {
     --nc-sidecar-width: 400px;
-    --nc-sidecar-handle-width: 28px;
+    --nc-sidecar-handle-width: 9px;
     --nc-sidecar-inset: 12px;
   }
 
@@ -652,6 +652,15 @@ body.nc-mapillary-open {
     cursor: pointer;
     box-shadow: 4px 10px 20px rgba(0, 0, 0, 0.12);
     transition: background 150ms ease;
+    position: relative;
+  }
+
+  .nc-desktop-card__toggle::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    left: -18px;
+    right: -18px;
   }
 
   .nc-desktop-card__toggle:hover {
@@ -700,12 +709,12 @@ body.nc-mapillary-open {
 
   #mapView.nc-sidecar-open:not(.nc-sidecar-collapsed) #hamburger,
   #mapView.nc-sidecar-open:not(.nc-sidecar-collapsed) #controls {
-    left: calc(var(--nc-sidecar-width) + 28px);
+    left: calc(var(--nc-sidecar-width) + var(--nc-sidecar-handle-width) + 28px);
   }
 
   #map.nc-sidecar-open:not(.nc-sidecar-collapsed) .mapboxgl-ctrl-top-left,
   #map.nc-sidecar-open:not(.nc-sidecar-collapsed) .mapboxgl-ctrl-bottom-left {
-    margin-left: calc(var(--nc-sidecar-width) + 16px);
+    margin-left: calc(var(--nc-sidecar-width) + var(--nc-sidecar-handle-width) + 16px);
   }
 }
 
