@@ -75,6 +75,29 @@
   color: #7a5f2d;
 }
 
+.tc-action-emoji {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.nc-action--primary {
+  background: #108452;
+  color: #fff;
+}
+
+.nc-action--primary:hover {
+  background: #0d6f46;
+}
+
+.tc-card-footnote {
+  margin-top: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #7a5f2d;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
 .tc-location-line {
   font-size: 14px;
   font-weight: 600;

@@ -672,8 +672,13 @@ body.nc-mapillary-open {
   }
 
   .nc-desktop-card.is-collapsed {
+    margin-left: calc(-1 * var(--nc-sidecar-inset));
     width: var(--nc-sidecar-handle-width);
     max-width: var(--nc-sidecar-handle-width);
+  }
+
+  .nc-desktop-card:not(.is-collapsed) {
+    margin-left: 0;
   }
 
   .nc-desktop-card.is-collapsed .nc-desktop-card__chevron {

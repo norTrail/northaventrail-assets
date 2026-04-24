@@ -213,15 +213,16 @@ body {
    Overlay banner
    ---------------------------- */
 #overlay-banner {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  right: 10px;
+  position: relative;
+  display: block;
+  width: 100%;
+  margin: 0 0 12px;
   padding: 16px;
   background: #e6f0ff;
   border-radius: 16px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   z-index: 4;
+  overflow: hidden;
 }
 
 #overlay-banner img {
@@ -241,6 +242,12 @@ body {
 #countdown {
   font-family: 'Inter', sans-serif;
   font-size: 1.6em;
+}
+
+#overlay-banner::after {
+  content: "";
+  display: block;
+  clear: both;
 }
 
 /* ----------------------------
@@ -271,6 +278,7 @@ body {
 
 /* No-mow zone markers (circular emoji style) */
 .no-mow-marker {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -300,6 +308,23 @@ body {
 .no-mow-marker:focus-visible {
   outline: 3px solid #1a73e8;
   outline-offset: 3px;
+}
+
+.no-mow-marker.is-active {
+  width: 48px;
+  height: 56px;
+  min-width: 48px;
+  min-height: 56px;
+  background: url('https://assets.northaventrail.org/img/redmarker.png') center bottom / 30px 48px no-repeat;
+}
+
+.no-mow-marker.is-active .marker-inner {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 18px;
+  text-shadow: none;
 }
 
 /* Pin-style herd marker */
@@ -336,6 +361,16 @@ body {
 
 .sheep-marker.is-hover {
   transform: scale(1.15) translateY(-3px);
+}
+
+.sheep-marker.is-active {
+  background: url('https://assets.northaventrail.org/img/redmarker.png') center bottom / contain no-repeat;
+  animation: none;
+  filter: drop-shadow(0 6px 10px rgba(0,0,0,0.28));
+}
+
+.sheep-marker.is-active .sheep-pin-svg {
+  opacity: 0;
 }
 
 .sheep-marker:focus {
@@ -721,6 +756,16 @@ body.is-map-fullscreen {
   box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
+#tails-app.is-fullscreen #overlay-banner {
+  position: fixed;
+  top: calc(var(--safe-top, 0px) + 56px);
+  left: 12px;
+  right: 12px;
+  width: auto;
+  margin: 0;
+  z-index: 1000000;
+}
+
 
 
 /* ----------------------------
@@ -789,6 +834,27 @@ body.is-map-fullscreen {
 }
 
 @media (max-width: 767px) {
+  #overlay-banner {
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+
+  #overlay-banner img {
+    float: none;
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 0 12px;
+  }
+
+  #overlayMessage {
+    font-size: 1.6em;
+  }
+
+  #countdown {
+    font-size: 1.2em;
+  }
+
   /* Pill links */
   .tl-pill-link {
     width: 100%;

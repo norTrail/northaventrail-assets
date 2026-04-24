@@ -7,6 +7,7 @@
   const GOOGLE_DIR_URL = 'https://www.google.com/maps/dir/?api=1&destination=';
   const GOOGLE_MAP_URL = 'https://www.google.com/maps?q=';
   const APPLE_MAP_URL = 'https://maps.apple.com/?z=20&q=';
+  const DONATE_URL = 'https://northaventrail.org/donate';
 
   let activeMarkerEl = null;
   let activeKey = null;
@@ -69,7 +70,6 @@
           '<img class="nc-hero-img" alt="Street-level photo" title="' + escAttr(heroTitle) + '">' +
           '<span class="nc-hero-cta" aria-hidden="true">' + esc(heroTitle) + '</span>' +
         '</a>' +
-        '<span class="nc-hero-badge">Street View</span>' +
       '</div>';
   }
 
@@ -95,26 +95,35 @@
   }
 
   function buildMapActions(lat, lng, shareTitle, shareText) {
-    if (lat == null || lng == null) return [];
-    const mapQuery = lat + ',' + lng;
-    const googleHref = GOOGLE_DIR_URL + mapQuery;
-    const appleHref = APPLE_MAP_URL + mapQuery;
     const shareUrl = location.href;
 
     const actions = [
-      '<a class="nc-action" href="' + escAttr(googleHref) + '" target="_blank" rel="noopener noreferrer" aria-label="Get directions in Google Maps" title="Get directions in Google Maps">' +
-        '<svg class="nc-action-icon" aria-hidden="true"><use href="#google-logo"></use></svg>' +
-        '<span class="nc-action-label">Directions</span>' +
+      '<a class="nc-action nc-action--primary" href="' + escAttr(DONATE_URL) + '" target="_blank" rel="noopener noreferrer" aria-label="Donate to Friends of Northaven Trail" title="Donate to Friends of Northaven Trail">' +
+        '<span class="nc-action-icon tc-action-emoji" aria-hidden="true">❤</span>' +
+        '<span class="nc-action-label">Donate</span>' +
       '</a>'
     ];
 
-    if (isApple()) {
+    if (lat != null && lng != null) {
+      const mapQuery = lat + ',' + lng;
+      const googleHref = GOOGLE_DIR_URL + mapQuery;
+      const appleHref = APPLE_MAP_URL + mapQuery;
+
       actions.push(
-        '<a class="nc-action" href="' + escAttr(appleHref) + '" target="_blank" rel="noopener noreferrer" aria-label="Open in Apple Maps" title="Open in Apple Maps">' +
-          '<svg class="nc-action-icon" aria-hidden="true"><use href="#apple-logo"></use></svg>' +
-          '<span class="nc-action-label">Apple Maps</span>' +
-        '</a>'
+        '<a class="nc-action" href="' + escAttr(googleHref) + '" target="_blank" rel="noopener noreferrer" aria-label="Get directions in Google Maps" title="Get directions in Google Maps">' +
+        '<svg class="nc-action-icon" aria-hidden="true"><use href="#google-logo"></use></svg>' +
+        '<span class="nc-action-label">Directions</span>' +
+      '</a>'
       );
+
+      if (isApple()) {
+        actions.push(
+          '<a class="nc-action" href="' + escAttr(appleHref) + '" target="_blank" rel="noopener noreferrer" aria-label="Open in Apple Maps" title="Open in Apple Maps">' +
+            '<svg class="nc-action-icon" aria-hidden="true"><use href="#apple-logo"></use></svg>' +
+            '<span class="nc-action-label">Apple Maps</span>' +
+          '</a>'
+        );
+      }
     }
 
     actions.push(
@@ -130,12 +139,10 @@
   function renderStatusMeta(status, icon, dateText, zoneCode) {
     const safeStatus = String(status || '').trim();
     const safeDate = String(dateText || '').trim();
-    const code = String(zoneCode || '').trim();
     return '' +
       '<div class="tc-meta-row">' +
         (safeStatus ? '<span class="tc-status-pill tc-status-pill--' + escAttr(safeStatus.toLowerCase().replace(/\s+/g, '-')) + '">' + (icon ? '<span class="tc-status-pill__icon" aria-hidden="true">' + esc(icon) + '</span>' : '') + '<span>' + esc(safeStatus) + '</span></span>' : '') +
         (safeDate ? '<span class="tc-date-pill">' + esc(safeDate) + '</span>' : '') +
-        (code ? '<span class="tc-code-pill">' + esc(code) + '</span>' : '') +
       '</div>';
   }
 
@@ -172,6 +179,7 @@
           '<div class="nc-category-row"><span class="nc-badge"><span class="nc-badge-label">No-Mow Zone</span></span></div>' +
           (desc ? '<div class="nc-desc">' + desc + '</div>' : '') +
           (hasCoords ? '<a class="nc-link" href="' + escAttr(GOOGLE_MAP_URL + lat + ',' + lng) + '" target="_blank" rel="noopener noreferrer">Open location in Google Maps</a>' : '') +
+          (p.zoneCode ? '<div class="tc-card-footnote">Grazing area ' + esc(p.zoneCode) + '</div>' : '') +
         '</div>' +
       '</div>';
   }
@@ -216,6 +224,7 @@
 
   function clearActiveMarker(restoreFocus) {
     if (!activeMarkerEl) return;
+    activeMarkerEl.classList.remove('is-active');
     activeMarkerEl.setAttribute('aria-pressed', 'false');
     activeMarkerEl.setAttribute('aria-expanded', 'false');
     if (restoreFocus && window.NorthavenUtils?.shouldFocusPopupForA11y?.()) {
@@ -237,6 +246,7 @@
 
     activeMarkerEl = markerEl;
     activeKey = config.key;
+    markerEl.classList.add('is-active');
     markerEl.setAttribute('aria-pressed', 'true');
     markerEl.setAttribute('aria-expanded', 'true');
 

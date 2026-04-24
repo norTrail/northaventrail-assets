@@ -857,8 +857,28 @@
       if (_lightbox) return;
       if (!_opts) return;
       e.preventDefault();
-      hide();
+        hide();
     }, true);
+
+    shell.addEventListener('wheel', function (e) {
+      const body = shell.querySelector('.nc-desktop-card__body');
+      if (!body || shell.hidden) return;
+
+      const deltaY = Number(e.deltaY) || 0;
+      if (!deltaY) {
+        e.preventDefault();
+        return;
+      }
+
+      const maxScroll = body.scrollHeight - body.clientHeight;
+      if (maxScroll <= 0) {
+        e.preventDefault();
+        return;
+      }
+
+      body.scrollTop += deltaY;
+      e.preventDefault();
+    }, { passive: false });
 
     host.appendChild(shell);
     return shell;
