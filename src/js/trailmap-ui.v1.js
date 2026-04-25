@@ -116,7 +116,7 @@ function wireMapEventsAfterMarkers_() {
     }
 
     // popup visibility restore/remove
-    // slim schema: id is on the feature itself
+
     if (popupFeature?.id) {
       const found = addPopupBack();
       if (!found) forceClosePopups();
@@ -129,7 +129,7 @@ function wireMapEventsAfterMarkers_() {
 
     addPopupBack();
 
-    // slim schema: id is on the feature itself
+
     if (flyToFeature?.id) {
       let zoomLevel = map.getZoom();
       if (zoomLevel > 22) {
@@ -236,10 +236,7 @@ function onMapClick_(event) {
   // flyToMarker expects a GeoJSON feature with .geometry.coordinates
   // Rendered features usually have it, but if yours doesn't, resolve from poiData by id.
   const clickedId = String(clickedPoint?.id ?? "");
-  const fullFeature =
-    clickedId && Array.isArray(poiData?.features)
-      ? poiData.features.find((f) => String(f.id) === clickedId) || clickedPoint
-      : clickedPoint;
+  const fullFeature = clickedId ? getFeatureById_(clickedId) || clickedPoint : clickedPoint;
 
   flyToMarker(fullFeature);
   updatePageDetails(fullFeature);
@@ -259,7 +256,7 @@ function onMapClick_(event) {
 }
 
 /* ============================================================
-   Custome Search
+   Custom Search
    ============================================================ */
 
 let SEARCH_READY = false;
@@ -630,13 +627,14 @@ const isMobile = () => window.NorthavenUtils.isMobile();
    Your existing functions (kept) — only minor let/const cleanup
    ============================================================ */
 
-// timer event for MapBox bug - rotateEnd firing all the time
 function updateBearing() {
   updatePageDetails();
 }
 
 // Add popups back when zooming in to the map and the icon appears
 function addPopupBack() {
+  if (!popupFeature?.id) return false;
+
   let found = false;
 
   if (!map.getLayer("trail_markers")) return false;  // prevent mapbox errors
@@ -705,7 +703,6 @@ function flyToMarker(currentFeature, zoomLevel, coords, options = {}) {
   scheduleFlyToPopupFallback_(currentFeature);
 }
 
-// removed redundant SVG logic — now in NorthavenUtils
 function getPropertyDetails(prop, feature = null, payload = poiData) {
   if (!prop) return {};
 
@@ -754,57 +751,6 @@ function getPropertyDetails(prop, feature = null, payload = poiData) {
   };
 }
 
-function getCategoryDefaults_(category, feature = null) {
-  switch (category) {
-    case "bicycle-15":
-      return {
-        d: "Basic tools for repairing your bike including a pump for your tires.",
-        icon: "https://assets.northaventrail.org/img/Bike_Icon.avif"
-      };
-
-    case "information":
-      return {
-        d: "Information about the trail and upcoming events are posted here.",
-        icon: "https://assets.northaventrail.org/img/Information_Icon.avif"
-      };
-
-    case "parking":
-      return {
-        // leave d blank if you don't want boilerplate
-        icon: "https://assets.northaventrail.org/img/Parking_Icon.avif"
-      };
-
-    case "water":
-      return {
-        d: "A water fountain for humans and another one for dogs.",
-        icon: "https://assets.northaventrail.org/img/Drinking_Icon.avif",
-        icon2: "https://assets.northaventrail.org/img/Pet_Drinking_Icon.avif"
-      };
-
-    case "garden":
-      const adoptAGardenPath = "/adoptgarden";
-      const isOnGardenPage =
-        window.location.pathname.replace(/\/$/, "") === adoptAGardenPath;
-
-      const additionalText = !isOnGardenPage
-        ? `Sign up <a class="map-popup-link" target="_blank" href="https://northaventrail.org/adoptgarden">here</a>.`
-        : "Sign up below.";
-      return {
-        additionalText: additionalText,
-        icon: "https://drive.google.com/thumbnail?id=1UwacGgwVwILtZZSJj35-KYmKnSA5jcut&sz=w400"
-      }
-
-    // Add more categories as you need:
-    // case "waste-basket":
-    // case "garden":
-    // case "mural":
-    // case "bridge":
-    // case "traffic-light":
-
-    default:
-      return {};
-  }
-}
 
 function createPopUp(currentFeature) {
   forceClosePopups();
@@ -812,10 +758,7 @@ function createPopUp(currentFeature) {
 
   // Resolve to full feature (rendered features sometimes lack full data)
   const idStr = String(currentFeature?.id ?? "");
-  const fullFeature =
-    idStr && Array.isArray(poiData?.features)
-      ? poiData.features.find((f) => String(f.id) === idStr) || currentFeature
-      : currentFeature;
+  const fullFeature = idStr ? getFeatureById_(idStr) || currentFeature : currentFeature;
 
   const coords = fullFeature?.geometry?.coordinates;
   if (!Array.isArray(coords) || coords.length !== 2) return;
@@ -997,7 +940,7 @@ function updatePageDetails(object) {
 
   // Helpers: build map links from coords
   const setMapLinksFromCoords_ = (lng, lat) => {
-    if (!isFiniteNumber_(lng) || !isFiniteNumber_(lat)) return;
+    if (!Number.isFinite(Number(lng)) || !Number.isFinite(Number(lat))) return;
 
     const coords = `${lat},${lng}`; // maps expect lat,lng
     const googleBtn = document.getElementById("googleMapsButton");
@@ -1084,19 +1027,14 @@ function updatePageDetails(object) {
   }
 }
 
-function isFiniteNumber_(n) {
-  const x = Number(n);
-  return Number.isFinite(x);
-}
-
 /* ------------------------------------------------------------ */
 
 function buildURL(urlParams = {}, makeShort = false) {
   let url = `${location.origin}${location.pathname}`;
 
   if (typeof DONT_UPDATE_URL !== "undefined" && DONT_UPDATE_URL) {
-    return url
-  };
+    return url;
+  }
 
 
   let joiner = "?";
@@ -1119,26 +1057,6 @@ function buildURL(urlParams = {}, makeShort = false) {
       joiner = "&";
     }
 
-    const bearing = map.getBearing().toFixed(URL_FIXED_NUMBER);
-    if (parseFloat(bearing) !== DEFAULT_BEARING) {
-      url += `${joiner}${BEARING_PARAM}=${bearing}`;
-      joiner = "&";
-    }
-
-    const pitch = map.getPitch().toFixed(URL_FIXED_NUMBER);
-    if (parseFloat(pitch) !== DEFAULT_PITCH) {
-      url += `${joiner}${PITCH_PARAM}=${pitch}`;
-      joiner = "&";
-    }
-
-    const sat = map.getLayer("mapbox-satellite")
-      ? map.getLayoutProperty("mapbox-satellite", "visibility")
-      : DEFAULT_SATELLITE;
-    if (sat !== DEFAULT_SATELLITE) {
-      url += `${joiner}${SATELLITE_PARAM}=${sat}`;
-      joiner = "&";
-    }
-
     if (!resetCoordinates) {
       const c = map.getCenter();
       const coords = [c.lng.toFixed(URL_FIXED_NUMBER), c.lat.toFixed(URL_FIXED_NUMBER)];
@@ -1151,28 +1069,28 @@ function buildURL(urlParams = {}, makeShort = false) {
         joiner = "&";
       }
     }
-  } else {
-    // Still write bearing/pitch/satellite even for system moves — these are map
-    // style preferences, not position, so they're safe to round-trip.
-    const bearing = map.getBearing().toFixed(URL_FIXED_NUMBER);
-    if (parseFloat(bearing) !== DEFAULT_BEARING) {
-      url += `${joiner}${BEARING_PARAM}=${bearing}`;
-      joiner = "&";
-    }
+  }
 
-    const pitch = map.getPitch().toFixed(URL_FIXED_NUMBER);
-    if (parseFloat(pitch) !== DEFAULT_PITCH) {
-      url += `${joiner}${PITCH_PARAM}=${pitch}`;
-      joiner = "&";
-    }
+  // Always write bearing/pitch/satellite — these are map style preferences,
+  // not position, so they're safe to round-trip regardless of whether the user moved.
+  const bearing = map.getBearing().toFixed(URL_FIXED_NUMBER);
+  if (parseFloat(bearing) !== DEFAULT_BEARING) {
+    url += `${joiner}${BEARING_PARAM}=${bearing}`;
+    joiner = "&";
+  }
 
-    const sat = map.getLayer("mapbox-satellite")
-      ? map.getLayoutProperty("mapbox-satellite", "visibility")
-      : DEFAULT_SATELLITE;
-    if (sat !== DEFAULT_SATELLITE) {
-      url += `${joiner}${SATELLITE_PARAM}=${sat}`;
-      joiner = "&";
-    }
+  const pitch = map.getPitch().toFixed(URL_FIXED_NUMBER);
+  if (parseFloat(pitch) !== DEFAULT_PITCH) {
+    url += `${joiner}${PITCH_PARAM}=${pitch}`;
+    joiner = "&";
+  }
+
+  const sat = map.getLayer("mapbox-satellite")
+    ? map.getLayoutProperty("mapbox-satellite", "visibility")
+    : DEFAULT_SATELLITE;
+  if (sat !== DEFAULT_SATELLITE) {
+    url += `${joiner}${SATELLITE_PARAM}=${sat}`;
+    joiner = "&";
   }
 
   if (dataFilter) {
@@ -1250,7 +1168,6 @@ window.initTrailmapSearch = function initTrailmapSearch(map) {
   const inputDiv = document.getElementById("locationListDiv");
   const input = document.getElementById("locationListInput");
 
-  // NEW: custom dropdown panel (replaces <datalist>)
   const listbox = document.getElementById("locationListbox");
 
   // If the page doesn't have the search HTML, just no-op.
@@ -1329,8 +1246,6 @@ window.initTrailmapSearch = function initTrailmapSearch(map) {
     map.addControl(new SearchCustomControl(), "top-left");
   }
 
-  // NEW: wire the custom search behavior (replaces datalist-based wiring)
-  // This should be idempotent (your function should guard against double-wiring).
   if (typeof wireCustomSearchUI_ === "function") {
     wireCustomSearchUI_();
   } else {
@@ -1536,7 +1451,6 @@ function goToElement(idOverride = null, options = {}) {
     for (let i = 0; i < features.length; i++) {
       const feature = features[i];
 
-      // ✅ slim schema: id is on feature.id
       if (String(feature?.id) === targetStr) {
         userMovedMap_ = false;
         const zoom = params?.[ZOOM_PARM] ?? DEFAULT_FLYTO_ZOOM;
@@ -1568,21 +1482,15 @@ function setShareButton(title, text, url) {
 function fitBoundsSilently(bounds, options = {}) {
   suppressMapEvents = true;
 
-  map.fitBounds(bounds, {
-    //duration: 0,   // no animation (optional)
-    ...options
-  });
+  map.fitBounds(bounds, { ...options });
 
-  // set defaults derived from bounds-based init
-  DEFAULT_ZOOM = Number(map.getZoom().toFixed(URL_FIXED_NUMBER));
-  const latLng = map.getCenter();
-  DEFAULT_COORDS = [
-    Number(latLng.lng.toFixed(URL_FIXED_NUMBER)),
-    Number(latLng.lat.toFixed(URL_FIXED_NUMBER))
-  ];
-
-  // clear flag after the map settles
   map.once("idle", () => {
+    DEFAULT_ZOOM = Number(map.getZoom().toFixed(URL_FIXED_NUMBER));
+    const latLng = map.getCenter();
+    DEFAULT_COORDS = [
+      Number(latLng.lng.toFixed(URL_FIXED_NUMBER)),
+      Number(latLng.lat.toFixed(URL_FIXED_NUMBER))
+    ];
     suppressMapEvents = false;
   });
 }
@@ -1613,20 +1521,6 @@ function normalizeOnlyShowListLabels_(value) {
 
   return null;
 }
-// Backwards-compatible alias (older code called normalizeOnlyShowList)
-function normalizeOnlyShowList(value) {
-  return normalizeOnlyShowListLabels_(value);
-}
-
-function isWhereToParkPath_() {
-  return window.location.pathname.replace(/\/$/, "") === "/where-to-park";
-}
-
-function shouldShowMonarchWay_() {
-  return (typeof SHOW_MONARCH_WAY !== "undefined" && !!SHOW_MONARCH_WAY) || isWhereToParkPath_();
-}
-
-
 function buildAllowedTypeKeySetByLabels_(data, labelSetLower) {
   const out = new Set();
   const types = data?.defs?.types || {};
@@ -1767,7 +1661,7 @@ function ensureLegendExists(options = {}) {
     { iconName: "expansion_trail", label: "Future Expansions", iconClass: "legend_future_expansions", clickable: false }
   ];
 
-  const showMonarch = shouldShowMonarchWay_();
+  const showMonarch = window.shouldShowMonarchWay_();
 
   const ALWAYS_ITEMS = [
     ...BASE_ALWAYS_ITEMS,
@@ -1858,7 +1752,7 @@ class LegendControl {
 
     const onlyShowList =
       (typeof ONLY_SHOW_LIST !== "undefined" && ONLY_SHOW_LIST !== null)
-        ? normalizeOnlyShowList(ONLY_SHOW_LIST)
+        ? normalizeOnlyShowListLabels_(ONLY_SHOW_LIST)
         : null;
 
     const legendEl = ensureLegendExists({
@@ -2025,7 +1919,7 @@ function closeLargeImage() {
 
 // Try to deal with the map getting hidden when inactive
 document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "visible") {
+  if (document.visibilityState === "visible" && map) {
     try {
       map.resize();
       map.triggerRepaint();

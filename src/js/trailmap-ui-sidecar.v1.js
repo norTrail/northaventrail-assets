@@ -16,8 +16,6 @@
   const DESKTOP_SIDECAR_WIDTH_FALLBACK = 400;
   const DESKTOP_SIDECAR_INSET_FALLBACK = 12;
   let activeMarkerBounceFrame = null;
-  let featureByIdCache_ = null;
-  let featureByIdCacheSource_ = null;
 
   function mapCenterMatchesCoords_(coords) {
     if (!Array.isArray(coords) || coords.length !== 2 || typeof map?.getCenter !== 'function') return false;
@@ -176,20 +174,6 @@
     };
   }
 
-  function getFeatureById_(featureId) {
-    if (!featureId || !Array.isArray(poiData?.features)) return null;
-    if (featureByIdCacheSource_ !== poiData.features) {
-      featureByIdCacheSource_ = poiData.features;
-      featureByIdCache_ = new Map();
-      for (let i = 0; i < poiData.features.length; i += 1) {
-        const candidate = poiData.features[i];
-        if (!candidate || candidate.id == null) continue;
-        featureByIdCache_.set(String(candidate.id), candidate);
-      }
-    }
-    return featureByIdCache_.get(String(featureId)) || null;
-  }
-
   function clearListingSelection() {
     removeActive();
     window.TrailmapListing?.clearActiveFeature?.();
@@ -231,11 +215,11 @@
 
   window.NorthavenSidecarOpenFromSearch = function openFromSearchSidecar_(featureId) {
     if (window.innerWidth < 768) return false;
-    if (!featureId || !Array.isArray(poiData?.features)) return false;
+    if (!featureId) return false;
 
     clearLegendFilterForSearchSelection_();
 
-    const fullFeature = poiData.features.find((f) => String(f?.id ?? '') === String(featureId));
+    const fullFeature = getFeatureById_(String(featureId));
     if (!fullFeature?.geometry?.coordinates) return false;
 
     userMovedMap_ = false;
