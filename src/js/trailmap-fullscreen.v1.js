@@ -70,8 +70,8 @@
     if (safeViewportRuntime.refCount > 0 || !safeViewportRuntime.attached) return;
 
     if (window.visualViewport) {
-      window.visualViewport.removeEventListener("resize", updateSafeViewport, { passive: true });
-      window.visualViewport.removeEventListener("scroll", updateSafeViewport, { passive: true });
+      window.visualViewport.removeEventListener("resize", updateSafeViewport);
+      window.visualViewport.removeEventListener("scroll", updateSafeViewport);
     }
 
     if (safeViewportRuntime.onOrientationChange) {

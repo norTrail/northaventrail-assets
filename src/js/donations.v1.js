@@ -56,7 +56,7 @@
       const sanitizeNum = (v) => {
         if (v === '' || v == null) return NaN;
         if (typeof v === 'number') return v;
-        const s = String(v).replace(/[^0-9.\-]/g, '');
+        const s = String(v).replace(/[^0-9.-]/g, '');
         return s ? parseFloat(s) : NaN;
       };
       const num      = (v, fb) => { const n = sanitizeNum(v); return Number.isFinite(n) ? n : fb; };

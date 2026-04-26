@@ -142,7 +142,7 @@ function updateOverlayState(state) {
   switch (state.state) {
 
     /* ---------------- COMING ---------------- */
-    case "coming":
+    case "coming": {
       showBanner();
       hideSheepUI();
       hideMapButtonAndLocation();
@@ -166,6 +166,7 @@ function updateOverlayState(state) {
       startCountdown(state.startDate);
 
       break;
+    }
 
     /* ---------------- SLEEPING ---------------- */
     case "sleeping":
@@ -355,14 +356,8 @@ function updateHerdHistoryLine(herdCode, historyGeoJSON, color, map) {
     }
   });
 
-  // Determine if the line should be visible
   const showHistory = document.getElementById('showHistory')?.checked ?? false;
-  // -------------------------------------------
-  // 3. Visibility logic ONLY (no adding/removing)
-  // -------------------------------------------
-  const visible = showHistory;
-
-  map.setLayoutProperty(layerId, 'visibility', visible ? 'visible' : 'none');
+  map.setLayoutProperty(layerId, 'visibility', showHistory ? 'visible' : 'none');
 }
 
 function renderAllHerds(data, map) {

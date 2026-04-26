@@ -631,6 +631,120 @@ function checkNiFilterFunctions() {
   return { checked: 1 };
 }
 
+// Regression guard for: gesture-control called positionTip_() synchronously on every
+// resize event and on every fullscreen toggle — each call forced a synchronous layout read
+// (getBoundingClientRect / offsetHeight) immediately after a style change, causing layout
+// thrash. Fix (68587e9, 9f51a53): schedulePositionTip_() debounces the call through
+// requestAnimationFrame so layout reads happen after paint, not mid-frame. The resize
+// listener and fullscreen branch must both go through schedulePositionTip_, and
+// tipPositionFrame must be cancelled in destroyGestureControl() to avoid stale callbacks.
+function checkGestureControlSchedulePositionTip() {
+  const content = fs.readFileSync(
+    path.join(REPO_ROOT, "src", "js", "gesture-control.v1.js"), "utf8"
+  );
+  assert.ok(
+    /function\s+schedulePositionTip_\s*\(/.test(content),
+    "gesture-control.v1.js: schedulePositionTip_() must be defined — direct positionTip_() calls on resize caused layout thrash (synchronous layout read mid-frame)"
+  );
+  assert.ok(
+    /addEventListener\s*\(\s*["']resize["'][^)]*schedulePositionTip_/.test(content),
+    "gesture-control.v1.js: resize listener must use schedulePositionTip_, not positionTip_ directly — direct call causes layout thrash on every resize event"
+  );
+  assert.ok(
+    /cancelAnimationFrame\s*\(\s*tipPositionFrame\s*\)/.test(content),
+    "gesture-control.v1.js: tipPositionFrame rAF must be cancelled (cancelAnimationFrame) — missing cancel lets stale tip-position callbacks fire after destroy"
+  );
+  return { checked: 1 };
+}
+
+// Regression guard for: FullscreenMapControl._renderIcon() replaced this._btn.innerHTML
+// on every fullscreen toggle — destroying and recreating the entire SVG subtree caused
+// unnecessary DOM churn and broke any references held by other code. Fix (68587e9): split
+// into _mountIcon() (called once at onAdd) which builds the SVG and caches this._iconUse,
+// and _renderIcon() which only sets the href attribute on the cached <use> element.
+function checkFullscreenIconMountOnce() {
+  const content = fs.readFileSync(
+    path.join(REPO_ROOT, "src", "js", "trailmap-fullscreen.v1.js"), "utf8"
+  );
+  assert.ok(
+    /function\s+_mountIcon\s*\(\s*\)|_mountIcon\s*\(\s*\)\s*\{/.test(content),
+    "trailmap-fullscreen.v1.js: _mountIcon() must be defined — without it _renderIcon() uses innerHTML, destroying and recreating the SVG subtree on every toggle"
+  );
+  assert.ok(
+    /this\._iconUse/.test(content),
+    "trailmap-fullscreen.v1.js: _iconUse must be cached on the instance — _renderIcon() must update href on the cached <use> element, not re-render the whole SVG"
+  );
+  assert.ok(
+    !/this\._btn\.innerHTML\s*=\s*`[\s\S]*?<svg/.test(content),
+    "trailmap-fullscreen.v1.js: _renderIcon must not set this._btn.innerHTML to an SVG string — use this._iconUse.setAttribute('href', ...) instead to avoid DOM churn"
+  );
+  return { checked: 1 };
+}
+
+// Regression guard for: FullscreenMapControl._toggle() called updateSafeViewport(),
+// onToggle, and map.resize() in a single synchronous block (or single rAF), before the
+// browser had applied the fullscreen CSS class changes — layout reads inside those calls
+// returned stale geometry. Fix (68587e9, 9f51a53): a two-frame rAF chain lets the
+// fullscreen class land in frame A (updateSafeViewport), then onToggle and map.resize()
+// run in frame B after one more paint. Pending frames must also be cancelled in remove().
+function checkFullscreenTwoFramePostToggle() {
+  const content = fs.readFileSync(
+    path.join(REPO_ROOT, "src", "js", "trailmap-fullscreen.v1.js"), "utf8"
+  );
+  assert.ok(
+    /_postToggleFrameA/.test(content),
+    "trailmap-fullscreen.v1.js: _postToggleFrameA must be tracked — the toggle sequence needs a two-frame rAF chain so CSS changes land before geometry reads"
+  );
+  assert.ok(
+    /_postToggleFrameB/.test(content),
+    "trailmap-fullscreen.v1.js: _postToggleFrameB must be tracked — onToggle and map.resize() must run in the second rAF frame, after updateSafeViewport() in the first"
+  );
+  // remove() must cancel both pending frames
+  const removeMatch = content.match(/remove\s*\(\s*\)\s*\{([\s\S]*?)^\s{4}\}/m);
+  if (removeMatch) {
+    assert.ok(
+      /cancelAnimationFrame/.test(removeMatch[1]),
+      "trailmap-fullscreen.v1.js: remove() must cancel pending _postToggleFrame rAFs — leaving them live causes onToggle/resize to fire after the control is torn down"
+    );
+  } else {
+    assert.ok(
+      /remove[\s\S]{1,400}cancelAnimationFrame/.test(content),
+      "trailmap-fullscreen.v1.js: remove() must cancel pending _postToggleFrame rAFs — leaving them live causes onToggle/resize to fire after the control is torn down"
+    );
+  }
+  return { checked: 1 };
+}
+
+// Regression guard for: donations.v1.js read the progress label via
+// querySelector('.progress'), but the CSS class was renamed to 'fund-progress-label' and
+// the generated HTML uses <span class="fund-progress-label"> — the querySelector missed
+// the element and the percentage label stayed at its initial "0%". Fix (c662b30): the
+// selector was updated to '.fund-progress-label, .progress' so both the new and any
+// legacy markup are found. Also: .fund-bar--tails .meter needed min-width:0 to prevent
+// the flex item from overflowing its row when the bar was narrow.
+function checkDonationsProgressLabelSelector() {
+  const jsContent = fs.readFileSync(
+    path.join(REPO_ROOT, "src", "js", "donations.v1.js"), "utf8"
+  );
+  assert.ok(
+    /querySelector\s*\(\s*['"]\.fund-progress-label/.test(jsContent),
+    "donations.v1.js: querySelector must target .fund-progress-label — the old .progress class was renamed and the bare .progress selector silently missed the element, leaving the % label stuck at 0%"
+  );
+
+  const cssContent = fs.readFileSync(
+    path.join(REPO_ROOT, "src", "css", "donations.v1.css"), "utf8"
+  );
+  assert.ok(
+    /\.fund-bar--tails\s+\.meter\s*\{[^}]*min-width\s*:\s*0/.test(cssContent),
+    "donations.v1.css: .fund-bar--tails .meter must declare min-width:0 — without it the flex item can overflow its container when the fund-bar is narrow"
+  );
+  assert.ok(
+    /\.fund-bar--tails\s+\.fund-progress-label\s*\{/.test(cssContent),
+    "donations.v1.css: .fund-bar--tails must style .fund-progress-label (not .progress) — the class was renamed and the CSS must match the generated HTML"
+  );
+  return { checked: 2 };
+}
+
 // Regression guard for: the CTA <a> link in buildDesktopCardHTML had no target
 // attribute — external CTAs (e.g. links to partner sites) opened in the same tab,
 // navigating the user away from the map. Fix: isExternalDomain() check added; external
@@ -674,6 +788,10 @@ function main() {
   const cardEaseSilentlyCheck = checkCardEaseMapSilently();
   const turnstileRetryCheck = checkTurnstileRetryLoop();
   const niFilterCheck = checkNiFilterFunctions();
+  const gestureScheduleCheck = checkGestureControlSchedulePositionTip();
+  const fullscreenIconMountCheck = checkFullscreenIconMountOnce();
+  const fullscreenTwoFrameCheck = checkFullscreenTwoFramePostToggle();
+  const donationsLabelCheck = checkDonationsProgressLabelSelector();
 
   console.log("Contract checks passed:");
   for (const result of results) {
@@ -699,6 +817,10 @@ function main() {
   console.log(`- card/sidecar easeTo calls use easeMapSilently (${cardEaseSilentlyCheck.checked} file(s) checked)`);
   console.log(`- issue-tracker Turnstile init has retry loop with attemptsRemaining (${turnstileRetryCheck.checked} file(s) checked)`);
   console.log(`- northaven-card ni=FALSE filter functions present and called (${niFilterCheck.checked} file(s) checked)`);
+  console.log(`- gesture-control resize uses schedulePositionTip_ rAF debounce (${gestureScheduleCheck.checked} file(s) checked)`);
+  console.log(`- fullscreen icon mounted once via _mountIcon/_iconUse (not innerHTML) (${fullscreenIconMountCheck.checked} file(s) checked)`);
+  console.log(`- fullscreen post-toggle uses two-frame rAF chain with frame cancellation (${fullscreenTwoFrameCheck.checked} file(s) checked)`);
+  console.log(`- donations querySelector targets .fund-progress-label and .meter has min-width:0 (${donationsLabelCheck.checked} file(s) checked)`);
 }
 
 try {

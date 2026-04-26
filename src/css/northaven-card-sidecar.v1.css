@@ -101,9 +101,11 @@ body.is-map-fullscreen .nc-sheet {
   -webkit-overflow-scrolling: touch;
   flex: 1;
   min-height: 0;
-  display: flex;
-  flex-direction: column;
   padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.nc-sheet-body .nc-body {
+  min-height: auto;
 }
 
 /* ── Card ────────────────────────────────────────────────────── */

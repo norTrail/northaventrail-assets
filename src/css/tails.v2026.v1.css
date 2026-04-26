@@ -230,7 +230,11 @@ body {
    ---------------------------- */
 #overlay-banner {
   position: relative;
-  padding: 16px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(136px, 28vw, 220px);
+  gap: 18px 20px;
+  align-items: center;
+  padding: 22px 24px;
   background: #e6f0ff;
   border-radius: 16px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
@@ -239,33 +243,35 @@ body {
 }
 
 #overlay-banner img {
-  float: right;
-  width: 220px;
-  max-width: 40%;
-  margin-left: 16px;
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  width: 100%;
+  max-width: 220px;
+  justify-self: end;
   border-radius: 12px;
 }
 
 #overlayMessage {
+  grid-column: 1;
   font-family: 'Fredoka', sans-serif;
   font-size: 2em;
   font-weight: 600;
-  line-height: 1;
+  line-height: 0.98;
+  letter-spacing: -0.02em;
 }
 
 .overlay-date {
+  display: block;
+  margin-top: 0.28em;
   color: #0c6b42;
 }
 
 #countdown {
+  grid-column: 1;
   font-family: 'Inter', sans-serif;
   font-size: 1.6em;
-}
-
-#overlay-banner::after {
-  content: "";
-  display: block;
-  clear: both;
+  line-height: 1.28;
+  max-width: 20ch;
 }
 
 /* ----------------------------
@@ -760,7 +766,6 @@ body.is-map-fullscreen {
   top: 45px; /* height of ADA banner */
 }
 
-#tails-app.is-fullscreen #ada-info,
 #tails-app.is-fullscreen #ada-info {
   position: fixed;
   top: var(--safe-top, 0px);
@@ -859,23 +864,29 @@ body.is-map-fullscreen {
 
 @media (max-width: 767px) {
   #overlay-banner {
-    padding: 14px;
+    grid-template-columns: minmax(0, 1fr) minmax(96px, 124px);
+    gap: 14px 16px;
+    padding: 20px 18px;
+    border-radius: 20px;
   }
 
   #overlay-banner img {
-    float: right;
-    display: block;
-    width: min(34%, 132px);
-    max-width: 34%;
-    margin: 0 0 8px 12px;
+    grid-column: 2;
+    grid-row: 1;
+    width: 100%;
+    max-width: 124px;
+    align-self: start;
   }
 
   #overlayMessage {
-    font-size: 1.6em;
+    font-size: clamp(1.8rem, 6vw, 2.35rem);
+    line-height: 0.96;
   }
 
   #countdown {
-    font-size: 1.2em;
+    grid-column: 1 / -1;
+    font-size: clamp(1.05rem, 4.3vw, 1.35rem);
+    max-width: none;
   }
 
   /* Pill links */
@@ -945,11 +956,12 @@ body.is-map-fullscreen {
   }
 
   #overlayMessage {
-    font-size: 1.3em !important;
+    font-size: 1.55rem !important;
   }
 
   #countdown {
-    font-size: 1em !important;
+    font-size: 1rem !important;
+    line-height: 1.35;
   }
 }
 
