@@ -70,8 +70,8 @@ let lastOverlayFetch = 0;
 
 let grazingActive = false; // 🔑 authoritative switch
 
-const TAILS_TEST_DATE_PARAM = "tailsTestDate";
-const TAILS_TEST_STATE_PARAM = "tailsTestState";
+const TAILS_DATA_TEST_DATE_PARAM = "tailsTestDate";
+const TAILS_DATA_TEST_STATE_PARAM = "tailsTestState";
 const TAILS_ACTIVE_STATES = new Set(["grazing", "active"]);
 const TAILS_NON_ACTIVE_STATES = new Set(["coming", "sleeping", "history"]);
 
@@ -80,7 +80,7 @@ function getSearchParams_() {
 }
 
 function parseTestDateOverride_() {
-  const raw = String(getSearchParams_().get(TAILS_TEST_DATE_PARAM) || "").trim();
+  const raw = String(getSearchParams_().get(TAILS_DATA_TEST_DATE_PARAM) || "").trim();
   if (!raw) return null;
 
   const direct = new Date(raw);
@@ -102,7 +102,7 @@ function parseTestDateOverride_() {
 }
 
 function getTestStateOverride_() {
-  const raw = String(getSearchParams_().get(TAILS_TEST_STATE_PARAM) || "")
+  const raw = String(getSearchParams_().get(TAILS_DATA_TEST_STATE_PARAM) || "")
     .trim()
     .toLowerCase();
   if (!raw) return null;

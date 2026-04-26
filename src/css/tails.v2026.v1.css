@@ -242,12 +242,21 @@ body {
   overflow: hidden;
 }
 
-#overlay-banner img {
+#overlay-banner > #overlayImage,
+#overlay-banner > :has(#overlayImage) {
   grid-column: 2;
   grid-row: 1 / span 2;
+  justify-self: end;
+  align-self: center;
   width: 100%;
   max-width: 220px;
-  justify-self: end;
+}
+
+#overlayImage,
+#overlay-banner img {
+  width: 100%;
+  max-width: 220px;
+  display: block;
   border-radius: 12px;
 }
 
@@ -870,12 +879,17 @@ body.is-map-fullscreen {
     border-radius: 20px;
   }
 
-  #overlay-banner img {
+  #overlay-banner > #overlayImage,
+  #overlay-banner > :has(#overlayImage) {
     grid-column: 2;
     grid-row: 1 / span 2;
-    width: 100%;
     max-width: 120px;
     align-self: center;
+  }
+
+  #overlayImage,
+  #overlay-banner img {
+    max-width: 120px;
   }
 
   #overlayMessage {
