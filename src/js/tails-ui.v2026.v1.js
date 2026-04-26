@@ -1156,13 +1156,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 function showBanner() {
-  if (UI.overlayBanner) UI.overlayBanner.hidden = false;
+  if (UI.overlayBanner) {
+    UI.overlayBanner.hidden = false;
+    UI.overlayBanner.removeAttribute("hidden");
+    UI.overlayBanner.style.removeProperty("display");
+    UI.overlayBanner.setAttribute("aria-hidden", "false");
+  }
   if (UI.statusPill) UI.statusPill.style.display = "none";
   queueMapResize_();
 }
 
 function hideBanner() {
-  if (UI.overlayBanner) UI.overlayBanner.hidden = true;
+  if (UI.overlayBanner) {
+    UI.overlayBanner.hidden = true;
+    UI.overlayBanner.setAttribute("aria-hidden", "true");
+  }
   queueMapResize_();
 }
 
