@@ -66,8 +66,7 @@ async function runScenario({ label, interceptPatched }) {
       timeout: 60000,
     });
 
-    await page.waitForSelector('#map .mapboxgl-canvas', { timeout: 30000 });
-    await page.waitForSelector('.mapboxgl-ctrl-top-right button[aria-label*="fullscreen" i]', { timeout: 30000 });
+    await page.waitForSelector('.mapboxgl-ctrl-top-right button[aria-label*="fullscreen" i]', { timeout: 45000 });
 
     const tracePath = path.join('/tmp', `trailmap-fullscreen-${label}.json`);
     await page.tracing.start({
