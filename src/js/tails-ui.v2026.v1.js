@@ -1156,13 +1156,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 function showBanner() {
-  if (UI.overlayBanner) UI.overlayBanner.style.display = "block";
+  if (UI.overlayBanner) UI.overlayBanner.hidden = false;
   if (UI.statusPill) UI.statusPill.style.display = "none";
   queueMapResize_();
 }
 
 function hideBanner() {
-  if (UI.overlayBanner) UI.overlayBanner.style.display = "none";
+  if (UI.overlayBanner) UI.overlayBanner.hidden = true;
   queueMapResize_();
 }
 
