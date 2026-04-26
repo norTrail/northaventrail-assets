@@ -27,6 +27,7 @@ function initGestureControl(mapboxMap) {
 
   let tipTimeout = null;
   let wheelLockTimer = null;
+  let tipPositionFrame = null;
   let isFullscreen = false;
   let ctrlUnlocked = false;
 
@@ -72,6 +73,17 @@ function initGestureControl(mapboxMap) {
       const openViewportCenter = ((cardRect.right - mapRect.left) + mapRect.width) / 2;
       gestureTip.style.left = `${openViewportCenter}px`;
     }
+  }
+
+  function schedulePositionTip_() {
+    if (!gestureTip) return;
+    if (tipPositionFrame !== null) {
+      cancelAnimationFrame(tipPositionFrame);
+    }
+    tipPositionFrame = requestAnimationFrame(() => {
+      tipPositionFrame = null;
+      positionTip_();
+    });
   }
 
   function showTip(message = "Use two fingers to move the map") {
@@ -144,7 +156,7 @@ function initGestureControl(mapboxMap) {
     }
   };
   window.addEventListener("blur", onWindowBlur, { passive: true });
-  window.addEventListener("resize", positionTip_, { passive: true });
+  window.addEventListener("resize", schedulePositionTip_, { passive: true });
 
   // ------------------------------------------------------------
   // Drag intent (mouse) — show tip if user tries to drag locked map
@@ -286,16 +298,20 @@ function initGestureControl(mapboxMap) {
       lockEmbeddedMode_();
     }
 
-    positionTip_();
+    schedulePositionTip_();
   };
 
   function destroyGestureControl() {
     clearTimeout(tipTimeout);
     clearTimeout(wheelLockTimer);
+    if (tipPositionFrame !== null) {
+      cancelAnimationFrame(tipPositionFrame);
+      tipPositionFrame = null;
+    }
     hideTip();
     removeCtrlDragUnlock?.();
     window.removeEventListener("blur", onWindowBlur);
-    window.removeEventListener("resize", positionTip_);
+    window.removeEventListener("resize", schedulePositionTip_);
     window.removeEventListener("mouseup", onMouseUp);
     canvas.removeEventListener("mousedown", onMouseDown);
     canvas.removeEventListener("mousemove", onMouseMove);

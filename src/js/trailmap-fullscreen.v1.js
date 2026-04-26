@@ -58,6 +58,7 @@
       this._container = null;
       this._btn = null;
       this._isFullscreen = false;
+      this._postToggleFrame = null;
 
       // configurable IDs/classes so this works across maps
       this._opts = {
@@ -120,6 +121,11 @@
 
       document.removeEventListener("keydown", this._onKeyDown);
 
+      if (this._postToggleFrame !== null) {
+        cancelAnimationFrame(this._postToggleFrame);
+        this._postToggleFrame = null;
+      }
+
       this._container?.remove();
 
       this._map = null;
@@ -172,16 +178,22 @@
       this._updateButtonLabels(this._isFullscreen);
       this._renderIcon(this._isFullscreen);
 
-      // optional integration hook (gesture rules, etc.)
-      if (this._opts.onToggle) {
-        try { this._opts.onToggle(this._isFullscreen, this._map); } catch (e) { console.warn('FullscreenMapControl onToggle error:', e); }
+      if (this._postToggleFrame !== null) {
+        cancelAnimationFrame(this._postToggleFrame);
       }
 
-      // let Mapbox recompute layout
-      requestAnimationFrame(() => this._map?.resize?.());
+      // Defer layout-sensitive follow-up work so class toggles can settle
+      // before hooks or Mapbox read geometry.
+      this._postToggleFrame = requestAnimationFrame(() => {
+        this._postToggleFrame = null;
 
-      // refresh safe viewport vars
-      updateSafeViewport();
+        if (this._opts.onToggle) {
+          try { this._opts.onToggle(this._isFullscreen, this._map); } catch (e) { console.warn('FullscreenMapControl onToggle error:', e); }
+        }
+
+        this._map?.resize?.();
+        updateSafeViewport();
+      });
     }
   }
 
