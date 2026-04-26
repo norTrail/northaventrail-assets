@@ -70,102 +70,6 @@ let lastOverlayFetch = 0;
 
 let grazingActive = false; // 🔑 authoritative switch
 
-const TAILS_DATA_TEST_DATE_PARAM = "tailsTestDate";
-const TAILS_DATA_TEST_STATE_PARAM = "tailsTestState";
-const TAILS_ACTIVE_STATES = new Set(["grazing", "active"]);
-const TAILS_NON_ACTIVE_STATES = new Set(["coming", "sleeping", "history"]);
-
-function getSearchParams_() {
-  return new URLSearchParams(window.location.search || "");
-}
-
-function parseTestDateOverride_() {
-  const raw = String(getSearchParams_().get(TAILS_DATA_TEST_DATE_PARAM) || "").trim();
-  if (!raw) return null;
-
-  const direct = new Date(raw);
-  if (!Number.isNaN(direct.getTime())) return direct;
-
-  const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (!match) return null;
-
-  const parsed = new Date(
-    Number(match[1]),
-    Number(match[2]) - 1,
-    Number(match[3]),
-    12,
-    0,
-    0,
-    0
-  );
-  return Number.isNaN(parsed.getTime()) ? null : parsed;
-}
-
-function getTestStateOverride_() {
-  const raw = String(getSearchParams_().get(TAILS_DATA_TEST_STATE_PARAM) || "")
-    .trim()
-    .toLowerCase();
-  if (!raw) return null;
-  if (TAILS_ACTIVE_STATES.has(raw) || TAILS_NON_ACTIVE_STATES.has(raw)) {
-    return raw === "active" ? "grazing" : raw;
-  }
-  return null;
-}
-
-function getEffectiveNow_() {
-  return parseTestDateOverride_() || new Date();
-}
-
-function parseOverlayDate_(value) {
-  if (!value) return null;
-  if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
-
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? null : parsed;
-}
-
-function getOverlayEndDate_(overlay) {
-  const candidates = [
-    overlay?.endDate,
-    overlay?.historyDate,
-    overlay?.eventEndDate,
-    overlay?.grazingEndDate,
-    overlay?.lastDate
-  ];
-
-  for (const candidate of candidates) {
-    const parsed = parseOverlayDate_(candidate);
-    if (parsed) return parsed;
-  }
-  return null;
-}
-
-function deriveOverlayState_(overlay) {
-  const forcedState = getTestStateOverride_();
-  if (forcedState) return forcedState;
-
-  const testNow = parseTestDateOverride_();
-  if (!testNow) return String(overlay?.state || "").trim().toLowerCase();
-
-  const startDate = parseOverlayDate_(overlay?.startDate);
-  if (!startDate) return String(overlay?.state || "").trim().toLowerCase();
-
-  if (testNow < startDate) return "coming";
-
-  const endDate = getOverlayEndDate_(overlay);
-  if (endDate && testNow > endDate) return "history";
-
-  const startHour = Number(overlay?.grazingStartHour);
-  const endHour = Number(overlay?.grazingEndHour);
-  const currentHour = testNow.getHours() + (testNow.getMinutes() / 60);
-
-  if (Number.isFinite(startHour) && Number.isFinite(endHour)) {
-    if (currentHour < startHour || currentHour >= endHour) return "sleeping";
-  }
-
-  return "grazing";
-}
-
 /* ----------------------------
    Existing trail (Mapbox dataset)
    ---------------------------- */
@@ -394,25 +298,20 @@ async function fetchOverlayState(isInitial = false) {
     if (result.unchanged) return;
 
     const overlay = result.data;
-    const derivedState = deriveOverlayState_(overlay);
-    const effectiveOverlay = {
-      ...overlay,
-      state: derivedState
-    };
     _lastKnownVersion.overlay = result.url;
     lastOverlayFetch = Date.now();
     retryCounts.overlay = 0;
     clearScheduledRetry("overlay");
 
-    if (!effectiveOverlay || !effectiveOverlay.state) return;
+    if (!overlay || !overlay.state) return;
 
-    if (effectiveOverlay.state !== lastOverlayState) {
-      handleOverlayTransition(effectiveOverlay.state);
-      lastOverlayState = effectiveOverlay.state;
+    if (overlay.state !== lastOverlayState) {
+      handleOverlayTransition(overlay.state);
+      lastOverlayState = overlay.state;
     }
 
     if (typeof updateOverlayState === "function") {
-      updateOverlayState(effectiveOverlay);
+      updateOverlayState(overlay);
     }
 
   } catch (err) {
@@ -562,7 +461,6 @@ window.initializeDataPipeline = initializeDataPipeline;
 window.handlePageVisibility = handlePageVisibility;
 
 window.TAILS_DATA = {
-  getEffectiveNow: getEffectiveNow_,
   getLastFetchTimes,
   getCurrentHerdLocation
 };

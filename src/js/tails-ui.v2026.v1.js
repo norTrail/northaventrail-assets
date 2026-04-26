@@ -41,8 +41,6 @@ let lastVisibleZoneCode = null;
 let userHasScrolledTable = false;
 const TAILS_SHARE_HERD_PARAM = "herd";
 const TAILS_SHARE_ZONE_PARAM = "nomowzone";
-const TAILS_UI_TEST_DATE_PARAM = "tailsTestDate";
-const TAILS_UI_TEST_STATE_PARAM = "tailsTestState";
 let activeHerdCode = null;
 let sharedHerdLookupReady = false;
 let sharedNoMowLookupReady = false;
@@ -67,8 +65,6 @@ function buildTailsShareUrl_(options) {
 
   url.searchParams.delete(TAILS_SHARE_HERD_PARAM);
   url.searchParams.delete(TAILS_SHARE_ZONE_PARAM);
-  url.searchParams.delete(TAILS_UI_TEST_DATE_PARAM);
-  url.searchParams.delete(TAILS_UI_TEST_STATE_PARAM);
 
   if (herdCode) {
     url.searchParams.set(TAILS_SHARE_HERD_PARAM, herdCode);
@@ -1202,7 +1198,7 @@ function startCountdown(startDate) {
   }
 
   function tick() {
-    const now = window.TAILS_DATA?.getEffectiveNow?.() || new Date();
+    const now = new Date();
     const diff = start - now;
 
     if (diff <= 0) {
