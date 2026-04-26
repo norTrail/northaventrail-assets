@@ -1214,9 +1214,9 @@ function startCountdown(startDate) {
     const m = Math.floor((diff / 60000) % 60);
 
     const parts = [];
-    if (d) parts.push(`${d} day${d !== 1 ? "s" : ""}`);
-    if (h) parts.push(`${h} hour${h !== 1 ? "s" : ""}`);
-    if (m) parts.push(`${m} minute${m !== 1 ? "s" : ""}`);
+    if (d) parts.push(`${d}\u00A0day${d !== 1 ? "s" : ""}`);
+    if (h) parts.push(`${h}\u00A0hour${h !== 1 ? "s" : ""}`);
+    if (m) parts.push(`${m}\u00A0minute${m !== 1 ? "s" : ""}`);
 
     UI.countdown.innerText =
       "Grazing starts in " + parts.join(", ");

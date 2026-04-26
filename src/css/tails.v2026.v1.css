@@ -291,7 +291,7 @@ body {
   font-family: 'Inter', sans-serif;
   font-size: 1.35em;
   line-height: 1.18;
-  max-width: 20ch;
+  max-width: 30ch;
   align-self: start;
   margin: 0;
 }
@@ -917,7 +917,7 @@ body.is-map-fullscreen {
     grid-row: 2;
     font-size: clamp(0.95rem, 3.6vw, 1.1rem);
     line-height: 1.18;
-    max-width: 18ch;
+    max-width: 30ch;
   }
 
   /* Pill links */
