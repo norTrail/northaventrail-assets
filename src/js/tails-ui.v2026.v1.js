@@ -404,11 +404,6 @@ let pendingZoneScrollCode = null;
 let lastNoMowHash = null;
 let noMowMarkerDelegationBound = false;
 let tableInteractionDelegationBound = false;
-let noMowDeclutterBound = false;
-let noMowDeclutterRaf = 0;
-
-const NO_MOW_TOUCH_TARGET_PX = 48;
-const NO_MOW_CLUSTER_PADDING_PX = 8;
 
 // Cheap structural hash — avoids full JSON.stringify on every poll
 function quickGeoHash_(geojson) {
@@ -440,102 +435,6 @@ function pruneOpenPopups() {
 function setNoMowMarkerHoverState_(markerEl, hovered) {
   if (!markerEl) return;
   markerEl.classList.toggle("is-hover", hovered);
-}
-
-function resetNoMowMarkerOffsets_() {
-  Object.values(noMowZoneMarkers).forEach(obj => {
-    const el = obj?.element;
-    if (!el) return;
-    el.style.setProperty("--marker-dx", "0px");
-    el.style.setProperty("--marker-dy", "0px");
-    el.style.removeProperty("--marker-z");
-  });
-}
-
-function scheduleNoMowMarkerDeclutter_(map) {
-  if (!map) return;
-  if (noMowDeclutterRaf) cancelAnimationFrame(noMowDeclutterRaf);
-  noMowDeclutterRaf = requestAnimationFrame(() => {
-    noMowDeclutterRaf = 0;
-    applyNoMowMarkerDeclutter_(map);
-  });
-}
-
-function buildNoMowMarkerGroups_(markers, minDistancePx) {
-  const groups = [];
-  const visited = new Set();
-
-  for (let i = 0; i < markers.length; i += 1) {
-    if (visited.has(i)) continue;
-
-    const group = [];
-    const queue = [i];
-    visited.add(i);
-
-    while (queue.length) {
-      const idx = queue.shift();
-      const candidate = markers[idx];
-      group.push(candidate);
-
-      for (let j = 0; j < markers.length; j += 1) {
-        if (visited.has(j)) continue;
-        const other = markers[j];
-        const dx = candidate.point.x - other.point.x;
-        const dy = candidate.point.y - other.point.y;
-        if (Math.hypot(dx, dy) >= minDistancePx) continue;
-        visited.add(j);
-        queue.push(j);
-      }
-    }
-
-    groups.push(group);
-  }
-
-  return groups;
-}
-
-function applyNoMowMarkerDeclutter_(map) {
-  if (!map) return;
-
-  const markerEntries = Object.entries(noMowZoneMarkers)
-    .map(([code, obj]) => {
-      const center = preferredZoneCenter_(obj?.feature);
-      const el = obj?.element;
-      if (!center || !el || el.style.display === "none") return null;
-      const point = map.project(center);
-      return { code, point, element: el };
-    })
-    .filter(Boolean);
-
-  resetNoMowMarkerOffsets_();
-  if (markerEntries.length < 2) return;
-
-  const minDistancePx = NO_MOW_TOUCH_TARGET_PX + NO_MOW_CLUSTER_PADDING_PX;
-  const groups = buildNoMowMarkerGroups_(markerEntries, minDistancePx);
-
-  groups.forEach(group => {
-    if (group.length < 2) return;
-
-    const sorted = group.slice().sort((a, b) => a.code.localeCompare(b.code));
-    const radius = Math.max(18, Math.ceil(minDistancePx / 2) + (sorted.length > 4 ? 6 : 0));
-
-    sorted.forEach((item, index) => {
-      const angle = ((Math.PI * 2) / sorted.length) * index - (Math.PI / 2);
-      const dx = Math.round(Math.cos(angle) * radius);
-      const dy = Math.round(Math.sin(angle) * radius);
-      item.element.style.setProperty("--marker-dx", `${dx}px`);
-      item.element.style.setProperty("--marker-dy", `${dy}px`);
-      item.element.style.setProperty("--marker-z", String(20 + index));
-    });
-  });
-}
-
-function bindNoMowDeclutterOnce_(map) {
-  if (noMowDeclutterBound || !map) return;
-  ["load", "move", "zoom", "rotate", "pitch", "resize", "idle"].forEach(eventName => {
-    map.on(eventName, () => scheduleNoMowMarkerDeclutter_(map));
-  });
-  noMowDeclutterBound = true;
 }
 
 function openNoMowZonePopup_(zoneCode, markerEl) {
@@ -625,7 +524,6 @@ function updateNoMowLayers(map, geojson, force = false) {
   if (!force && hash === lastNoMowHash) return;
   lastNoMowHash = hash;
   attachNoMowMarkerDelegationOnce();
-  bindNoMowDeclutterOnce_(map);
 
   UI.tableBtn.style.display = "block";
   updateBottomUiState();
@@ -668,7 +566,8 @@ function updateNoMowLayers(map, geojson, force = false) {
     if (!feature?.geometry) return;
 
     const props = feature.properties || {};
-    const center = preferredZoneCenter_(feature);
+    const center =
+      props.center || featureCenter(feature.geometry);
 
     if (!center) return;
 
@@ -724,7 +623,6 @@ function updateNoMowLayers(map, geojson, force = false) {
   });
 
   UI.tableBtn.style.display = Object.keys(noMowZoneMarkers).length > 0 ? "block" : "none";
-  scheduleNoMowMarkerDeclutter_(map);
   queueMapResize_();
 }
 
