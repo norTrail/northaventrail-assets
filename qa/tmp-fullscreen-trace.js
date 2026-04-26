@@ -2,6 +2,10 @@ const fs = require('fs');
 const path = require('path');
 const puppeteer = require('puppeteer');
 
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 const ROOT = path.resolve(__dirname, '..');
 const PATCHED_FILES = new Map([
   [
@@ -43,6 +47,7 @@ async function runScenario({ label, interceptPatched }) {
   try {
     const page = await browser.newPage();
     await page.setViewport({ width: 1440, height: 1100, deviceScaleFactor: 1 });
+    await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36');
 
     if (interceptPatched) {
       await page.setRequestInterception(true);
@@ -85,7 +90,7 @@ async function runScenario({ label, interceptPatched }) {
       () => document.getElementById('mapView')?.classList.contains('is-fullscreen'),
       { timeout: 5000 }
     );
-    await page.waitForTimeout(1200);
+    await delay(1200);
 
     await page.tracing.stop();
     const trace = JSON.parse(fs.readFileSync(tracePath, 'utf8'));
