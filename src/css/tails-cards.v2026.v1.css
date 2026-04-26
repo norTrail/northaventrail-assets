@@ -118,6 +118,85 @@
   margin-bottom: 0;
 }
 
+/* ── Closest Parking row ─────────────────────────────────────── */
+
+.nc-related {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 6px 14px 12px;
+  border-top: 1px solid #eef2ef;
+  background: linear-gradient(180deg, rgba(248, 251, 249, 0.92) 0%, rgba(255, 255, 255, 0) 100%);
+}
+
+.nc-related-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nc-related-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #617267;
+}
+
+.nc-related-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid #d7e8de;
+  border-radius: 12px;
+  background: #f4faf6;
+  color: #133524;
+  text-align: left;
+  box-shadow: 0 1px 0 rgba(16, 132, 82, 0.04);
+}
+
+.nc-related-row-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: rgba(16, 132, 82, 0.1);
+  flex-shrink: 0;
+}
+
+.nc-related-icon-img {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+.nc-related-row-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nc-related-row-meta {
+  font-size: 11px;
+  font-weight: 700;
+  color: #5e7165;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.nc-related-row-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #143423;
+  line-height: 1.25;
+}
+
 @media (min-width: 768px) {
   .nc-desktop-card {
     z-index: 70;
