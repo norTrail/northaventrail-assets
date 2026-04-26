@@ -39,6 +39,149 @@ let countdownTimer = null;
 let isZoomedToHerd = false;
 let lastVisibleZoneCode = null;
 let userHasScrolledTable = false;
+const TAILS_SHARE_HERD_PARAM = "herd";
+const TAILS_SHARE_ZONE_PARAM = "nomowzone";
+let activeHerdCode = null;
+let sharedHerdLookupReady = false;
+let sharedNoMowLookupReady = false;
+let pendingSharedSelection = parseSharedSelectionFromUrl_();
+
+function normalizeSharedId_(value) {
+  return String(value || "").trim();
+}
+
+function parseSharedSelectionFromUrl_() {
+  const params = new URLSearchParams(window.location.search || "");
+  const herdCode = normalizeSharedId_(params.get(TAILS_SHARE_HERD_PARAM));
+  const zoneCode = normalizeSharedId_(params.get(TAILS_SHARE_ZONE_PARAM));
+  if (!herdCode && !zoneCode) return null;
+  return { herdCode, zoneCode };
+}
+
+function buildTailsShareUrl_(options) {
+  const url = new URL(window.location.href);
+  const herdCode = normalizeSharedId_(options?.herdCode);
+  const zoneCode = normalizeSharedId_(options?.zoneCode);
+
+  url.searchParams.delete(TAILS_SHARE_HERD_PARAM);
+  url.searchParams.delete(TAILS_SHARE_ZONE_PARAM);
+
+  if (herdCode) {
+    url.searchParams.set(TAILS_SHARE_HERD_PARAM, herdCode);
+  } else if (zoneCode) {
+    url.searchParams.set(TAILS_SHARE_ZONE_PARAM, zoneCode);
+  }
+
+  return url.toString();
+}
+
+function syncPageShareButtonUrl_(url) {
+  const shareBtn = document.getElementById("share-button");
+  if (!shareBtn) return;
+
+  shareBtn.setAttribute("share-url", String(url || window.location.href));
+
+  if (!shareBtn.getAttribute("share-title")) {
+    shareBtn.setAttribute("share-title", "Northaven TAILS");
+  }
+  if (!shareBtn.getAttribute("share-text")) {
+    shareBtn.setAttribute("share-text", "Explore the Northaven TAILS grazing map.");
+  }
+}
+
+function syncTailsShareState_(options, historyMode = "replace") {
+  const nextUrl = buildTailsShareUrl_(options);
+  const currentUrl = window.location.href;
+
+  activeHerdCode = normalizeSharedId_(options?.herdCode) || null;
+  selectedZoneCode = activeHerdCode ? null : normalizeSharedId_(options?.zoneCode) || null;
+
+  if (currentUrl !== nextUrl) {
+    const state = window.history.state;
+    if (historyMode === "push") {
+      window.history.pushState(state, document.title, nextUrl);
+    } else {
+      window.history.replaceState(state, document.title, nextUrl);
+    }
+  }
+
+  syncPageShareButtonUrl_(nextUrl);
+  return nextUrl;
+}
+
+function ensureNoMowVisible_() {
+  const checkbox = document.getElementById("showNoMow");
+  if (checkbox?.checked) return;
+
+  if (checkbox) {
+    checkbox.checked = true;
+    checkbox.dispatchEvent(new Event("change", { bubbles: true }));
+    return;
+  }
+
+  Object.values(noMowZoneMarkers || {}).forEach(obj => {
+    if (obj?.element) obj.element.style.display = "inline-flex";
+  });
+}
+
+function activateHerdByCode(herdCode, options = {}) {
+  const normalizedCode = normalizeSharedId_(herdCode);
+  const marker = normalizedCode ? herdMarkers?.[normalizedCode] : null;
+  const markerEl = marker?.__tailsElement || marker?._element || null;
+  const feature = marker?.__tailsFeature || null;
+  const map = window.TAILS?.getMap?.();
+
+  if (!normalizedCode || !markerEl || !feature || !map) return false;
+
+  closeAllPopups({ preserveShareState: true });
+  const shareUrl = syncTailsShareState_({ herdCode: normalizedCode });
+  window.TailsCards?.showHerd?.(feature, markerEl, map, {
+    herdCode: normalizedCode,
+    shareUrl,
+    onClose: () => {
+      activeHerdCode = null;
+      syncTailsShareState_({});
+    }
+  });
+  return true;
+}
+
+function tryApplySharedSelection_() {
+  if (!pendingSharedSelection) return;
+
+  const herdCode = normalizeSharedId_(pendingSharedSelection.herdCode);
+  const zoneCode = normalizeSharedId_(pendingSharedSelection.zoneCode);
+
+  if (herdCode) {
+    if (!sharedHerdLookupReady) return;
+    if (activateHerdByCode(herdCode)) {
+      pendingSharedSelection = null;
+      return;
+    }
+  }
+
+  if (zoneCode) {
+    if (herdCode && !sharedHerdLookupReady) return;
+    if (!sharedNoMowLookupReady) return;
+    if (focusNoMowZone(zoneCode, { fromSharedUrl: true })) {
+      pendingSharedSelection = null;
+      return;
+    }
+  }
+
+  if ((!herdCode || sharedHerdLookupReady) && (!zoneCode || sharedNoMowLookupReady)) {
+    pendingSharedSelection = null;
+    syncTailsShareState_({});
+  }
+}
+
+window.TAILS_SHARE = {
+  buildShareUrl: buildTailsShareUrl_,
+  getCurrentShareUrl: () => buildTailsShareUrl_({
+    herdCode: activeHerdCode,
+    zoneCode: selectedZoneCode
+  })
+};
 
 function formatMarkerStatusLabel_(props) {
   const status = String(props?.status || "").trim().toLowerCase();
@@ -135,6 +278,9 @@ function updateOverlayState(state) {
   if (!state || !state.state) return;
 
   currentState = state;
+  if (state.state !== "active" && state.state !== "grazing") {
+    sharedHerdLookupReady = true;
+  }
 
   clearCountdown();
   hideFlockLoader();
@@ -221,6 +367,7 @@ function updateOverlayState(state) {
     default:
       hideBanner();
       UI.controls.style.display = "";
+      sharedHerdLookupReady = false;
 
       UI.statusPill.innerText = "Grazing";
       UI.statusPill.dataset.state = "grazing";
@@ -228,6 +375,8 @@ function updateOverlayState(state) {
       showSheepUI();
       break;
   }
+
+  tryApplySharedSelection_();
 }
 
 
@@ -299,8 +448,7 @@ function updateMarker(herdCode, herdObj, map) {
   el.addEventListener("click", e => {
     e.stopPropagation();
 
-    closeAllPopups();
-    window.TailsCards?.showHerd?.(feature, el, map);
+    activateHerdByCode(herdCode);
   });
 
   herdMarkers[herdCode] = new mapboxgl.Marker({
@@ -309,6 +457,7 @@ function updateMarker(herdCode, herdObj, map) {
   })
     .setLngLat([lng, lat])
     .addTo(map);
+  herdMarkers[herdCode].__tailsElement = el;
   herdMarkers[herdCode].__tailsFeature = feature;
 
 
@@ -361,7 +510,7 @@ function updateHerdHistoryLine(herdCode, historyGeoJSON, color, map) {
 }
 
 function renderAllHerds(data, map) {
-  if (currentState?.state !== "active") {
+  if (currentState?.state !== "active" && currentState?.state !== "grazing") {
     // Prevents this from being called before the OverlayState is returned
     return;
   }
@@ -386,6 +535,9 @@ function renderAllHerds(data, map) {
       map
     );
   });
+
+  sharedHerdLookupReady = true;
+  tryApplySharedSelection_();
 }
 
 
@@ -432,21 +584,27 @@ function setNoMowMarkerHoverState_(markerEl, hovered) {
   markerEl.classList.toggle("is-hover", hovered);
 }
 
-function openNoMowZonePopup_(zoneCode, markerEl) {
-  const obj = noMowZoneMarkers?.[zoneCode];
+function openNoMowZonePopup_(zoneCode, markerEl, options = {}) {
+  const normalizedCode = normalizeSharedId_(zoneCode);
+  const obj = noMowZoneMarkers?.[normalizedCode];
   const map = window.TAILS?.getMap?.();
-  if (!obj || !obj.feature || !markerEl || !map) return;
+  if (!obj || !obj.feature || !markerEl || !map) return false;
 
   const center = preferredZoneCenter_(obj.feature);
-  if (!center) return;
+  if (!center) return false;
 
-  closeAllPopups();
-  selectedZoneCode = zoneCode;
+  ensureNoMowVisible_();
+  closeAllPopups({ preserveShareState: true });
+  const shareUrl = syncTailsShareState_({ zoneCode: normalizedCode });
   window.TailsCards?.showNoMowZone?.(obj.feature, markerEl, map, {
+    zoneCode: normalizedCode,
+    shareUrl,
     onClose: () => {
       selectedZoneCode = null;
+      syncTailsShareState_({});
     }
   });
+  return true;
 }
 
 function attachNoMowMarkerDelegationOnce() {
@@ -593,6 +751,8 @@ function updateNoMowLayers(map, geojson, force = false) {
     noMowZoneMarkers[code] = { marker, element: el, feature };
   });
 
+  sharedNoMowLookupReady = true;
+
   /* ---------------------------
      Visibility toggle
      --------------------------- */
@@ -619,6 +779,7 @@ function updateNoMowLayers(map, geojson, force = false) {
 
   UI.tableBtn.style.display = Object.keys(noMowZoneMarkers).length > 0 ? "block" : "none";
   queueMapResize_();
+  tryApplySharedSelection_();
 }
 
 
@@ -1140,6 +1301,7 @@ function clickShare(title, text, url) {
 function buildPopupNavIcons(lat, lng, shareText) {
   const googleHref = `https://maps.google.com/maps?q=${lat},${lng}`;
   const appleHref = `https://maps.apple.com/?z=20&q=${lat},${lng}`;
+  const shareUrl = window.TAILS_SHARE?.getCurrentShareUrl?.() || location.href;
 
   const appleLink = isApple() ? `
     <a class="popupIconLink" href="${appleHref}" target="_blank" rel="noopener noreferrer"
@@ -1152,7 +1314,7 @@ function buildPopupNavIcons(lat, lng, shareText) {
             title="Share" aria-label="Share location"
             data-share-title="Northaven TAILS"
             data-share-text="${escapeHtmlAttr(shareText)}"
-            data-share-url="${escapeHtmlAttr(location.href)}">
+            data-share-url="${escapeHtmlAttr(shareUrl)}">
       <svg class="popupIcon" aria-hidden="true"><use href="#share-icon"/></svg>
     </button>` : "";
 
@@ -1220,22 +1382,26 @@ function zoomToHerd(map) {
 let openPopups = [];
 let currentFullPopup = null;
 
-function closeAllPopups() {
+function closeAllPopups(options = {}) {
   try {
     pruneOpenPopups();
     while (openPopups.length) {
       openPopups.pop().remove();
     }
     window.TailsCards?.hide?.();
+    activeHerdCode = null;
     selectedZoneCode = null;
     currentFullPopup = null;
+    if (!options.preserveShareState) {
+      syncTailsShareState_({});
+    }
   } catch (error) {
     console.warn("closeAllPopups error:", error);
     logCaughtError?.("closeAllPopups", error);
   }
 }
 
-function focusNoMowZone(zoneCode) {
+function focusNoMowZone(zoneCode, options = {}) {
   // Instant switch (no flip): user tapped a table row and expects immediate map response
   const tableView = document.getElementById("tableView");
   const mapView = document.getElementById("mapView");
@@ -1247,13 +1413,13 @@ function focusNoMowZone(zoneCode) {
   const map = window.TAILS?.getMap?.();
   if (!map) {
     console.warn("focusNoMowZone: map not ready");
-    return;
+    return false;
   }
 
   const obj = noMowZoneMarkers?.[zoneCode];
   if (!obj || !obj.feature) {
     console.warn("focusNoMowZone: zone not found", zoneCode);
-    return;
+    return false;
   }
 
   // Determine center safely
@@ -1266,12 +1432,13 @@ function focusNoMowZone(zoneCode) {
 
   if (!center || center.length !== 2) {
     console.warn("focusNoMowZone: invalid center for zone", zoneCode);
-    return;
+    return false;
   }
 
   // Open popup (same behavior as before)
-  if (obj.element) {
-    obj.element.click();
+  ensureNoMowVisible_();
+  if (obj.element && !openNoMowZonePopup_(zoneCode, obj.element, options)) {
+    return false;
   }
 
   // Fly map
@@ -1280,6 +1447,7 @@ function focusNoMowZone(zoneCode) {
     zoom: 15,
     essential: true
   });
+  return true;
 }
 
 let _bottomUiPending = false;

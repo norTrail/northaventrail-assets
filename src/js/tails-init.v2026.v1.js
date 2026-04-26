@@ -127,6 +127,12 @@ async function bootstrapTailsApp() {
   loadSvgSpriteOnce();  // load shared icon sprite from assets.northaventrail.org
   initMap(mapEl);
   wireUIControls();
+  if (window.TAILS_SHARE?.getCurrentShareUrl) {
+    const shareBtn = document.getElementById("share-button");
+    if (shareBtn) {
+      shareBtn.setAttribute("share-url", window.TAILS_SHARE.getCurrentShareUrl());
+    }
+  }
   window.NorthavenUtils?.labelUntitledIframes();
   window.NorthavenUtils?.fixNewWindowAriaLabels();
 }
@@ -339,6 +345,10 @@ function wireNoMowToggle(map) {
     localStorage.setItem("tails-pref-showNoMow", String(checkbox.checked));
     const show = checkbox.checked;
     const visibility = show ? "visible" : "none";
+
+    if (!show && typeof closeAllPopups === "function") {
+      closeAllPopups();
+    }
 
     // Polygon layer
     if (map.getLayer("no-mow-zones-layer")) {

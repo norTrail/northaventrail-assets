@@ -94,8 +94,8 @@
     return '<div class="nc-actions">' + actions.filter(Boolean).join('') + '</div>';
   }
 
-  function buildMapActions(lat, lng, shareTitle, shareText) {
-    const shareUrl = location.href;
+  function buildMapActions(lat, lng, shareTitle, shareText, shareUrl) {
+    const resolvedShareUrl = String(shareUrl || location.href || '').trim();
 
     const actions = [
       '<a class="nc-action nc-action--primary" href="' + escAttr(DONATE_URL) + '" target="_blank" rel="noopener noreferrer" aria-label="Donate to Friends of Northaven Trail" title="Donate to Friends of Northaven Trail">' +
@@ -127,7 +127,7 @@
     }
 
     actions.push(
-      '<button class="nc-action nc-action-share" type="button" aria-label="Share this location" title="Share this location" data-share-title="' + escAttr(shareTitle) + '" data-share-text="' + escAttr(shareText) + '" data-share-url="' + escAttr(shareUrl) + '">' +
+      '<button class="nc-action nc-action-share" type="button" aria-label="Share this location" title="Share this location" data-share-title="' + escAttr(shareTitle) + '" data-share-text="' + escAttr(shareText) + '" data-share-url="' + escAttr(resolvedShareUrl) + '">' +
         '<svg class="nc-action-icon" aria-hidden="true"><use href="#share-icon"></use></svg>' +
         '<span class="nc-action-label">Share</span>' +
       '</button>'
@@ -175,7 +175,7 @@
       '</div>';
   }
 
-  function renderNoMowZoneCard(feature) {
+  function renderNoMowZoneCard(feature, options) {
     const p = feature?.properties || {};
     const title = cleanZoneTitle(p.zoneName);
     const near = String(p.near || '').trim();
@@ -187,7 +187,7 @@
     const shareText = desc
       ? title + ' — ' + String(desc).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
       : title + ' on the Northaven Trail';
-    const actions = buildMapActions(hasCoords ? lat : null, hasCoords ? lng : null, title, shareText);
+    const actions = buildMapActions(hasCoords ? lat : null, hasCoords ? lng : null, title, shareText, options?.shareUrl);
 
     return '' +
       '<div class="nc-card tc-card tc-card--zone">' +
@@ -214,7 +214,7 @@
       '</div>';
   }
 
-  function renderHerdCard(feature) {
+  function renderHerdCard(feature, options) {
     const p = feature?.properties || {};
     const coords = safeCoords(feature);
     const title = String(p.herdName || 'Northaven TAILS').trim();
@@ -226,7 +226,7 @@
     const shareText = shortLine
       ? title + ' is currently grazing at ' + shortLine
       : title + ' is currently grazing on the Northaven Trail';
-    const actions = buildMapActions(coords?.lat, coords?.lng, title, shareText);
+    const actions = buildMapActions(coords?.lat, coords?.lng, title, shareText, options?.shareUrl);
 
     return '' +
       '<div class="nc-card tc-card tc-card--herd">' +
@@ -290,7 +290,7 @@
       map: config.map,
       mapillaryId: config.mapillaryId,
       onShare: function () {
-        clickShare(config.shareTitle, config.shareText, location.href);
+        clickShare(config.shareTitle, config.shareText, config.shareUrl || location.href);
       },
       onClose: function () {
         clearActiveMarker(true);
@@ -309,6 +309,12 @@
 
   function showNoMowZone(feature, markerEl, map, options) {
     const p = feature?.properties || {};
+    const zoneCode = String(options?.zoneCode || p.zoneCode || feature?.id || '').trim();
+    const shareUrl = String(
+      options?.shareUrl ||
+      window.TAILS_SHARE?.buildShareUrl?.({ zoneCode }) ||
+      location.href
+    ).trim();
     const lat = Number(p.centerLat);
     const lng = Number(p.centerLng);
     const coords = {
@@ -318,34 +324,43 @@
     const title = cleanZoneTitle(p.zoneName);
     const descText = cleanDescriptionHtml(p.description).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
     showCard({
-      key: 'zone:' + String(p.zoneCode || feature?.id || ''),
+      key: 'zone:' + zoneCode,
       markerEl: markerEl,
       map: map,
       coords: coords,
       mapillaryId: p.m_id,
-      html: renderNoMowZoneCard(feature),
+      html: renderNoMowZoneCard(feature, { shareUrl }),
       shareTitle: title,
       shareText: descText ? title + ' — ' + descText : title + ' on the Northaven Trail',
+      shareUrl: shareUrl,
       onClose: options && typeof options.onClose === 'function' ? options.onClose : null
     });
   }
 
-  function showHerd(feature, markerEl, map) {
+  function showHerd(feature, markerEl, map, options) {
     const coords = safeCoords(feature);
     const p = feature?.properties || {};
     const title = String(p.herdName || 'Northaven TAILS').trim();
     const trailSectionShort = String(p.trailSectionShort || '').replace(/&nbsp;/g, ' ').trim();
+    const herdCode = String(options?.herdCode || p.herdCode || '').trim();
+    const shareUrl = String(
+      options?.shareUrl ||
+      window.TAILS_SHARE?.buildShareUrl?.({ herdCode }) ||
+      location.href
+    ).trim();
     showCard({
-      key: 'herd:' + title,
+      key: 'herd:' + (herdCode || title),
       markerEl: markerEl,
       map: map,
       coords: coords,
       mapillaryId: p.m_id,
-      html: renderHerdCard(feature),
+      html: renderHerdCard(feature, { shareUrl }),
       shareTitle: title,
       shareText: trailSectionShort
         ? title + ' is currently grazing at ' + trailSectionShort
-        : title + ' is currently grazing on the Northaven Trail'
+        : title + ' is currently grazing on the Northaven Trail',
+      shareUrl: shareUrl,
+      onClose: options && typeof options.onClose === 'function' ? options.onClose : null
     });
   }
 
