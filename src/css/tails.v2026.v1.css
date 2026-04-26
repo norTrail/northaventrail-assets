@@ -298,10 +298,12 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  position: relative;
   cursor: pointer;
   z-index: 2;
   background: transparent;
   border: none;
+  transform: translate(var(--marker-dx, 0), var(--marker-dy, 0));
   transition: transform 120ms ease;
   /* Minimum 48×48px touch target (WCAG 2.1 AA updated) */
   min-width: 48px;
