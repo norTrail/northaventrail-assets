@@ -283,12 +283,12 @@ function updateOverlayState(state) {
   }
 
   clearCountdown();
-  hideFlockLoader();
 
   switch (state.state) {
 
     /* ---------------- COMING ---------------- */
     case "coming": {
+      hideFlockLoader();
       showBanner();
       hideSheepUI();
       hideMapButtonAndLocation();
@@ -316,6 +316,7 @@ function updateOverlayState(state) {
 
     /* ---------------- SLEEPING ---------------- */
     case "sleeping":
+      hideFlockLoader();
       showBanner();
       hideSheepUI();
       hideMapButtonAndLocation();
@@ -341,6 +342,7 @@ function updateOverlayState(state) {
 
     /* ---------------- HISTORY ---------------- */
     case "history":
+      hideFlockLoader();
       showBanner();
       hideSheepUI();
       hideMapButtonAndLocation();
@@ -1237,10 +1239,11 @@ function clearCountdown() {
    ---------------------------- */
 function hideFlockLoader() {
   const el = document.getElementById("flock-loader");
-  if (!el) return;
-  el.classList.add("flock-loader--hidden");
-  el.addEventListener("transitionend", () => el.remove(), { once: true });
-  document.getElementById("mapView")?.setAttribute("aria-busy", "false");
+  if (el) {
+    el.classList.add("flock-loader--hidden");
+    el.addEventListener("transitionend", () => el.remove(), { once: true });
+  }
+  window.TAILS?.setLoadingState?.(false);
 }
 
 

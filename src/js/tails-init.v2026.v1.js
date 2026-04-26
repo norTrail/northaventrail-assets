@@ -33,6 +33,7 @@ let fit_to_bounds_lat;
 let map = null;
 let mapReady = false;
 let appInitialized = false;
+let mapInteractionLoading = true;
 
 
 /* ----------------------------
@@ -247,7 +248,9 @@ function initMap(container) {
     const attrBtn = document.querySelector('.mapboxgl-ctrl-attrib-button');
     if (attrBtn) attrBtn.setAttribute('aria-label', 'Toggle map attribution info');
 
+    map.__gestureControlLoadingLocked = true;
     initGestureControl(map);
+    setMapInteractionLoadingState(true);
 
     if (window.TrailmapFullscreen?.FullscreenMapControl) {
       map.addControl(new TrailmapFullscreen.FullscreenMapControl({
@@ -296,6 +299,21 @@ function initMap(container) {
   });
 
 
+}
+
+function setMapInteractionLoadingState(isLoading) {
+  mapInteractionLoading = !!isLoading;
+
+  if (map?.setInteractionLoadingState) {
+    map.setInteractionLoadingState(mapInteractionLoading);
+  } else if (map) {
+    map.__gestureControlLoadingLocked = mapInteractionLoading;
+  }
+
+  const mapView = document.getElementById("mapView");
+  if (mapView) {
+    mapView.setAttribute("aria-busy", mapInteractionLoading ? "true" : "false");
+  }
 }
 
 /* ----------------------------
@@ -568,5 +586,7 @@ function logCaughtError(fn, err, extra = {}) {
 
 // Expose minimal globals intentionally
 window.TAILS = {
-  getMap: getMapInstance
+  getMap: getMapInstance,
+  setLoadingState: setMapInteractionLoadingState,
+  isLoading: () => mapInteractionLoading
 };

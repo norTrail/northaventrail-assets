@@ -30,6 +30,7 @@ function initGestureControl(mapboxMap) {
   let tipPositionFrame = null;
   let isFullscreen = false;
   let ctrlUnlocked = false;
+  let loadingLocked = !!mapboxMap.__gestureControlLoadingLocked;
 
   let lastTipAt = 0;
   let lastTipMsg = "";
@@ -142,10 +143,15 @@ function initGestureControl(mapboxMap) {
   lockEmbeddedMode_();
 
   // Setup keyboard events (Ctrl/⌘ unlock)
-  const removeCtrlDragUnlock = wireCtrlDragUnlock_(mapboxMap, () => isFullscreen, (unlocked) => {
+  const removeCtrlDragUnlock = wireCtrlDragUnlock_(
+    mapboxMap,
+    () => isFullscreen,
+    () => loadingLocked,
+    (unlocked) => {
     ctrlUnlocked = unlocked;
     if (unlocked) hideTip();
-  });
+    }
+  );
 
   // ------------------------------------------------------------
   // Blur cleanup: prevents timers / states lingering after tab switch
@@ -155,6 +161,7 @@ function initGestureControl(mapboxMap) {
     hideTip();
 
     if (isFullscreen) return;
+    if (loadingLocked) return;
 
     // If you tab away mid-gesture, re-lock for embedded mode
     if (!ctrlUnlocked) {
@@ -171,7 +178,7 @@ function initGestureControl(mapboxMap) {
   let dragIntent = false;
 
   const onMouseDown = (e) => {
-    if (isFullscreen || isTouchDevice) return;
+    if (loadingLocked || isFullscreen || isTouchDevice) return;
 
     dragIntent = true;
 
@@ -186,7 +193,7 @@ function initGestureControl(mapboxMap) {
   canvas.addEventListener("mousedown", onMouseDown, { passive: true });
 
   const onMouseMove = (e) => {
-    if (!dragIntent || isFullscreen || isTouchDevice) return;
+    if (loadingLocked || !dragIntent || isFullscreen || isTouchDevice) return;
 
     // If user starts holding Ctrl mid-drag, unlock
     if (e.ctrlKey || e.metaKey) {
@@ -198,6 +205,7 @@ function initGestureControl(mapboxMap) {
 
 
   const onTouchMove = (e) => {
+    if (loadingLocked) return;
     // Only interfere with two-finger gestures on the map
     if (!isFullscreen && e.touches && e.touches.length >= 2) {
       e.preventDefault(); // blocks page scroll / pinch-zoom
@@ -210,7 +218,7 @@ function initGestureControl(mapboxMap) {
 
     dragIntent = false;
 
-    if (isFullscreen) return;
+    if (loadingLocked || isFullscreen) return;
 
     // If they aren't holding Ctrl/⌘ and keyboard unlock isn't active, re-lock
     if (!(e.ctrlKey || e.metaKey) && !ctrlUnlocked) {
@@ -228,6 +236,10 @@ function initGestureControl(mapboxMap) {
   // Non-passive listener: prevents the page from scrolling (or the browser
   // from zooming) at the same time the map is being intentionally zoomed.
   const onWheelPreventDefault = (e) => {
+    if (loadingLocked) {
+      e.preventDefault();
+      return;
+    }
     if (!isFullscreen && (e.ctrlKey || e.metaKey || ctrlUnlocked)) {
       e.preventDefault();
     }
@@ -236,7 +248,7 @@ function initGestureControl(mapboxMap) {
 
   // Logic listener (passive — no preventDefault needed here)
   const onWheel = (e) => {
-    if (isFullscreen || isTouchDevice) return;
+    if (loadingLocked || isFullscreen || isTouchDevice) return;
 
     const intentional = e.ctrlKey || e.metaKey || ctrlUnlocked;
 
@@ -266,6 +278,7 @@ function initGestureControl(mapboxMap) {
   // Touch handling
   // ------------------------------------------------------------
   const onTouchStart = (e) => {
+    if (loadingLocked) return;
     if (isFullscreen) {
       mapboxMap.dragPan.enable();
       mapboxMap.touchZoomRotate.enable();
@@ -285,7 +298,7 @@ function initGestureControl(mapboxMap) {
   canvas.addEventListener("touchstart", onTouchStart, { passive: true });
 
   const onTouchEnd = () => {
-    if (isFullscreen) return;
+    if (loadingLocked || isFullscreen) return;
     mapboxMap.dragPan.disable();
     mapboxMap.touchZoomRotate.disable();
   };
@@ -298,13 +311,37 @@ function initGestureControl(mapboxMap) {
     isFullscreen = !!enabled;
     clearTimeout(wheelLockTimer);
 
-    if (isFullscreen) {
+    if (loadingLocked) {
+      hideTip();
+      lockEmbeddedMode_();
+    } else if (isFullscreen) {
       unlockFullscreenMode_();
       hideTip();
     } else {
       lockEmbeddedMode_();
       schedulePositionTip_();
     }
+  };
+
+  mapboxMap.setInteractionLoadingState = function setInteractionLoadingState(locked) {
+    loadingLocked = !!locked;
+    mapboxMap.__gestureControlLoadingLocked = loadingLocked;
+    clearTimeout(wheelLockTimer);
+
+    if (loadingLocked) {
+      ctrlUnlocked = false;
+      dragIntent = false;
+      hideTip();
+      lockEmbeddedMode_();
+      return;
+    }
+
+    if (isFullscreen) {
+      unlockFullscreenMode_();
+      return;
+    }
+
+    lockEmbeddedMode_();
   };
 
   function destroyGestureControl() {
@@ -328,6 +365,7 @@ function initGestureControl(mapboxMap) {
     canvas.removeEventListener("touchend", onTouchEnd);
     mapboxMap.__gestureControlInitialized = false;
     mapboxMap.__gestureControlDestroy = null;
+    mapboxMap.setInteractionLoadingState = null;
   }
 
   mapboxMap.__gestureControlDestroy = destroyGestureControl;
@@ -335,16 +373,25 @@ function initGestureControl(mapboxMap) {
 
 }
 
-function wireCtrlDragUnlock_(mapboxMap, isFullscreenRef, onStateChange) {
+function wireCtrlDragUnlock_(mapboxMap, isFullscreenRef, isLoadingLockedRef, onStateChange) {
   const isUnlockKey = (e) => e.ctrlKey || e.metaKey;
 
   function setUnlocked_(unlocked) {
+    if (typeof isLoadingLockedRef === "function" && isLoadingLockedRef()) {
+      mapboxMap.dragPan.disable();
+      mapboxMap.scrollZoom.disable();
+      mapboxMap.keyboard.disable();
+      if (typeof onStateChange === "function") onStateChange(false);
+      return;
+    }
     if (unlocked) {
       mapboxMap.dragPan.enable();
       mapboxMap.scrollZoom.enable();
+      mapboxMap.keyboard.enable();
     } else {
       mapboxMap.dragPan.disable();
       mapboxMap.scrollZoom.disable();
+      mapboxMap.keyboard.disable();
     }
     if (typeof onStateChange === "function") onStateChange(unlocked);
   }
