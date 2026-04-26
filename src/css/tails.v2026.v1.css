@@ -232,9 +232,12 @@ body {
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) clamp(136px, 28vw, 220px);
-  gap: 18px 20px;
-  align-items: center;
-  padding: 22px 24px;
+  grid-template-rows: auto auto;
+  column-gap: 20px;
+  row-gap: 10px;
+  align-items: start;
+  align-content: start;
+  padding: 18px 22px;
   background: #e6f0ff;
   border-radius: 16px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
@@ -251,7 +254,7 @@ body {
   grid-column: 2;
   grid-row: 1 / span 2;
   justify-self: end;
-  align-self: center;
+  align-self: start;
   width: 100%;
   max-width: 220px;
 }
@@ -268,10 +271,12 @@ body {
   grid-column: 1;
   grid-row: 1;
   font-family: 'Fredoka', sans-serif;
-  font-size: 2em;
+  font-size: 1.85em;
   font-weight: 600;
   line-height: 0.98;
   letter-spacing: -0.02em;
+  align-self: start;
+  margin: 0;
 }
 
 .overlay-date {
@@ -284,9 +289,11 @@ body {
   grid-column: 1;
   grid-row: 2;
   font-family: 'Inter', sans-serif;
-  font-size: 1.6em;
-  line-height: 1.28;
+  font-size: 1.35em;
+  line-height: 1.18;
   max-width: 20ch;
+  align-self: start;
+  margin: 0;
 }
 
 /* ----------------------------
@@ -880,8 +887,9 @@ body.is-map-fullscreen {
 @media (max-width: 767px) {
   #overlay-banner {
     grid-template-columns: minmax(0, 1fr) minmax(104px, 120px);
-    gap: 12px 14px;
-    padding: 18px 16px;
+    column-gap: 12px;
+    row-gap: 8px;
+    padding: 16px 14px;
     border-radius: 20px;
   }
 
@@ -890,7 +898,7 @@ body.is-map-fullscreen {
     grid-column: 2;
     grid-row: 1 / span 2;
     max-width: 120px;
-    align-self: center;
+    align-self: start;
   }
 
   #overlayImage,
@@ -900,15 +908,15 @@ body.is-map-fullscreen {
 
   #overlayMessage {
     grid-row: 1;
-    font-size: clamp(1.5rem, 5.3vw, 2rem);
-    line-height: 0.98;
+    font-size: clamp(1.35rem, 5vw, 1.75rem);
+    line-height: 0.95;
   }
 
   #countdown {
     grid-column: 1;
     grid-row: 2;
-    font-size: clamp(1rem, 3.9vw, 1.2rem);
-    line-height: 1.3;
+    font-size: clamp(0.95rem, 3.6vw, 1.1rem);
+    line-height: 1.18;
     max-width: 18ch;
   }
 
@@ -979,12 +987,12 @@ body.is-map-fullscreen {
   }
 
   #overlayMessage {
-    font-size: 1.4rem !important;
+    font-size: 1.25rem !important;
   }
 
   #countdown {
-    font-size: 0.96rem !important;
-    line-height: 1.35;
+    font-size: 0.9rem !important;
+    line-height: 1.15;
   }
 }
 
