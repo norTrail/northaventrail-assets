@@ -31,6 +31,12 @@
     let manualLatitudeInput, manualLongitudeInput, applyLatLngBtn, latErrorEl, lngErrorEl;
     let firstNameInput, lastNameInput, rememberContactCheckbox;
     let lifecycleHandlersBound = false;
+    const boundTabHeaders = new WeakSet();
+    const boundUploadButtons = new WeakSet();
+    const boundUploadInputs = new WeakSet();
+    const boundSearchLists = new WeakSet();
+    const boundSearchInputs = new WeakSet();
+    let searchDocumentClickBound = false;
 
     // -------------------------
     // SVG Sprite Loader
@@ -775,6 +781,9 @@
 
         // Tab Logic
         tabs.forEach((tab, i) => {
+            if (boundTabHeaders.has(tab)) return;
+            boundTabHeaders.add(tab);
+
             tab.addEventListener('click', () => activateTab(tab, i));
             tab.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
@@ -812,8 +821,14 @@
         if (tabs && tabs[0]) activateTab(tabs[0], 0);
 
         // File Uploads
-        uploadButton.addEventListener('click', () => fileInput.click());
-        fileInput.addEventListener('change', async (e) => {
+        if (uploadButton && !boundUploadButtons.has(uploadButton)) {
+            boundUploadButtons.add(uploadButton);
+            uploadButton.addEventListener('click', () => fileInput.click());
+        }
+
+        if (fileInput && !boundUploadInputs.has(fileInput)) {
+            boundUploadInputs.add(fileInput);
+            fileInput.addEventListener('change', async (e) => {
             const selected = Array.from(e.target.files);
 
             // Filter to image files only (MIME type + extension fallback for HEIC/HEIF)
@@ -915,7 +930,8 @@
             }
             // Reset input value so the same file selection triggers change event again
             e.target.value = '';
-        });
+            });
+        }
 
 
 
@@ -1124,64 +1140,80 @@
                 locationListInput.focus();
             };
 
-            locationList.addEventListener('mousemove', (e) => {
-                const opt = e.target.closest('.optionDropdown[role="option"]');
-                if (!opt) return;
-                const idx = Number(opt.dataset.idx);
-                if (!Number.isFinite(idx) || idx === _activeOptionIndex) return;
-                _activeOptionIndex = idx;
-                syncActivePOIOption_();
-            });
+            if (locationList && !boundSearchLists.has(locationList)) {
+                boundSearchLists.add(locationList);
 
-            locationList.addEventListener('mousedown', (e) => {
-                const opt = e.target.closest('.optionDropdown[role="option"]');
-                if (!opt) return;
-                const idx = Number(opt.dataset.idx);
-                if (!Number.isFinite(idx) || !searchResults[idx]) return;
-                e.preventDefault();
-                selectPOIOption_(searchResults[idx]);
-            });
-
-            locationListInput.addEventListener('keydown', (e) => {
-                const isOpen = !locationList.classList.contains('hidden');
-                if (!isOpen && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
-                    renderPOIResult_(getFilteredPOIResults_());
-                    syncDropdownWidth_();
-                    showDropdown_();
-                }
-
-                if (e.key === 'Escape') {
-                    hideDropdown_();
-                    return;
-                }
-
-                if (locationList.classList.contains('hidden') || searchResults.length === 0) return;
-
-                if (e.key === 'ArrowDown') {
-                    e.preventDefault();
-                    _activeOptionIndex = Math.min(_activeOptionIndex + 1, searchResults.length - 1);
+                locationList.addEventListener('mousemove', (e) => {
+                    const opt = e.target.closest('.optionDropdown[role="option"]');
+                    if (!opt) return;
+                    const idx = Number(opt.dataset.idx);
+                    if (!Number.isFinite(idx) || idx === _activeOptionIndex) return;
+                    _activeOptionIndex = idx;
                     syncActivePOIOption_();
-                    return;
-                }
+                });
 
-                if (e.key === 'ArrowUp') {
+                locationList.addEventListener('mousedown', (e) => {
+                    const opt = e.target.closest('.optionDropdown[role="option"]');
+                    if (!opt) return;
+                    const idx = Number(opt.dataset.idx);
+                    if (!Number.isFinite(idx) || !searchResults[idx]) return;
                     e.preventDefault();
-                    _activeOptionIndex = Math.max(_activeOptionIndex - 1, 0);
-                    syncActivePOIOption_();
-                    return;
-                }
+                    selectPOIOption_(searchResults[idx]);
+                });
+            }
 
-                if (e.key === 'Enter' && _activeOptionIndex >= 0) {
-                    e.preventDefault();
-                    selectPOIOption_(searchResults[_activeOptionIndex]);
-                }
-            });
+            if (locationListInput && !boundSearchInputs.has(locationListInput)) {
+                boundSearchInputs.add(locationListInput);
 
-            document.addEventListener('click', (e) => {
-                if (!locationList.contains(e.target) && e.target !== locationListInput) {
-                    hideDropdown_();
-                }
-            });
+                locationListInput.addEventListener('keydown', (e) => {
+                    const isOpen = !locationList.classList.contains('hidden');
+                    if (!isOpen && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+                        renderPOIResult_(getFilteredPOIResults_());
+                        syncDropdownWidth_();
+                        showDropdown_();
+                    }
+
+                    if (e.key === 'Escape') {
+                        hideDropdown_();
+                        return;
+                    }
+
+                    if (locationList.classList.contains('hidden') || searchResults.length === 0) return;
+
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        _activeOptionIndex = Math.min(_activeOptionIndex + 1, searchResults.length - 1);
+                        syncActivePOIOption_();
+                        return;
+                    }
+
+                    if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        _activeOptionIndex = Math.max(_activeOptionIndex - 1, 0);
+                        syncActivePOIOption_();
+                        return;
+                    }
+
+                    if (e.key === 'Enter' && _activeOptionIndex >= 0) {
+                        e.preventDefault();
+                        selectPOIOption_(searchResults[_activeOptionIndex]);
+                    }
+                });
+            }
+
+            if (!searchDocumentClickBound) {
+                searchDocumentClickBound = true;
+                document.addEventListener('click', (e) => {
+                    const currentList = document.getElementById('locationListbox');
+                    const currentInput = document.getElementById('locationListInput');
+                    if (!currentList || !currentInput) return;
+                    if (!currentList.contains(e.target) && e.target !== currentInput) {
+                        currentList.classList.add('hidden');
+                        currentInput.setAttribute('aria-expanded', 'false');
+                        currentInput.removeAttribute('aria-activedescendant');
+                    }
+                });
+            }
         }
 
         window.onIssueTrackerMapReady = (m) => {

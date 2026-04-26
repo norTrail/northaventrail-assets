@@ -1,5 +1,12 @@
 // trailmap-fullscreen.js
 (function () {
+  const safeViewportRuntime = window.__trailmapSafeViewportRuntime || {
+    refCount: 0,
+    attached: false,
+    onOrientationChange: null
+  };
+  window.__trailmapSafeViewportRuntime = safeViewportRuntime;
+
   // -------- Safe viewport vars (iOS Safari friendly) --------
   function updateSafeViewport() {
     let safeBottom = 0;
@@ -36,19 +43,43 @@
   }
 
   function attachSafeViewportListenersOnce() {
-    if (window.__safeViewportListenersAttached) return;
-    window.__safeViewportListenersAttached = true;
+    safeViewportRuntime.refCount += 1;
+    if (safeViewportRuntime.attached) {
+      updateSafeViewport();
+      return;
+    }
+    safeViewportRuntime.attached = true;
 
     if (window.visualViewport) {
       window.visualViewport.addEventListener("resize", updateSafeViewport, { passive: true });
       window.visualViewport.addEventListener("scroll", updateSafeViewport, { passive: true });
     }
 
-    window.addEventListener("orientationchange", () => {
+    safeViewportRuntime.onOrientationChange = () => {
       setTimeout(updateSafeViewport, 300);
-    });
+    };
+    window.addEventListener("orientationchange", safeViewportRuntime.onOrientationChange);
 
     updateSafeViewport();
+  }
+
+  function detachSafeViewportListeners() {
+    if (safeViewportRuntime.refCount > 0) {
+      safeViewportRuntime.refCount -= 1;
+    }
+    if (safeViewportRuntime.refCount > 0 || !safeViewportRuntime.attached) return;
+
+    if (window.visualViewport) {
+      window.visualViewport.removeEventListener("resize", updateSafeViewport, { passive: true });
+      window.visualViewport.removeEventListener("scroll", updateSafeViewport, { passive: true });
+    }
+
+    if (safeViewportRuntime.onOrientationChange) {
+      window.removeEventListener("orientationchange", safeViewportRuntime.onOrientationChange);
+      safeViewportRuntime.onOrientationChange = null;
+    }
+
+    safeViewportRuntime.attached = false;
   }
 
   // -------- Mapbox control: toggles CSS fullscreen --------
@@ -122,6 +153,7 @@
       }
 
       document.removeEventListener("keydown", this._onKeyDown);
+      detachSafeViewportListeners();
 
       if (this._postToggleFrameA !== null) {
         cancelAnimationFrame(this._postToggleFrameA);
@@ -225,6 +257,7 @@
   window.TrailmapFullscreen = {
     FullscreenMapControl,
     updateSafeViewport,
-    attachSafeViewportListenersOnce
+    attachSafeViewportListenersOnce,
+    detachSafeViewportListeners
   };
 })();

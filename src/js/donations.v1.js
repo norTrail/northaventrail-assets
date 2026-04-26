@@ -6,20 +6,38 @@
    to the .fund-bar element to point at any donation data file.
    ============================================================ */
 (function () {
-  // Guard against double-init if script tag appears in multiple code blocks
-  if (window._NTFundBarsInited) return;
-  window._NTFundBarsInited = true;
+  const runtime = window.__NTFundBarsRuntime || {
+    bootstrapped: false,
+    lifecycleBound: false,
+    cleanupCurrent: null
+  };
+  window.__NTFundBarsRuntime = runtime;
+  if (runtime.bootstrapped) return;
+  runtime.bootstrapped = true;
 
   try {
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', init, { once: true });
     } else { init(); }
 
+    bindLifecycleHandlersOnce();
+
     function init() {
+      runtime.cleanupCurrent?.();
+      runtime.cleanupCurrent = null;
+
       injectTailsDonationBar();
 
       const bars = Array.from(document.querySelectorAll('.fund-bar:not([hidden])'));
       if (!bars.length) return;
+
+      const cleanupFns = [];
+      runtime.cleanupCurrent = () => {
+        while (cleanupFns.length) {
+          const fn = cleanupFns.pop();
+          try { fn(); } catch (_) {}
+        }
+      };
 
       bars.forEach((root) => {
         const hasCustomProgressRow = Array.from(root.children).some((child) => child.classList?.contains('fund-progress-row'));
@@ -219,6 +237,11 @@
         };
         window.addEventListener('focus', onFocusOrVisible);
         document.addEventListener('visibilitychange', onFocusOrVisible);
+        cleanupFns.push(() => {
+          stopTimer();
+          window.removeEventListener('focus', onFocusOrVisible);
+          document.removeEventListener('visibilitychange', onFocusOrVisible);
+        });
       }
 
       for (const [url, group] of groups.entries()) {
@@ -226,6 +249,20 @@
       }
 
       injectFundBarDonateButtons();
+    }
+
+    function bindLifecycleHandlersOnce() {
+      if (runtime.lifecycleBound) return;
+      runtime.lifecycleBound = true;
+
+      const teardown = () => {
+        runtime.cleanupCurrent?.();
+        runtime.cleanupCurrent = null;
+      };
+
+      window.addEventListener('pagehide', teardown, { passive: true });
+      window.addEventListener('mercury:load', init);
+      window.addEventListener('popstate', init);
     }
 
     function injectTailsDonationBar() {
