@@ -18,7 +18,7 @@
 #tableView {
   position: relative;
   width: 100%;
-  height: 75vh;
+  height: var(--tails-panel-height, 600px);
   overflow: hidden;
   background: #f7faf7;
   overflow-x: hidden;

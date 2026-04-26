@@ -81,7 +81,7 @@
         const goal    = num(payload.goal, fallbacks.goalAttr);
         const updated = payload.updated || null;
         const greenbar    = root.querySelector('.greenbar');
-        const progressLbl = root.querySelector('.progress');
+        const progressLbl = root.querySelector('.fund-progress-label, .progress');
         const statusLine  = root.querySelector('.statusLine');
         const pct = goal > 0 ? clamp((raised / goal) * 100, 0, 100) : 0;
 
@@ -248,7 +248,7 @@
                aria-label="Donation progress">
             <div class="greenbar"></div>
           </div>
-          <span class="progress">0%</span>
+          <span class="fund-progress-label">0%</span>
         </div>
         <div class="fund-msg">
           <span class="statusLine"></span>

@@ -106,6 +106,7 @@
 
 .fund-bar--tails .meter {
   flex: 1;
+  min-width: 0;
   height: 12px;
   border-radius: 6px;
   margin-bottom: 0;
@@ -115,13 +116,15 @@
   border-radius: 6px;
 }
 
-.fund-bar--tails .progress {
+.fund-bar--tails .fund-progress-label {
+  flex: 0 0 auto;
   font-size: 0.9rem;
   font-weight: 700;
   color: #2f6f4e;
   white-space: nowrap;
   min-width: 3ch;
   text-align: right;
+  line-height: 1;
 }
 
 .fund-bar--tails .statusLine {
