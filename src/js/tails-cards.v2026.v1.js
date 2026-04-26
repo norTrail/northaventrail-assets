@@ -136,6 +136,35 @@
     return actions;
   }
 
+  function formatParkingDist(ft) {
+    const n = Number(ft);
+    if (!Number.isFinite(n) || n <= 0) return '';
+    if (n < 1000) return '~' + Math.round(n) + ' ft';
+    return '~' + (n / 5280).toFixed(1) + ' mi';
+  }
+
+  function renderParkingRow(p) {
+    const name = String(p.p_name || '').trim();
+    if (!name) return '';
+    const dist = formatParkingDist(p.p_dist);
+    const iconUrl = window.NorthavenUtils?.resolveIconUrl?.('parking.svg') || '';
+    return '' +
+      '<div class="nc-related" aria-label="Closest Parking">' +
+        '<div class="nc-related-group" role="group" aria-label="Closest Parking">' +
+          '<div class="nc-related-label" aria-hidden="true">Closest Parking</div>' +
+          '<div class="nc-related-row">' +
+            '<span class="nc-related-row-icon" aria-hidden="true">' +
+              (iconUrl ? '<img src="' + escAttr(iconUrl) + '" alt="" class="nc-related-icon-img" onerror="this.remove()">' : '') +
+            '</span>' +
+            '<span class="nc-related-row-text">' +
+              (dist ? '<span class="nc-related-row-meta" aria-hidden="true">' + esc(dist) + '</span>' : '') +
+              '<span class="nc-related-row-title">' + esc(name) + '</span>' +
+            '</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+  }
+
   function renderStatusMeta(status, icon, dateText, zoneCode) {
     const safeStatus = String(status || '').trim();
     const safeDate = String(dateText || '').trim();
@@ -175,6 +204,7 @@
         '<hr class="nc-divider">' +
         buildActionHtml(actions) +
         buildHeroHtml(p.m_id) +
+        renderParkingRow(p) +
         '<div class="nc-body">' +
           '<div class="nc-category-row"><span class="nc-badge"><span class="nc-badge-label">No-Mow Zone</span></span></div>' +
           (desc ? '<div class="nc-desc">' + desc + '</div>' : '') +
