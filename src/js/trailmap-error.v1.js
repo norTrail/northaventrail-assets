@@ -798,5 +798,6 @@ window.TrailmapError = {
   attachErrorLogging,
   installWebglAutoRecovery,
   logClientEvent,
-  logClientErrorToServer
+  logClientErrorToServer,
+  getAppNameFromUrl: getAppNameFromUrl_
 };

@@ -1,18 +1,12 @@
 // trailmap-monarch.js
 (function () {
-  function shouldShowMonarchWay_() {
-    const isWhereToParkPage =
-      window.location.pathname.replace(/\/$/, "") === "/where-to-park";
-    return (typeof SHOW_MONARCH_WAY !== "undefined" && !!SHOW_MONARCH_WAY) || isWhereToParkPage;
-  }
-
   function initMonarchWayPopups(map) {
     if (!map || typeof map.on !== "function" || typeof map.getStyle !== "function") {
       console.warn("[MonarchWay] map missing / not Mapbox");
       return;
     }
 
-    if (!shouldShowMonarchWay_()) {
+    if (!window.shouldShowMonarchWay_()) {
       return;
     }
 
@@ -90,7 +84,7 @@
 
       activeMonarchPopup?.remove();
 
-      // Close other popups 
+      // Close other popups
       if (typeof forceClosePopups === "function") forceClosePopups();
 
       activeMonarchPopup = new mapboxgl.Popup({
@@ -110,62 +104,46 @@
 
     const onReady = () => {
       if (!map.getSource("monarch_way_source")) {
-          map.addSource('monarch_way_source', {
-            type: 'geojson',
-            data: URL_MONARCH_WAY
-          });
-        }
-
-        // Background to block out the trail and highlight the Way
-        if (!map.getLayer("monarch_casing")) {
-          map.addLayer({
-            "id": "monarch_casing",
-            "type": "line",
-            "source": "monarch_way_source",
-            "layout": {
-              "line-cap": "round",
-              "line-join": "round"
-            },
-            "paint": {
-              "line-color": "#f5f5f5", // match map background
-              "line-width": 10
-            }
-          });
-        }
-
-        // Draw the way
-        if (!map.getLayer("monarch_way")) {
-          map.addLayer({
-            "id": "monarch_way",
-            "type": "line",
-            "source": "monarch_way_source",
-            "layout": {
-              "line-join": "round",
-              "line-cap": "round"
-            },
-            "paint": {
-              "line-color": "#551A8B",
-              "line-width": 5
-            }
-          });
-        }
-
-        map.on("click", "monarch_way", (e) => {
-          const props = e.features?.[0]?.properties || {};
-          createMonarchPopup(e.lngLat, props);
+        map.addSource('monarch_way_source', {
+          type: 'geojson',
+          data: URL_MONARCH_WAY
         });
+      }
 
-        map.on("mouseenter", "monarch_way", () => {
-          map.getCanvas().style.cursor = "pointer";
+      if (!map.getLayer("monarch_casing")) {
+        map.addLayer({
+          "id": "monarch_casing",
+          "type": "line",
+          "source": "monarch_way_source",
+          "layout": { "line-cap": "round", "line-join": "round" },
+          "paint": { "line-color": "#f5f5f5", "line-width": 10 }
         });
+      }
 
-        map.on("mouseleave", "monarch_way", () => {
-          map.getCanvas().style.cursor = "";
+      if (!map.getLayer("monarch_way")) {
+        map.addLayer({
+          "id": "monarch_way",
+          "type": "line",
+          "source": "monarch_way_source",
+          "layout": { "line-join": "round", "line-cap": "round" },
+          "paint": { "line-color": "#551A8B", "line-width": 5 }
         });
+      }
 
-        map.once('idle', () => {
-          monarchSetBoundsReady();
-        });
+      map.on("click", "monarch_way", (e) => {
+        const props = e.features?.[0]?.properties || {};
+        createMonarchPopup(e.lngLat, props);
+      });
+
+      map.on("mouseenter", "monarch_way", () => {
+        map.getCanvas().style.cursor = "pointer";
+      });
+
+      map.on("mouseleave", "monarch_way", () => {
+        map.getCanvas().style.cursor = "";
+      });
+
+      map.once('idle', () => { monarchSetBoundsReady(); });
 
       function monarchSetBoundsReady() {
         if (!mapInitialIdleCompleted) {
@@ -186,7 +164,6 @@
           fitBoundsSilently(MAP_BOUNDS_MONARCH_WAY, { padding: 40 });
           flyToFeature = null;
 
-          // initial info popup
           createMonarchPopup(
             monarchInfoPoint.geometry.coordinates,
             monarchInfoPoint.properties,
@@ -194,7 +171,6 @@
           );
         }
       }
-
     };
 
     if (map.loaded()) {

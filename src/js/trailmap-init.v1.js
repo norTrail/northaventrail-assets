@@ -196,7 +196,7 @@ function loadWindow() {
     mapEl.appendChild(wrapper);
     window.TrailmapError?.logClientEvent?.({
       kind: "map_fallback_rendered",
-      app: getAppNameFromUrl({ fallback: "northaven-trail" }),
+      app: window.TrailmapError.getAppNameFromUrl("northaven-trail"),
       reason
     });
   }
@@ -234,7 +234,7 @@ function loadWindow() {
     } catch (err) {
       window.TrailmapError?.logClientEvent?.({
         kind: "buildMap_failed",
-        app: getAppNameFromUrl({ fallback: "northaven-trail" }),
+        app: window.TrailmapError.getAppNameFromUrl("northaven-trail"),
         message: err?.message || String(err),
         stack: err?.stack || null
       });
@@ -244,7 +244,7 @@ function loadWindow() {
 
     if (window.TrailmapError?.attachErrorLogging) {
       window.TrailmapError.attachErrorLogging(m, {
-        appName: getAppNameFromUrl({ fallback: "northaven-trail" }),
+        appName: window.TrailmapError.getAppNameFromUrl("northaven-trail"),
         endpoint: window.TRAILMAP_ERROR_ENDPOINT
       });
     }
@@ -500,20 +500,10 @@ function loadWindow() {
             setShareButton();
             newMap.once("idle", () => { mapInitialIdleCompleted = true; });
             if (typeof initGestureControl === "function") initGestureControl(newMap);
-            // ✅ Re-init Monarch Way on rebuilt map
             if (shouldShowMonarchWay_()) {
-              // style is loaded when onReinit fires, but idle is a safe "everything settled" moment
               setTimeout(() => initMonarchWayIfNeeded_(newMap), 0);
             }
           }
-
-          /*if (typeof SHOW_LEGEND !== "undefined" && SHOW_LEGEND) {
-            newMap.once("idle", () => {
-              ensureLegendExists({ mountId: "mapView" });
-              initLegendUI_();
-              setupLegendClicked();
-            });
-          }*/
         } finally {
           setTimeout(() => { __onReinitRunning = false; }, 1500);
         }
@@ -552,37 +542,21 @@ function loadWindow() {
       return;
     }
 
-    // (optional) community paths / wildflowers remain commented as you had them
-    // addOptionalLayers_();
-
     getMarkerData(); // fetch + adds marker layer + then wires controls/events
-    //setShareButton();
 
     if (typeof initGestureControl === "function") {
       initGestureControl(map);
     }
 
-
     map.once('idle', () => {
       document.getElementById("map-loading-overlay")?.remove();
-
-      // Setup Monarch Way
       initMonarchWayIfNeeded_(map);
-
-      // Setup the legend
-      /*if (typeof SHOW_LEGEND !== 'undefined' && SHOW_LEGEND) {
-        ensureLegendExists({ mountId: "mapView" });
-        initLegendUI_();
-        setupLegendClicked();
-      }*/
-
       setupDebug();
 
       mapInitialIdleCompleted = true;
     });
   });
 
-  // share button wiring (kept behavior)
   const shareBtn = document.getElementById('share-button');
   const shareWrap = document.getElementById('shareButton');
 
@@ -749,7 +723,7 @@ function _fetchAndApplyMarkerData(reqId, mapAtStart, dataUrls, index = 0) {
         kind: "marker_fetch_error",
         message: String(err?.message || err),
         stack: err?.stack,
-        app: getAppNameFromUrl({ fallback: "northaven-trail" }),
+        app: window.TrailmapError.getAppNameFromUrl("northaven-trail"),
         page: window.location?.pathname,
         ua: navigator?.userAgent
       });
@@ -1080,6 +1054,7 @@ function isWhereToParkPage_() {
 function shouldShowMonarchWay_() {
   return (typeof SHOW_MONARCH_WAY !== "undefined" && !!SHOW_MONARCH_WAY) || isWhereToParkPage_();
 }
+window.shouldShowMonarchWay_ = shouldShowMonarchWay_;
 
 function initMonarchWayIfNeeded_(targetMap) {
   if (!shouldShowMonarchWay_()) return;
@@ -1237,25 +1212,3 @@ function loadSvgSpriteOnce() {
   window.NorthavenUtils.loadSvgSpriteOnce();
 }
 
-function getAppNameFromUrl({ fallback = "trail-map" } = {}) {
-  try {
-    const { pathname } = window.location;
-    if (!pathname) return fallback;
-
-    // Normalize: remove leading/trailing slashes
-    const clean = pathname.replace(/^\/+|\/+$/g, "");
-    if (!clean) return fallback;
-
-    // Use the last path segment
-    let segment = clean.split("/").pop();
-
-    // Safety: lowercase, allow only url-safe chars
-    segment = segment
-      .toLowerCase()
-      .replace(/[^a-z0-9-_]/g, "");
-
-    return segment || fallback;
-  } catch {
-    return fallback;
-  }
-}
