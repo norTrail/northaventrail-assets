@@ -242,6 +242,10 @@ body {
   overflow: hidden;
 }
 
+#overlay-banner[hidden] {
+  display: none !important;
+}
+
 #overlay-banner > #overlayImage,
 #overlay-banner > :has(#overlayImage) {
   grid-column: 2;
