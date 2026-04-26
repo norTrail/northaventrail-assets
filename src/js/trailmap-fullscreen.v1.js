@@ -57,8 +57,10 @@
       this._map = null;
       this._container = null;
       this._btn = null;
+      this._iconUse = null;
       this._isFullscreen = false;
-      this._postToggleFrame = null;
+      this._postToggleFrameA = null;
+      this._postToggleFrameB = null;
 
       // configurable IDs/classes so this works across maps
       this._opts = {
@@ -95,7 +97,7 @@
       this._btn = document.createElement("button");
       this._btn.type = "button";
       this._updateButtonLabels(false);
-
+      this._mountIcon();
       this._renderIcon(false);
 
       this._btn.addEventListener("click", () => {
@@ -121,9 +123,13 @@
 
       document.removeEventListener("keydown", this._onKeyDown);
 
-      if (this._postToggleFrame !== null) {
-        cancelAnimationFrame(this._postToggleFrame);
-        this._postToggleFrame = null;
+      if (this._postToggleFrameA !== null) {
+        cancelAnimationFrame(this._postToggleFrameA);
+        this._postToggleFrameA = null;
+      }
+      if (this._postToggleFrameB !== null) {
+        cancelAnimationFrame(this._postToggleFrameB);
+        this._postToggleFrameB = null;
       }
 
       this._container?.remove();
@@ -137,13 +143,22 @@
       }
     }
 
+    _mountIcon() {
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("width", "22");
+      svg.setAttribute("height", "22");
+      svg.setAttribute("aria-hidden", "true");
+
+      this._iconUse = document.createElementNS("http://www.w3.org/2000/svg", "use");
+      svg.appendChild(this._iconUse);
+      this._btn.appendChild(svg);
+    }
+
     _renderIcon(isFs) {
       const iconId = isFs ? this._opts.iconExit : this._opts.iconEnter;
-      this._btn.innerHTML = `
-        <svg width="22" height="22" aria-hidden="true">
-          <use href="${iconId}"></use>
-        </svg>
-      `;
+      if (this._iconUse) {
+        this._iconUse.setAttribute("href", iconId);
+      }
     }
 
     _updateButtonLabels(isFs) {
@@ -178,21 +193,30 @@
       this._updateButtonLabels(this._isFullscreen);
       this._renderIcon(this._isFullscreen);
 
-      if (this._postToggleFrame !== null) {
-        cancelAnimationFrame(this._postToggleFrame);
+      if (this._postToggleFrameA !== null) {
+        cancelAnimationFrame(this._postToggleFrameA);
+        this._postToggleFrameA = null;
+      }
+      if (this._postToggleFrameB !== null) {
+        cancelAnimationFrame(this._postToggleFrameB);
+        this._postToggleFrameB = null;
       }
 
-      // Defer layout-sensitive follow-up work so class toggles can settle
-      // before hooks or Mapbox read geometry.
-      this._postToggleFrame = requestAnimationFrame(() => {
-        this._postToggleFrame = null;
-
-        if (this._opts.onToggle) {
-          try { this._opts.onToggle(this._isFullscreen, this._map); } catch (e) { console.warn('FullscreenMapControl onToggle error:', e); }
-        }
-
-        this._map?.resize?.();
+      // Let fullscreen class/style changes land, then update viewport vars,
+      // then wait one more frame before any geometry reads.
+      this._postToggleFrameA = requestAnimationFrame(() => {
+        this._postToggleFrameA = null;
         updateSafeViewport();
+
+        this._postToggleFrameB = requestAnimationFrame(() => {
+          this._postToggleFrameB = null;
+
+          if (this._opts.onToggle) {
+            try { this._opts.onToggle(this._isFullscreen, this._map); } catch (e) { console.warn('FullscreenMapControl onToggle error:', e); }
+          }
+
+          this._map?.resize?.();
+        });
       });
     }
   }

@@ -77,6 +77,13 @@ function initGestureControl(mapboxMap) {
 
   function schedulePositionTip_() {
     if (!gestureTip) return;
+    if (isFullscreen) {
+      if (tipPositionFrame !== null) {
+        cancelAnimationFrame(tipPositionFrame);
+        tipPositionFrame = null;
+      }
+      return;
+    }
     if (tipPositionFrame !== null) {
       cancelAnimationFrame(tipPositionFrame);
     }
@@ -296,9 +303,8 @@ function initGestureControl(mapboxMap) {
       hideTip();
     } else {
       lockEmbeddedMode_();
+      schedulePositionTip_();
     }
-
-    schedulePositionTip_();
   };
 
   function destroyGestureControl() {
