@@ -74,6 +74,7 @@
   let _resizeTick = null;
   let _lastMobileMode = isMobile();
   let _responsiveSyncBound = false;
+  let _sheetBodyTouchStartY = null;
 
   function isMobile() {
     return window.innerWidth < MOBILE_BREAKPOINT;
@@ -564,6 +565,33 @@
     el.style.transform = 'translateY(' + y + 'px)';
   }
 
+  function _setSheetState(el, target, easing) {
+    if (!el || !target || _sheetState === SHEET_STATE_HIDDEN && target === SHEET_STATE_HIDDEN) return;
+    _animate(el, _stateY(target, el.offsetHeight), easing || '300ms cubic-bezier(0.32, 0.72, 0, 1)');
+    _sheetState = target;
+  }
+
+  function _sheetBodyEl() {
+    return document.getElementById(SHEET_BODY_ID);
+  }
+
+  function _sheetHasHiddenScrollableContent() {
+    const sheet = _sheetEl();
+    const body = _sheetBodyEl();
+    if (!sheet || !body || _sheetState !== SHEET_STATE_INITIAL) return false;
+
+    const visibleHeight = Math.max(0, sheet.offsetHeight - _peekY - body.offsetTop);
+    if (visibleHeight <= 0) return false;
+    return body.scrollHeight > visibleHeight + 12;
+  }
+
+  function _promoteSheetForContentScroll() {
+    const sheet = _sheetEl();
+    if (!sheet || !_sheetHasHiddenScrollableContent()) return false;
+    _setSheetState(sheet, SHEET_STATE_FULL);
+    return true;
+  }
+
   function _dragPointY(e) {
     if (typeof e.clientY === 'number') return e.clientY;
     if (e.touches && e.touches[0]) return e.touches[0].clientY;
@@ -609,8 +637,7 @@
       target = _sheetState;
     }
 
-    _animate(el, _stateY(target, h), '300ms cubic-bezier(0.32, 0.72, 0, 1)');
-    _sheetState = target;
+    _setSheetState(el, target, '300ms cubic-bezier(0.32, 0.72, 0, 1)');
 
     if (target === SHEET_STATE_HIDDEN) {
       hide();
@@ -691,6 +718,7 @@
     document.body.appendChild(el);
 
     const handleTrack = el.querySelector('.nc-handle-track');
+    const sheetBody = el.querySelector('.nc-sheet-body');
 
     el.style.transition = 'none';
     el.style.transform = 'translateY(' + (window.innerHeight + 30) + 'px)';
@@ -731,8 +759,7 @@
         if (_dragData || _sheetState === SHEET_STATE_HIDDEN) return;
         if (Date.now() < _suppressHandleClickUntil) return;
         const target = _sheetState === SHEET_STATE_INITIAL ? SHEET_STATE_FULL : SHEET_STATE_INITIAL;
-        _animate(el, _stateY(target, el.offsetHeight), '300ms cubic-bezier(0.32, 0.72, 0, 1)');
-        _sheetState = target;
+        _setSheetState(el, target, '300ms cubic-bezier(0.32, 0.72, 0, 1)');
       }
 
       handleTrack.addEventListener('click', toggleExpand);
@@ -742,6 +769,30 @@
           toggleExpand();
         }
       });
+    }
+
+    if (sheetBody) {
+      sheetBody.addEventListener('wheel', function (e) {
+        if (e.deltaY > 6) _promoteSheetForContentScroll();
+      }, { passive: true });
+
+      sheetBody.addEventListener('touchstart', function (e) {
+        _sheetBodyTouchStartY = _dragPointY(e);
+      }, { passive: true });
+
+      sheetBody.addEventListener('touchmove', function (e) {
+        const nextY = _dragPointY(e);
+        if (typeof _sheetBodyTouchStartY !== 'number' || typeof nextY !== 'number') return;
+        if (_sheetBodyTouchStartY - nextY > 12) _promoteSheetForContentScroll();
+      }, { passive: true });
+
+      sheetBody.addEventListener('touchend', function () {
+        _sheetBodyTouchStartY = null;
+      }, { passive: true });
+
+      sheetBody.addEventListener('touchcancel', function () {
+        _sheetBodyTouchStartY = null;
+      }, { passive: true });
     }
 
     return el;

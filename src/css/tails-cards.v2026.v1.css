@@ -157,6 +157,21 @@
   box-shadow: 0 1px 0 rgba(16, 132, 82, 0.04);
 }
 
+.nc-related-row--link {
+  text-decoration: none !important;
+  cursor: pointer;
+}
+
+.nc-related-row--link:hover {
+  border-color: #b9d7c4;
+  background: #eef8f1;
+}
+
+.nc-related-row--link:focus-visible {
+  outline: 2px solid #108452;
+  outline-offset: 2px;
+}
+
 .nc-related-row-icon {
   display: inline-flex;
   align-items: center;
@@ -195,6 +210,13 @@
   font-weight: 600;
   color: #143423;
   line-height: 1.25;
+}
+
+.nc-related-chevron {
+  font-size: 18px;
+  line-height: 1;
+  color: #3f5b47;
+  flex-shrink: 0;
 }
 
 @media (min-width: 768px) {

@@ -143,16 +143,39 @@
     return '~' + (n / 5280).toFixed(1) + ' mi';
   }
 
+  function buildTrailmapParkingHref_(props) {
+    const candidates = [
+      props?.p_id,
+      props?.pID,
+      props?.parkingId,
+      props?.parkingID,
+      props?.parkingLotId,
+      props?.parkingLotID,
+      props?.pid,
+      props?.cp,
+    ];
+    const featureId = candidates
+      .map(value => String(value == null ? '' : value).trim())
+      .find(Boolean);
+
+    return featureId ? '/trailmap?loc=' + encodeURIComponent(featureId) : '';
+  }
+
   function renderParkingRow(p) {
     const name = String(p.p_name || '').trim();
     if (!name) return '';
     const dist = formatParkingDist(p.p_dist);
     const iconUrl = window.NorthavenUtils?.resolveIconUrl?.('parking.svg') || '';
+    const href = buildTrailmapParkingHref_(p);
+    const rowTag = href ? 'a' : 'div';
+    const rowAttrs = href
+      ? ' class="nc-related-row nc-related-row--link" href="' + escAttr(href) + '" aria-label="Open parking lot on the trail map: ' + escAttr(name) + '" title="Open parking lot on the trail map"'
+      : ' class="nc-related-row"';
     return '' +
       '<div class="nc-related" aria-label="Closest Parking">' +
         '<div class="nc-related-group" role="group" aria-label="Closest Parking">' +
           '<div class="nc-related-label" aria-hidden="true">Closest Parking</div>' +
-          '<div class="nc-related-row">' +
+          '<' + rowTag + rowAttrs + '>' +
             '<span class="nc-related-row-icon" aria-hidden="true">' +
               (iconUrl ? '<img src="' + escAttr(iconUrl) + '" alt="" class="nc-related-icon-img" onerror="this.remove()">' : '') +
             '</span>' +
@@ -160,7 +183,8 @@
               (dist ? '<span class="nc-related-row-meta" aria-hidden="true">' + esc(dist) + '</span>' : '') +
               '<span class="nc-related-row-title">' + esc(name) + '</span>' +
             '</span>' +
-          '</div>' +
+            (href ? '<span class="nc-related-chevron" aria-hidden="true">&#8250;</span>' : '') +
+          '</' + rowTag + '>' +
         '</div>' +
       '</div>';
   }

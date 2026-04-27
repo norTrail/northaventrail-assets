@@ -654,6 +654,31 @@ async function tailsMarkerFlow(browser) {
       }, { timeout: 15000 });
       const pillText = await page.$eval("#status-pill", (el) => el.innerText.trim());
       assert.ok(pillText.length > 0, "TAILS status pill should have text when not active");
+
+      // Regression guard for 71ecf90: showBanner() only set .hidden = false but
+      // did not remove the inline display:none style set during the initial
+      // hidden state, leaving the banner invisible even in "coming" state.
+      // Fix: also call style.removeProperty("display") and removeAttribute("hidden").
+      const bannerState = await page.evaluate(() => {
+        const banner = document.getElementById("overlay-banner");
+        if (!banner) return { exists: false };
+        const style = window.getComputedStyle(banner);
+        const rect = banner.getBoundingClientRect();
+        return {
+          exists: true,
+          hasHiddenAttr: banner.hasAttribute("hidden"),
+          ariaHidden: banner.getAttribute("aria-hidden"),
+          inlineDisplay: banner.style.display,
+          computedDisplay: style.display,
+          height: rect.height
+        };
+      });
+      assert.equal(bannerState.exists, true, "TAILS overlay banner #overlay-banner should exist in the DOM");
+      assert.equal(bannerState.hasHiddenAttr, false, "Overlay banner should not have [hidden] attribute in non-active state (regression: 71ecf90)");
+      assert.equal(bannerState.ariaHidden, "false", "Overlay banner should have aria-hidden='false' in non-active state (regression: 71ecf90)");
+      assert.notEqual(bannerState.computedDisplay, "none", "Overlay banner computed display should not be 'none' (regression: 71ecf90 — showBanner() left inline display:none)");
+      assert.ok(bannerState.height > 0, "Overlay banner should have positive height in non-active state (regression: 71ecf90)");
+
       console.log(`tails status ui (${overlayState}): pass`);
     } else {
       // Active: verify a sheep marker is present and opens the new card UI
@@ -922,6 +947,81 @@ async function cardRelatedGroupADAFlow(browser) {
   }
 }
 
+async function tailsLoadingStateApiFlow(browser) {
+  // Regression guard for ff2176d: tails-init.v2026.v1.js now sets
+  // map.__gestureControlLoadingLocked = true before initGestureControl() so
+  // gesture-control.v1.js blocks interaction while the page loads.
+  // TAILS.setLoadingState / TAILS.isLoading are exposed globally so callers
+  // can check and control this flag. hideFlockLoader() calls setLoadingState(false).
+  // If these APIs are absent the gesture-lock-during-load path is broken.
+  const page = await newPage(browser);
+  try {
+    await goto(page, "https://northaventrail.org/tails-2026");
+    await waitForMap(page);
+
+    const apiState = await page.evaluate(() => {
+      const tails = window.TAILS;
+      return {
+        tailsExists: typeof tails === "object" && tails !== null,
+        getMapFn: typeof tails?.getMap === "function",
+        isLoadingFn: typeof tails?.isLoading === "function",
+        setLoadingFn: typeof tails?.setLoadingState === "function",
+        isLoading: typeof tails?.isLoading === "function" ? tails.isLoading() : null
+      };
+    });
+
+    assert.equal(apiState.tailsExists, true, "window.TAILS should be defined after page load");
+    assert.equal(apiState.getMapFn, true, "TAILS.getMap should be a function");
+    assert.equal(apiState.isLoadingFn, true, "TAILS.isLoading should be a function (regression: ff2176d — loading-lock API missing)");
+    assert.equal(apiState.setLoadingFn, true, "TAILS.setLoadingState should be a function (regression: ff2176d — loading-lock API missing)");
+    assert.equal(apiState.isLoading, false, "TAILS.isLoading() should return false after map is ready (hideFlockLoader calls setLoadingState(false))");
+
+    console.log("tails loading state API: pass");
+  } finally {
+    await page.close();
+  }
+}
+
+async function trailmapFullscreenCleanupApiFlow(browser) {
+  // Regression guard for 6a2d17c: trailmap-fullscreen.v1.js was adding
+  // orientationchange and visualViewport resize/scroll listeners on every init
+  // with no way to remove them. The fix adds reference counting and exposes
+  // TrailmapFullscreen.detachSafeViewportListeners(). The FullscreenMapControl
+  // onRemove() now calls detachSafeViewportListeners() to clean up.
+  const page = await newPage(browser);
+  try {
+    await installTrailmapPoiFixture(page);
+    await goto(page, TRAILMAP_LIVE_URL);
+    await waitForMap(page);
+
+    const apiState = await page.evaluate(() => {
+      const tf = window.TrailmapFullscreen;
+      const runtime = window.__trailmapSafeViewportRuntime;
+      return {
+        tfExists: typeof tf === "object" && tf !== null,
+        hasDetach: typeof tf?.detachSafeViewportListeners === "function",
+        hasAttach: typeof tf?.attachSafeViewportListenersOnce === "function",
+        hasUpdate: typeof tf?.updateSafeViewport === "function",
+        runtimeExists: typeof runtime === "object" && runtime !== null,
+        runtimeAttachedIsBoolean: typeof runtime?.attached === "boolean",
+        runtimeRefCountIsNumber: typeof runtime?.refCount === "number"
+      };
+    });
+
+    assert.equal(apiState.tfExists, true, "window.TrailmapFullscreen should be defined after page load");
+    assert.equal(apiState.hasDetach, true, "TrailmapFullscreen.detachSafeViewportListeners should be a function (regression: 6a2d17c — listener-leak cleanup missing)");
+    assert.equal(apiState.hasAttach, true, "TrailmapFullscreen.attachSafeViewportListenersOnce should be a function");
+    assert.equal(apiState.hasUpdate, true, "TrailmapFullscreen.updateSafeViewport should be a function");
+    assert.equal(apiState.runtimeExists, true, "__trailmapSafeViewportRuntime should exist (ref-counting runtime)");
+    assert.equal(apiState.runtimeAttachedIsBoolean, true, "__trailmapSafeViewportRuntime.attached should be a boolean");
+    assert.equal(apiState.runtimeRefCountIsNumber, true, "__trailmapSafeViewportRuntime.refCount should be a number");
+
+    console.log("trailmap fullscreen cleanup API: pass");
+  } finally {
+    await page.close();
+  }
+}
+
 async function main() {
   assertHeadersAllowMapillaryViewer();
   const browser = await launchBrowser();
@@ -941,6 +1041,8 @@ async function main() {
     await mapsMenuPageFlow(browser, "https://northaventrail.org/hawk-lights", "hawk lights maps menu");
     await issueTrackerSearchFlow(browser);
     await tailsMarkerFlow(browser);
+    await tailsLoadingStateApiFlow(browser);
+    await trailmapFullscreenCleanupApiFlow(browser);
     await valentineModalFlow(browser);
   } finally {
     await browser.close();

@@ -86,8 +86,11 @@ body.is-map-fullscreen .nc-sheet {
 .nc-sheet-body {
   overflow-y: auto;
   overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
   flex: 1;
   min-height: 0;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .nc-sheet-body .nc-body {
