@@ -37,7 +37,7 @@ const UI = {
 let currentState = null;
 let countdownTimer = null;
 let isZoomedToHerd = false;
-let _isMapFullscreen = false;
+let _bannerSuppressedByFullscreen = false;
 let lastVisibleZoneCode = null;
 let userHasScrolledTable = false;
 const TAILS_SHARE_HERD_PARAM = "herd";
@@ -1158,10 +1158,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function showBanner() {
   if (!UI.overlayBanner) return;
-  if (_isMapFullscreen) {
-    // Defer until fullscreen exits — setFullscreenState will restore it
-    UI.overlayBanner.setAttribute("data-fs-hidden", "true");
+  if (UI.mapView?.classList.contains("is-fullscreen")) {
+    _bannerSuppressedByFullscreen = true;
     if (UI.statusPill) UI.statusPill.style.display = "none";
+    queueMapResize_();
     return;
   }
   UI.overlayBanner.hidden = false;
@@ -1176,31 +1176,26 @@ function hideBanner() {
   if (UI.overlayBanner) {
     UI.overlayBanner.hidden = true;
     UI.overlayBanner.setAttribute("aria-hidden", "true");
-    UI.overlayBanner.removeAttribute("data-fs-hidden");
   }
+  _bannerSuppressedByFullscreen = false;
   queueMapResize_();
 }
 
 function setFullscreenState(isFs) {
-  _isMapFullscreen = !!isFs;
   if (!UI.overlayBanner) return;
   if (isFs) {
-    // Hide the banner when entering fullscreen
     if (!UI.overlayBanner.hidden) {
-      UI.overlayBanner.setAttribute("data-fs-hidden", "true");
+      _bannerSuppressedByFullscreen = true;
       UI.overlayBanner.hidden = true;
       UI.overlayBanner.setAttribute("aria-hidden", "true");
       queueMapResize_();
     }
-  } else {
-    // Restore the banner if it was hidden by fullscreen
-    if (UI.overlayBanner.getAttribute("data-fs-hidden") === "true") {
-      UI.overlayBanner.removeAttribute("data-fs-hidden");
-      UI.overlayBanner.hidden = false;
-      UI.overlayBanner.removeAttribute("hidden");
-      UI.overlayBanner.setAttribute("aria-hidden", "false");
-      queueMapResize_();
-    }
+  } else if (_bannerSuppressedByFullscreen) {
+    _bannerSuppressedByFullscreen = false;
+    UI.overlayBanner.hidden = false;
+    UI.overlayBanner.removeAttribute("hidden");
+    UI.overlayBanner.setAttribute("aria-hidden", "false");
+    queueMapResize_();
   }
 }
 
