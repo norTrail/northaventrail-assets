@@ -139,8 +139,8 @@
   function formatParkingDist(ft) {
     const n = Number(ft);
     if (!Number.isFinite(n) || n <= 0) return '';
-    if (n < 1000) return '~' + Math.round(n) + ' ft';
-    return '~' + (n / 5280).toFixed(1) + ' mi';
+    if (n < 1000) return '~' + (Math.ceil(n / 50) * 50) + ' ft';
+    return '~' + (Math.ceil((n / 5280) * 10) / 10).toFixed(1) + ' mi';
   }
 
   function buildTrailmapParkingHref_(props) {

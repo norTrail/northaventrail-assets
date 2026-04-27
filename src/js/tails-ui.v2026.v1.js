@@ -26,7 +26,8 @@ const UI = {
   openMapBtn: document.getElementById("open-map-btn"),
   adaInfo: document.getElementById("ada-info"),
   adaInfoLong: document.getElementById("ada-long-text"),
-  adaInfoShort: document.getElementById("ada-short-text")
+  adaInfoShort: document.getElementById("ada-short-text"),
+  shareBtn: document.getElementById("share-button")
 };
 
 
@@ -46,6 +47,7 @@ let activeHerdCode = null;
 let sharedHerdLookupReady = false;
 let sharedNoMowLookupReady = false;
 let pendingSharedSelection = parseSharedSelectionFromUrl_();
+let viewDocksInitialized = false;
 
 function normalizeSharedId_(value) {
   return String(value || "").trim();
@@ -77,16 +79,15 @@ function buildTailsShareUrl_(options) {
 }
 
 function syncPageShareButtonUrl_(url) {
-  const shareBtn = document.getElementById("share-button");
-  if (!shareBtn) return;
+  if (!UI.shareBtn) return;
 
-  shareBtn.setAttribute("share-url", String(url || window.location.href));
+  UI.shareBtn.setAttribute("share-url", String(url || window.location.href));
 
-  if (!shareBtn.getAttribute("share-title")) {
-    shareBtn.setAttribute("share-title", "Northaven TAILS");
+  if (!UI.shareBtn.getAttribute("share-title")) {
+    UI.shareBtn.setAttribute("share-title", "Northaven TAILS");
   }
-  if (!shareBtn.getAttribute("share-text")) {
-    shareBtn.setAttribute("share-text", "Explore the Northaven TAILS grazing map.");
+  if (!UI.shareBtn.getAttribute("share-text")) {
+    UI.shareBtn.setAttribute("share-text", "Explore the Northaven TAILS grazing map.");
   }
 }
 
@@ -162,7 +163,6 @@ function tryApplySharedSelection_() {
   }
 
   if (zoneCode) {
-    if (herdCode && !sharedHerdLookupReady) return;
     if (!sharedNoMowLookupReady) return;
     if (focusNoMowZone(zoneCode, { fromSharedUrl: true })) {
       pendingSharedSelection = null;
@@ -243,6 +243,62 @@ function queueMapResize_() {
   });
 }
 
+function setViewVisible_(viewEl, visible) {
+  if (!viewEl) return;
+  if (!visible) {
+    viewEl.style.display = "none";
+    return;
+  }
+
+  viewEl.style.display = viewEl.id === "tableView" ? "flex" : "block";
+}
+
+function ensureViewDocks_() {
+  if (viewDocksInitialized) return;
+
+  if (UI.mapView && UI.tableBtn) {
+    let mapDock = document.getElementById("tailsScheduleDock");
+    if (!mapDock) {
+      mapDock = document.createElement("div");
+      mapDock.id = "tailsScheduleDock";
+      mapDock.className = "tails-view-dock tails-view-dock--map";
+      UI.mapView.insertAdjacentElement("afterend", mapDock);
+    }
+    mapDock.appendChild(UI.tableBtn);
+  }
+
+  if (UI.tableView && UI.backToMapBtn) {
+    let tableDock = document.getElementById("tailsTableDock");
+    if (!tableDock) {
+      tableDock = document.createElement("div");
+      tableDock.id = "tailsTableDock";
+      tableDock.className = "tails-view-dock tails-view-dock--table";
+      UI.tableView.insertAdjacentElement("afterend", tableDock);
+    }
+    tableDock.appendChild(UI.backToMapBtn);
+  }
+
+  viewDocksInitialized = true;
+}
+
+function syncViewDockVisibility_() {
+  ensureViewDocks_();
+
+  const mapDock = document.getElementById("tailsScheduleDock");
+  if (mapDock) {
+    const mapVisible = UI.mapView && window.getComputedStyle(UI.mapView).display !== "none";
+    const tableButtonVisible = UI.tableBtn && UI.tableBtn.style.display !== "none";
+    mapDock.hidden = !(mapVisible && tableButtonVisible);
+  }
+
+  const tableDock = document.getElementById("tailsTableDock");
+  if (tableDock) {
+    const tableVisible = UI.tableView && window.getComputedStyle(UI.tableView).display !== "none";
+    const backVisible = UI.backToMapBtn && UI.backToMapBtn.style.display !== "none";
+    tableDock.hidden = !(tableVisible && backVisible);
+  }
+}
+
 function parseEventDate_(value) {
   if (!value) return null;
   if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
@@ -275,11 +331,15 @@ function formatEventDateLong_(value) {
    OVERLAY STATE RENDERING
    ============================================================ */
 
+function isActiveState_(stateStr) {
+  return stateStr === "active" || stateStr === "grazing";
+}
+
 function updateOverlayState(state) {
   if (!state || !state.state) return;
 
   currentState = state;
-  if (state.state !== "active" && state.state !== "grazing") {
+  if (!isActiveState_(state.state)) {
     sharedHerdLookupReady = true;
   }
 
@@ -513,7 +573,7 @@ function updateHerdHistoryLine(herdCode, historyGeoJSON, color, map) {
 }
 
 function renderAllHerds(data, map) {
-  if (currentState?.state !== "active" && currentState?.state !== "grazing") {
+  if (!isActiveState_(currentState?.state)) {
     // Prevents this from being called before the OverlayState is returned
     return;
   }
@@ -840,12 +900,12 @@ function flipToView(exitEl, enterEl, direction, onReady, onComplete) {
 
   setTimeout(() => {
     exitEl.classList.remove(exitClass);
-    exitEl.style.display = "none";
+    setViewVisible_(exitEl, false);
 
     // Populate the incoming view while it is still off-screen
     if (onReady) onReady();
 
-    enterEl.style.display = "block";
+    setViewVisible_(enterEl, true);
     void enterEl.offsetWidth; // force reflow so CSS animation triggers cleanly
     if (!prefersNoMotion) enterEl.classList.add(enterClass);
     updateBottomUiState();
@@ -1165,7 +1225,6 @@ function showBanner() {
     return;
   }
   UI.overlayBanner.hidden = false;
-  UI.overlayBanner.removeAttribute("hidden");
   UI.overlayBanner.style.removeProperty("display");
   UI.overlayBanner.setAttribute("aria-hidden", "false");
   if (UI.statusPill) UI.statusPill.style.display = "none";
@@ -1193,7 +1252,6 @@ function setFullscreenState(isFs) {
   } else if (_bannerSuppressedByFullscreen) {
     _bannerSuppressedByFullscreen = false;
     UI.overlayBanner.hidden = false;
-    UI.overlayBanner.removeAttribute("hidden");
     UI.overlayBanner.setAttribute("aria-hidden", "false");
     queueMapResize_();
   }
@@ -1442,8 +1500,8 @@ function focusNoMowZone(zoneCode, options = {}) {
   const tableView = document.getElementById("tableView");
   const mapView = document.getElementById("mapView");
 
-  if (tableView) tableView.style.display = "none";
-  if (mapView) mapView.style.display = "block";
+  setViewVisible_(tableView, false);
+  setViewVisible_(mapView, true);
   updateBottomUiState();
 
   const map = window.TAILS?.getMap?.();
@@ -1526,6 +1584,8 @@ function _doUpdateBottomUiState() {
       items.at(-1).classList.add('is-last');
     }
   });
+
+  syncViewDockVisibility_();
 }
 
 
@@ -1533,6 +1593,12 @@ function _doUpdateBottomUiState() {
 /* ============================================================
    PUBLIC API
    ============================================================ */
+
+document.addEventListener("DOMContentLoaded", () => {
+  ensureViewDocks_();
+  syncViewDockVisibility_();
+  updateBottomUiState();
+});
 
 window.updateOverlayState = updateOverlayState;
 window.renderAllHerds = renderAllHerds;

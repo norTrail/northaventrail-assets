@@ -592,6 +592,18 @@
     return true;
   }
 
+  function _sheetCanCollapseFromBodyScroll() {
+    const body = _sheetBodyEl();
+    return _sheetState === SHEET_STATE_FULL && body && body.scrollTop <= 0;
+  }
+
+  function _collapseSheetFromContentScroll() {
+    const sheet = _sheetEl();
+    if (!sheet || !_sheetCanCollapseFromBodyScroll()) return false;
+    _setSheetState(sheet, SHEET_STATE_INITIAL);
+    return true;
+  }
+
   function _dragPointY(e) {
     if (typeof e.clientY === 'number') return e.clientY;
     if (e.touches && e.touches[0]) return e.touches[0].clientY;
@@ -773,7 +785,11 @@
 
     if (sheetBody) {
       sheetBody.addEventListener('wheel', function (e) {
-        if (e.deltaY > 6) _promoteSheetForContentScroll();
+        if (e.deltaY > 6) {
+          _promoteSheetForContentScroll();
+          return;
+        }
+        if (e.deltaY < -6) _collapseSheetFromContentScroll();
       }, { passive: true });
 
       sheetBody.addEventListener('touchstart', function (e) {
@@ -783,7 +799,11 @@
       sheetBody.addEventListener('touchmove', function (e) {
         const nextY = _dragPointY(e);
         if (typeof _sheetBodyTouchStartY !== 'number' || typeof nextY !== 'number') return;
-        if (_sheetBodyTouchStartY - nextY > 12) _promoteSheetForContentScroll();
+        if (_sheetBodyTouchStartY - nextY > 12) {
+          _promoteSheetForContentScroll();
+          return;
+        }
+        if (nextY - _sheetBodyTouchStartY > 12) _collapseSheetFromContentScroll();
       }, { passive: true });
 
       sheetBody.addEventListener('touchend', function () {

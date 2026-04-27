@@ -29,6 +29,7 @@
   inset: 0;
   width: 100vw;
   height: var(--vvh, 100dvh);
+  margin-top: 0;
   z-index: 999999;
   background: #ffff;
 }
@@ -47,13 +48,13 @@
 
 /* Wrapper allows scrolling body with sticky header */
 #tableWrapper {
-  position: absolute;
-  inset: 0;
+  position: relative;
+  inset: auto;
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;              /* ✅ critical */
   -webkit-overflow-scrolling: touch;
-  /*padding-bottom: 80px; /* space for bottom UI buttons */
-  max-height: 90%;
 }
 
 /* ----------------------------
