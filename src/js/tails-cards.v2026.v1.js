@@ -4,7 +4,6 @@
 (function () {
   'use strict';
 
-  const GOOGLE_DIR_URL = 'https://www.google.com/maps/dir/?api=1&travelmode=driving&dir_action=navigate&destination=';
   const GOOGLE_MAP_URL = 'https://www.google.com/maps?q=';
   const APPLE_MAP_URL = 'https://maps.apple.com/?z=20&q=';
   const DONATE_URL = 'https://northaventrail.org/donate';
@@ -94,6 +93,12 @@
     return '<div class="nc-actions">' + actions.filter(Boolean).join('') + '</div>';
   }
 
+  function buildGoogleDirectionsHref(lat, lng) {
+    if (lat == null || lng == null) return '';
+    const coords = lat + ',' + lng;
+    return 'https://www.google.com/maps/dir//' + coords + '/@' + coords + ',17z/?entry=ttu';
+  }
+
   function buildMapActions(lat, lng, shareTitle, shareText, shareUrl) {
     const resolvedShareUrl = String(shareUrl || location.href || '').trim();
 
@@ -106,7 +111,7 @@
 
     if (lat != null && lng != null) {
       const mapQuery = lat + ',' + lng;
-      const googleHref = GOOGLE_DIR_URL + mapQuery;
+      const googleHref = buildGoogleDirectionsHref(lat, lng);
       const appleHref = APPLE_MAP_URL + mapQuery;
 
       actions.push(
