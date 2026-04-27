@@ -4,7 +4,7 @@
 (function () {
   'use strict';
 
-  const GOOGLE_DIR_URL = 'https://www.google.com/maps/dir/?api=1&destination=';
+  const GOOGLE_DIR_URL = 'https://www.google.com/maps/dir/?api=1&travelmode=driving&dir_action=navigate&destination=';
   const GOOGLE_MAP_URL = 'https://www.google.com/maps?q=';
   const APPLE_MAP_URL = 'https://maps.apple.com/?z=20&q=';
   const DONATE_URL = 'https://northaventrail.org/donate';
