@@ -134,6 +134,12 @@ function activateHerdByCode(herdCode, options = {}) {
   const map = window.TAILS?.getMap?.();
 
   if (!normalizedCode || !markerEl || !feature || !map) return false;
+  if (
+    activeHerdCode === normalizedCode &&
+    window.NorthavenEventCard?.isVisible?.()
+  ) {
+    return true;
+  }
 
   closeAllPopups({ preserveShareState: true });
   const shareUrl = syncTailsShareState_({ herdCode: normalizedCode });
