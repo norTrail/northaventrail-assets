@@ -258,6 +258,7 @@ function initMap(container) {
         tableViewId: "tableView",
         onToggle: (isFs) => {
           if (typeof setMapFullscreenMode === "function") setMapFullscreenMode(isFs);
+          if (typeof setFullscreenState === "function") setFullscreenState(isFs);
         }
       }), "top-right");
     }

@@ -799,14 +799,9 @@ body.is-map-fullscreen {
   box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
+/* Overlay is hidden by JS (setFullscreenState) during fullscreen; this is a safety fallback */
 #tails-app.is-fullscreen #overlay-banner {
-  position: fixed;
-  top: calc(var(--safe-top, 0px) + 56px);
-  left: 12px;
-  right: 12px;
-  width: auto;
-  margin: 0;
-  z-index: 1000000;
+  display: none !important;
 }
 
 

@@ -37,6 +37,7 @@ const UI = {
 let currentState = null;
 let countdownTimer = null;
 let isZoomedToHerd = false;
+let _isMapFullscreen = false;
 let lastVisibleZoneCode = null;
 let userHasScrolledTable = false;
 const TAILS_SHARE_HERD_PARAM = "herd";
@@ -1156,12 +1157,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 function showBanner() {
-  if (UI.overlayBanner) {
-    UI.overlayBanner.hidden = false;
-    UI.overlayBanner.removeAttribute("hidden");
-    UI.overlayBanner.style.removeProperty("display");
-    UI.overlayBanner.setAttribute("aria-hidden", "false");
+  if (!UI.overlayBanner) return;
+  if (_isMapFullscreen) {
+    // Defer until fullscreen exits — setFullscreenState will restore it
+    UI.overlayBanner.setAttribute("data-fs-hidden", "true");
+    if (UI.statusPill) UI.statusPill.style.display = "none";
+    return;
   }
+  UI.overlayBanner.hidden = false;
+  UI.overlayBanner.removeAttribute("hidden");
+  UI.overlayBanner.style.removeProperty("display");
+  UI.overlayBanner.setAttribute("aria-hidden", "false");
   if (UI.statusPill) UI.statusPill.style.display = "none";
   queueMapResize_();
 }
@@ -1170,8 +1176,32 @@ function hideBanner() {
   if (UI.overlayBanner) {
     UI.overlayBanner.hidden = true;
     UI.overlayBanner.setAttribute("aria-hidden", "true");
+    UI.overlayBanner.removeAttribute("data-fs-hidden");
   }
   queueMapResize_();
+}
+
+function setFullscreenState(isFs) {
+  _isMapFullscreen = !!isFs;
+  if (!UI.overlayBanner) return;
+  if (isFs) {
+    // Hide the banner when entering fullscreen
+    if (!UI.overlayBanner.hidden) {
+      UI.overlayBanner.setAttribute("data-fs-hidden", "true");
+      UI.overlayBanner.hidden = true;
+      UI.overlayBanner.setAttribute("aria-hidden", "true");
+      queueMapResize_();
+    }
+  } else {
+    // Restore the banner if it was hidden by fullscreen
+    if (UI.overlayBanner.getAttribute("data-fs-hidden") === "true") {
+      UI.overlayBanner.removeAttribute("data-fs-hidden");
+      UI.overlayBanner.hidden = false;
+      UI.overlayBanner.removeAttribute("hidden");
+      UI.overlayBanner.setAttribute("aria-hidden", "false");
+      queueMapResize_();
+    }
+  }
 }
 
 function showSheepUI() {
@@ -1517,3 +1547,4 @@ window.closeAllPopups = closeAllPopups;
 window.showSheepUI = showSheepUI;
 window.hideSheepUI = hideSheepUI;
 window.updateBottomUiState = updateBottomUiState;
+window.setFullscreenState = setFullscreenState;
