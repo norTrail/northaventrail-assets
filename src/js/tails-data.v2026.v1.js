@@ -354,11 +354,10 @@ function startPolling() {
 }
 
 function stopPolling() {
-  Object.values(timers).forEach(t => t && clearTimeout(t));
-  timers.sheep = null;
-  timers.overlay = null;
-  timers.sheepRetry = null;
-  timers.overlayRetry = null;
+  if (timers.sheep) { clearInterval(timers.sheep); timers.sheep = null; }
+  if (timers.overlay) { clearInterval(timers.overlay); timers.overlay = null; }
+  if (timers.sheepRetry) { clearTimeout(timers.sheepRetry); timers.sheepRetry = null; }
+  if (timers.overlayRetry) { clearTimeout(timers.overlayRetry); timers.overlayRetry = null; }
 }
 
 /* ----------------------------
