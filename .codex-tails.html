@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Northaven TAILS 2026 – Sheep Grazing Tracker — Friends of Northaven Trail</title>
+
+  <!-- Mapbox GL CSS -->
+  <link rel="preconnect" href="https://api.mapbox.com" crossorigin>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.22.0/mapbox-gl.css" rel="stylesheet">
+
+  <!-- Northaven / Tails CSS -->
+  <link rel="stylesheet" href="https://assets.northaventrail.org/css/northaven-utils.v1.css">
+  <link rel="stylesheet" href="https://assets.northaventrail.org/css/gesture-control.v1.css">
+  <link rel="stylesheet" href="https://assets.northaventrail.org/css/tails.v2026.v1.css">
+  <link rel="stylesheet" href="https://assets.northaventrail.org/css/tails-table.v2026.v1.css">
+  <link rel="stylesheet" href="https://assets.northaventrail.org/css/tails-cards.v2026.v1.css">
+</head>
+<body>
+
+  <header>
+    <nav aria-label="Site navigation">
+      <a href="https://northaventrail.org">Friends of Northaven Trail</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <h1>Northaven TAILS – Sheep Grazing Tracker 2026</h1>
+    <p>Follow the sheep herd as it grazes native plants along the Northaven Trail corridor.</p>
+
+    <div id="tails-app">
+
+      <!-- Skip link: positioned off-screen by CSS; visible on focus (WCAG 2.4.1).
+           JS (ensureSkipLink) finds this element by ID and updates href="#map". -->
+      <a id="tails-skip-link" class="skip-link" href="#map">Skip to map</a>
+
+      <!-- Overlay banner: shown during coming / sleeping / history states.
+           Hidden by default via the [hidden] attribute (CSS enforces display:none). -->
+      <div id="overlay-banner" hidden aria-live="polite" aria-atomic="true">
+        <p id="overlayMessage"></p>
+        <p id="countdown"></p>
+        <img id="overlayImage" src="" alt="">
+      </div>
+
+      <!-- ADA info bar: flex order:-1 in CSS so it renders visually above #mapView.
+           Contains a visually-hidden long description for screen readers and a
+           visible short summary that announces state changes via aria-live. -->
+      <div id="ada-info" role="region" aria-label="Grazing status">
+        <div id="ada-long-text"></div>
+        <div id="ada-short-text" aria-live="polite" aria-atomic="true"></div>
+        <!-- Directions link: shown by JS once herd location data has loaded -->
+        <a id="open-map-btn"
+           href="https://www.google.com/maps"
+           target="_blank"
+           rel="noopener noreferrer"
+           aria-label="Open herd location in Google Maps">
+          Get Directions
+        </a>
+      </div>
+
+      <!-- Map view: primary interactive region. -->
+      <div id="mapView" role="region" aria-label="Sheep grazing map" aria-busy="true">
+
+        <!-- Hamburger button opens the controls panel (WCAG 4.1.2 — name, role, value) -->
+        <button id="hamburger"
+                type="button"
+                aria-label="Open map controls"
+                aria-expanded="false"
+                aria-controls="controls">
+          &#9776;
+        </button>
+
+        <!-- Controls panel: hidden by CSS by default; shown when hamburger is clicked.
+             #showSatellite checkbox is injected here by wireSatelliteToggle(). -->
+        <div id="controls" role="group" aria-labelledby="controls-heading">
+          <p id="controls-heading" class="section-title">Display Options</p>
+          <label>
+            <input type="checkbox" id="showNoMow" checked>
+            Show no-mow zones
+          </label>
+          <label>
+            <input type="checkbox" id="showHistory" checked>
+            Show grazing history
+          </label>
+        </div>
+
+        <!-- Floating status pill: announces the current grazing state -->
+        <div id="status-pill"
+             class="floating-status"
+             role="status"
+             aria-live="polite"
+             aria-atomic="true"></div>
+
+        <!-- Mapbox GL map container. JS sets role="region" and aria-label on this. -->
+        <div id="map"></div>
+
+        <!-- Bottom button group for the map view -->
+        <div id="bottomUiGroupMap">
+          <button id="zoom-sheep-btn"
+                  type="button"
+                  class="map-bottom-button is-first"
+                  aria-label="Zoom to current herd location">
+            Zoom to Herd
+          </button>
+          <button id="toggleTableBtn"
+                  type="button"
+                  class="map-bottom-button"
+                  aria-label="Switch to table view of grazing schedule">
+            Table View
+          </button>
+          <button id="zoom-out-btn"
+                  type="button"
+                  class="map-bottom-button is-last"
+                  aria-label="Zoom out to full trail overview"
+                  style="display:none">
+            Zoom Out
+          </button>
+        </div>
+
+      </div><!-- #mapView -->
+
+      <!-- Table view: hidden by default via CSS (display:none).
+           Shown when the user activates the Table View button. -->
+      <div id="tableView" role="region" aria-label="Grazing schedule table">
+
+        <div id="tableWrapper">
+          <table id="grazingTable">
+            <caption>Northaven TAILS Grazing Schedule 2026</caption>
+            <thead>
+              <tr>
+                <th scope="col">Herd</th>
+                <th scope="col">Zone</th>
+                <th scope="col">Status</th>
+                <th scope="col">Date</th>
+              </tr>
+            </thead>
+            <tbody id="grazingTableBody">
+              <!-- Rows injected by tails-data.v2026.v1.js after data loads -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Bottom buttons for table view -->
+        <div id="bottomUiGroupTable">
+          <button id="backToMapBtn"
+                  type="button"
+                  class="map-bottom-button is-only"
+                  aria-label="Return to map view">
+            Back to Map
+          </button>
+        </div>
+
+      </div><!-- #tableView -->
+
+      <!-- Share button: JS sets share-url / share-title / share-text attributes.
+           click handler provided by northaven-utils clickShare. -->
+      <button id="share-button"
+              type="button"
+              aria-label="Share this page"
+              share-title="Northaven TAILS 2026"
+              share-text="Follow the sheep herd grazing along the Northaven Trail.">
+        Share
+      </button>
+
+    </div><!-- #tails-app -->
+  </main>
+
+  <footer>
+    <p>&copy; 2026 <a href="https://northaventrail.org">Friends of Northaven Trail</a></p>
+  </footer>
+
+  <!-- Mapbox GL JS -->
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.22.0/mapbox-gl.js"></script>
+
+  <!-- Northaven / Tails JS -->
+  <script src="https://assets.northaventrail.org/js/northaven-utils.v1.js"></script>
+  <script src="https://assets.northaventrail.org/js/gesture-control.v1.js"></script>
+  <script src="https://assets.northaventrail.org/js/tails-init.v2026.v1.js"></script>
+  <script src="https://assets.northaventrail.org/js/tails-ui.v2026.v1.js"></script>
+  <script src="https://assets.northaventrail.org/js/tails-data.v2026.v1.js"></script>
+  <script src="https://assets.northaventrail.org/js/tails-cards.v2026.v1.js"></script>
+
+</body>
+</html>
