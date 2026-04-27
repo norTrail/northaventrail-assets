@@ -492,19 +492,6 @@ function wireUIControls() {
 }
 
 
-/* ----------------------------
-   Page visibility handling
-   ---------------------------- */
-
-function wireVisibilityHandling() {
-  document.addEventListener("visibilitychange", () => {
-    const visible = document.visibilityState === "visible";
-
-    if (typeof handlePageVisibility === "function") {
-      handlePageVisibility(visible);
-    }
-  });
-}
 
 
 /* ----------------------------
